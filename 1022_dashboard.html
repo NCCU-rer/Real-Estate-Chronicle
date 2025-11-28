@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地政大事記｜Dashboard</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/save-svg-as-png@1.4.17/lib/saveSvgAsPng.min.js"></script>
+<script src="dashboard_data.js"></script>
+<style>
+/* ======== 你的原樣式（略調整） ======== */
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f8f9fa;color:#333;margin:0}
+h1{font-size:24px;color:#2c3e50;text-align:center;margin-bottom:20px}
+#splash-screen{position:fixed;inset:0;background:#f8f9fa;display:flex;justify-content:center;align-items:center;z-index:9999;opacity:1;transition:opacity 3s;flex-direction:column}
+#splash-screen .logo-and-text{display:inline-flex;align-items:center;margin-bottom:30px}
+.splash-logo{width:40px;margin-right:15px;opacity:0;transform:translateX(-20px);animation:fadeIn-slide 1.5s ease-out forwards}
+.splash-title{font-size:3em;color:#2c3e50;opacity:0;transform:translateY(20px);animation:fadeIn-float 1.5s ease-out forwards;margin:0;white-space:nowrap;margin-bottom:10px}
+.splash-subtitle{font-family:"Microsoft JhengHei","微軟正黑體","PingFang TC","蘋方-繁","Heiti TC","黑體-繁","STHeiti","華康黑體",SimHei,"黑體",sans-serif;font-size:1.2em;color:#2A3689;opacity:0;transform:translateX(20px);line-height:1.4;animation:fadeIn-slide 1.5s ease-out forwards;font-weight:900;width:170px;text-align:justify;text-align-last:justify;margin:0}
+@keyframes fadeIn-float{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn-slide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+svg{border:1px solid #ddd;overflow:visible;width:100%;height:auto;background:#fff;border-radius:8px}
+.line{fill:none;stroke:#4e79a7;stroke-width:3}
+.dot{fill:#4e79a7;stroke:#4e79a7;stroke-width:4;cursor:pointer}
+.event-icon-text{font-size:20px;cursor:pointer;text-anchor:middle;display:inline-block}
+.event-icon-text.orange-bulb{filter:hue-rotate(350deg) saturate(5) brightness(1)}
+.event-icon-text.blue-bulb{filter:hue-rotate(180deg) saturate(2) brightness(1)}
+.event-icon-text.green-bulb{filter:hue-rotate(90deg) saturate(1) brightness(.95)}
+#popup{display:none;position:fixed;background:#fff;border:1px solid #ccc;padding:10px;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;pointer-events:none}
+#detailPopup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;width:320px;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+#detailPopup button{float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s}
+#detailPopup button:hover{background:#c0392b}
+#detailContent h3{font-size:18px;margin-top:0}
+#detailContent p{font-size:14px;line-height:1.6}
+.x-axis .tick text,.y-axis .tick text{font-size:14px}
+.watermark{pointer-events:none;user-select:none;opacity:.8;font-weight:300;letter-spacing:.5px}
+
+.dashboard-container{max-width:1200px;margin:20px auto;padding:20px;border-radius:8px;background:#fff}
+#filter{background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;box-shadow:0 2px 4px rgba(0,0,0,.05);margin-bottom:16px}
+.filter-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
+.filter-group{margin:5px 15px;display:flex;align-items:center}
+.filter-group strong{margin-right:8px;font-size:14px;color:#555;white-space:nowrap;line-height:1}
+select{border-radius:4px;border:1px solid #ccc;padding:8px 12px;background:#fff;font-size:14px;height:38px;min-width:120px;box-sizing:border-box}
+.btn-group label{display:inline-block;padding:8px 12px;margin:0;font-size:14px;font-weight:500;text-align:center;cursor:pointer;user-select:none;border:1px solid #ccc;color:#333;background:#fff;transition:.2s;height:38px;line-height:22px;box-sizing:border-box}
+.btn-group input{display:none}
+.btn-group input:checked+label{background:#4e79a7;color:#fff;border-color:#4e79a7}
+.filter-dropdown{position:relative;display:inline-block}
+.dropdown-button{border:1px solid #ddd;background:#fff;color:#333;cursor:pointer;padding:10px 16px;border-radius:8px;min-width:240px;text-align:left;height:42px;line-height:22px;font-size:15px;font-weight:500;transition:.2s}
+.dropdown-panel{position:absolute;z-index:1200;top:48px;left:0;width:360px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:16px;user-select:none}
+.panel-section{padding:12px 8px}
+.option-row{display:block;font-size:15px;color:#333;padding:10px 8px;line-height:1.4;cursor:pointer;border-radius:6px;transition:.2s}
+.option-row:hover{background:#f8f9fa}
+.event-type-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.event-chip{display:inline-block;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #ccc;color:#333;background:#fff;border-radius:16px;transition:.2s}
+.event-chip.active{background:#e6eef7;color:#2c3e50;border-color:#a7bfdc}
+.event-chip.national{border-color:#ffd700;color:#b8860b}
+.event-chip.national.active{background:rgba(255,215,0,.18);border-color:#ffd700;color:#8a6f00}
+.event-chip.tax{border-color:#ff8c00;color:#d2691e}
+.event-chip.tax.active{background:rgba(255,140,0,.18);border-color:#ff8c00;color:#a85e14}
+.event-chip.infra{border-color:#4169e1;color:#191970}
+.event-chip.infra.active{background:rgba(65,105,225,.18);border-color:#4169e1;color:#1c2f7a}
+.event-chip.dev{border-color:#32cd32;color:#228b22}
+.event-chip.dev.active{background:rgba(50,205,50,.18);border-color:#32cd32;color:#1b6e1b}
+.action-buttons-container{display:flex;justify-content:flex-end;align-items:center;gap:15px;margin-top:12px}
+.action-btn{font-size:14px;color:#555;cursor:pointer;border:1px solid #ccc;padding:5px 10px;border-radius:4px;background:#fff;transition:.2s}
+.action-btn:hover{background:#f0f0f0;border-color:#999}
+
+/* ======== 新增：Dashboard 兩欄版型與側欄卡片 ======== */
+.dashboard-layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px}
+.card{background:#fff;border:1px solid #eaeaea;border-radius:10px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.card h3{margin:0 0 10px 0;font-size:16px;color:#2c3e50}
+.kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{border:1px dashed #e5e7eb;border-radius:10px;padding:10px 12px}
+.kpi .label{font-size:12px;color:#6b7280}
+.kpi .val{font-size:18px;font-weight:800;color:#111827}
+.kpi .delta.up{color:#0f9d58}
+.kpi .delta.down{color:#d93025}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #e5e7eb;color:#374151;background:#f9fafb;margin-right:6px}
+.event-li{display:flex;gap:8px;margin:8px 0;align-items:flex-start}
+.dotcat{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.cat-tax{background:#ff8c00}.cat-infra{background:#4169e1}.cat-dev{background:#32cd32}.cat-national{background:#ffd700}
+.event-text{font-size:13px;line-height:1.5;color:#374151}
+.small{font-size:12px;color:#6b7280}
+.side-note{font-size:12px;color:#6b7280;margin-top:6px}
+
+/* 行動版調整 */
+@media (max-width: 992px){
+  .dashboard-layout{grid-template-columns:1fr}
+}
+
+/* ===== 事件說明樣式 ===== */
+.event-detail{ padding:10px; background:#f8f9fa; border-radius:6px; margin-top:8px; }
+.event-detail h4{ margin:0 0 8px 0; font-size:14px; color:#2c3e50; }
+.event-detail p{ margin:0; font-size:13px; line-height:1.5; color:#555; }
+
+/* Toggle Switch 樣式 */
+.toggle-container{ display:flex; align-items:center; gap:8px; }
+.toggle-switch{ position:relative; display:inline-block; width:50px; height:24px; }
+.toggle-switch input{ opacity:0; width:0; height:0; }
+.slider{ position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px; }
+.slider:before{ position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+input:checked + .slider{ background-color:#4e79a7; }
+input:checked + .slider:before{ transform:translateX(26px); }
+.toggle-text{ font-size:14px; font-weight:500; color:#555; }
+
+/* 事件時間軸樣式 */
+.timeline-svg{ width:100%; height:60px; }
+.timeline-point{ cursor:pointer; transition:all 0.2s; }
+.timeline-point:hover{ stroke-width:3; }
+.timeline-point.active{ stroke-width:4; stroke:#4e79a7; }
+.timeline-line{ stroke:#ddd; stroke-width:2; }
+
+/* ======== 防截圖/複製（保留你的原設定） ======== */
+.dashboard-container{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dashboard-container *{-webkit-user-select:none !important;-moz-user-select:none !important;-ms-user-select:none !important;user-select:none !important}
+button,input,select,textarea{-webkit-user-select:text !important;-moz-user-select:text !important;-ms-user-select:text !important;user-select:text !important}
+</style>
+
+<!-- Splash -->
+<div id="splash-screen">
+  <div>
+    <h1 class="splash-title">地政大事記</h1>
+    <div class="logo-and-text">
+      <img class="splash-logo" alt="國立政治大學不動產研究中心 Logo" src="https://nccu.fun4.com.tw/content/img/logo.svg">
+      <p class="splash-subtitle">國立政治大學<br>不動產研究中心</p>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard-container" style="display:none;">
+  <h1>地政大事記</h1>
+
+  <!-- 篩選列（原有） -->
+  <div id="filter">
+    <div class="filter-row">
+      <div class="filter-group" id="placeGroup">
+        <div class="toggle-container no-border">
+          <span class="toggle-text">全國</span>
+          <label class="toggle-switch">
+            <input id="filterToggle" type="checkbox">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-text">縣市</span>
+        </div>
+        <select id="placeSelect" style="margin-left:15px;">
+          <option value="Taipei">台北市</option>
+          <option value="NewTaipei">新北市</option>
+          <option value="Taoyuan">桃園市</option>
+          <option value="Taichung">台中市</option>
+          <option value="Tainan">台南市</option>
+          <option value="Kaohsiung">高雄市</option>
+          <option value="Hsinchu">新竹縣市</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <strong>時間範圍模式:</strong>
+        <div class="btn-group" id="timeModeButtons">
+          <input type="radio" id="quarterMode" name="timeMode" value="quarter" checked><label for="quarterMode">季別選擇</label>
+          <input type="radio" id="yearMode" name="timeMode" value="year"><label for="yearMode">年份範圍</label>
+        </div>
+      </div>
+
+      <div class="filter-group" id="quarterControls">
+        <strong>季別範圍:</strong>
+        <div class="quarter-range-container">
+          <select class="quarter-select" id="startSelect"></select>
+          <span class="range-separator">至</span>
+          <select class="quarter-select" id="endSelect"></select>
+        </div>
+      </div>
+
+      <div class="filter-group" id="yearControls" style="display:none;">
+        <strong>年份範圍:</strong>
+        <select id="yearRangeSelect">
+          <option value="all">全部年份</option>
+          <option value="3Y">近3年</option>
+          <option value="5Y">近5年</option>
+          <option value="10Y">近10年</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-group">
+        <strong>屋齡篩選:</strong>
+        <div class="filter-dropdown" id="filterDropdown">
+          <button id="filterDropdownToggle" type="button" class="dropdown-button">全部屋齡 ▾</button>
+          <div id="filterDropdownPanel" class="dropdown-panel" style="display:none;">
+            <div class="panel-section">
+              <label class="option-row"><input id="chk_age_10" type="checkbox" value="age_10"> 屋齡 ≤ 10 年</label>
+              <label class="option-row"><input id="chk_age_20" type="checkbox" value="age_20"> 屋齡 ≤ 20 年</label>
+            </div>
+          </div>
+        </div>
+        <input id="dataTypeHidden" type="hidden" value="all">
+      </div>
+
+      <div class="filter-group">
+        <strong>事件類型:</strong>
+        <div class="event-type-buttons" id="eventChips">
+          <button class="event-chip national active" data-value="national" type="button">💡 全國重大事件</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:14px;color:#000">(移動滑鼠查看各季資料 → 點擊👆圓點鎖定季度 → 雙擊解鎖)</p>
+
+  <!-- 兩欄布局：左圖右側欄 -->
+  <div class="dashboard-layout">
+    <div>
+      <div id="graph"></div>
+      
+      <!-- 事件時間軸 -->
+      <div id="timeline" style="margin-top: 20px;"></div>
+      
+      <div class="action-buttons-container">
+        <button class="action-btn" id="export-chart-btn">匯出圖片</button>
+        <button class="action-btn" id="data-logic-trigger">資料清理邏輯</button>
+      </div>
+    </div>
+
+    <!-- 右側資訊側欄 -->
+    <aside>
+      <div class="card">
+        <h3 id="side-title">本期概覽</h3>
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="label">本期中位數（萬/坪）</div>
+            <div class="val" id="kpi-now">—</div>
+            <div class="small" id="kpi-quarter">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">與去年同期（YoY）</div>
+            <div class="val" id="kpi-yoy">—</div>
+            <div class="small" id="kpi-yoy-note">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">與上一季（QoQ）</div>
+            <div class="val" id="kpi-qoq">—</div>
+            <div class="small" id="kpi-qoq-note">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">期間最高 / 最低</div>
+            <div class="val" id="kpi-hi-lo">—</div>
+            <div class="small" id="kpi-hi-lo-note">—</div>
+          </div>
+        </div>
+        <div class="side-note" id="kpi-extra">提示：移動滑鼠查看各季資料，點擊圓點鎖定，雙擊解鎖</div>
+        <div class="side-note" id="lock-status" style="color: #e74c3c; font-weight: bold;">狀態：未鎖定</div>
+      </div>
+
+      <div class="card">
+        <h3>當季事件（依類型）</h3>
+        <div id="events-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>事件說明</h3>
+        <div id="events-top"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="popup"><div id="popupContent"></div></div>
+  <div id="detailPopup"><button id="closeDetailPopup">X</button><div id="detailContent"></div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  loadDashboardData()
+    .then(apiData=>{initializeChart(apiData);})
+    .catch(error=>{
+      console.error('讀取本地資料時發生問題:', error);
+      const dashboard=document.querySelector('.dashboard-container');dashboard.style.display='block';
+      const banner=document.createElement('div');banner.textContent='本地資料載入失敗，請確認 json 檔案或預覽伺服器設定。';
+      banner.setAttribute('style','max-width:1200px;margin:10px auto;padding:10px 14px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:6px;');
+      document.body.insertBefore(banner,dashboard);
+      const splashScreen=document.getElementById('splash-screen');if(splashScreen){splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+    });
+
+  window.__splashFailSafe=setTimeout(()=>{
+    const splashScreen=document.getElementById('splash-screen');
+    const dashboard=document.querySelector('.dashboard-container');
+    if(splashScreen&&splashScreen.style.display!=='none'){dashboard.style.display='block';splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+  },8000);
+});
+
+function initializeChart(apiData){
+  // ======== 取用你的資料結構 ========
+  let rawNewData = apiData.newData || [];
+  if(Array.isArray(rawNewData) && rawNewData.length>0 && Array.isArray(rawNewData[0])){ rawNewData = rawNewData[0]; }
+  const nationalEvents = apiData.oldLabelData || [];
+  const taipeiEvents = apiData.taipeiData || [];
+  const newtaipeiEvents = apiData.newtaipeiData || [];
+  const taoyuanEvents = apiData.taoyuanData || [];
+  const hsinchuEvents = apiData.hsinchuData || [];
+  const taichungEvents = apiData.taichungData || [];
+  const tainanEvents = apiData.tainanData || [];
+  const kaohsiungEvents = apiData.kaohsiungData || [];
+
+  const allEvents = [...nationalEvents,...taipeiEvents,...newtaipeiEvents,...taoyuanEvents,...hsinchuEvents,...taichungEvents,...tainanEvents,...kaohsiungEvents];
+
+  function processData(){
+    const dataMap=new Map();
+    rawNewData.forEach(d=>{
+      const newD={...d};
+      if(newD.HsinchuCity||newD.HsinchuCounty){ newD.Hsinchu=newD.HsinchuCity||newD.HsinchuCounty; delete newD.HsinchuCity; delete newD.HsinchuCounty; }
+      dataMap.set(newD.Quarter,{...newD,events:[]});
+    });
+    allEvents.forEach(ev=>{ if(dataMap.has(ev.Quarter)){ dataMap.get(ev.Quarter).events.push(ev);} });
+    const arr=Array.from(dataMap.values());
+    arr.sort((a,b)=>{
+      const [ya,qa]=a.Quarter.split('_'); const [yb,qb]=b.Quarter.split('_');
+      if(ya!==yb) return (+ya)-(+yb);
+      return qa.localeCompare(qb);
+    });
+    return arr;
+  }
+
+  const fullData = processData();
+
+  // ======== 快捷存取 DOM ========
+  const placeSelect = d3.select('#placeSelect');
+  const chkAge10 = d3.select('#chk_age_10');
+  const chkAge20 = d3.select('#chk_age_20');
+  const hiddenDataType = d3.select('#dataTypeHidden');
+  const dropdownToggle = d3.select('#filterDropdownToggle');
+  const dropdownPanel = d3.select('#filterDropdownPanel');
+  const filterToggle = d3.select('#filterToggle');
+  const yearRangeSelect = d3.select('#yearRangeSelect');
+  const timeModeButtons = d3.selectAll('input[name="timeMode"]');
+  let eventTypeButtons = d3.selectAll('.event-chip');
+
+  // ======== 狀態 ========
+  const margin={top:50,right:100,bottom:80,left:100};
+  const width=1000-margin.left-margin.right;
+  const height=600-margin.top-margin.bottom;
+
+  const allQuarters = rawNewData.map(d=>d.Quarter);
+  const startSelect = d3.select("#startSelect");
+  const endSelect = d3.select("#endSelect");
+  allQuarters.forEach((q,i)=>{startSelect.append('option').attr('value',i).text(q); endSelect.append('option').attr('value',i).text(q);});
+
+  const mainSvg = d3.select("#graph").append("svg")
+    .attr("width", width+margin.left+margin.right)
+    .attr("height", height+margin.top+margin.bottom)
+    .attr("viewBox",`0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
+    .attr("preserveAspectRatio","xMidYMid meet");
+  mainSvg.append("defs").append("clipPath").attr("id","clip").append("rect").attr("width",width).attr("height",height);
+  mainSvg.append("text").attr("id","chart-title").style("font-size","22px").style("font-weight","bold").style("text-anchor","middle").style("fill","#2c3e50").attr("x",(width+margin.left+margin.right)/2).attr("y",30);
+  mainSvg.append("text").attr("class","axis-label").attr("x",30).attr("y",margin.top+height/2).attr("text-anchor","middle").attr("transform",`rotate(-90, 30, ${margin.top+height/2})`).style("font-size","18px").style("font-weight","bold").style("fill","#2c3e50").text("每坪單價（萬元）");
+  mainSvg.append("text").attr("class","axis-label").attr("x",margin.left+width/2).attr("y",margin.top+height+margin.bottom-25).attr("text-anchor","middle").style("font-size","18px").style("font-weight","bold").style("fill","#2c3e50").text("時間（季別）");
+
+  // 時間軸相關變數
+  const timelineSvg = d3.select("#timeline").append("svg")
+    .attr("class", "timeline-svg")
+    .attr("width", width+margin.left+margin.right)
+    .attr("height", 60)
+    .attr("viewBox", `0 0 ${width+margin.left+margin.right} 60`)
+    .attr("preserveAspectRatio", "xMidYMid meet");
+  
+  const timelineX = d3.scaleBand()
+    .range([margin.left, width+margin.left])
+    .paddingInner(0.1)
+    .paddingOuter(0);
+  
+  let timelineData = [];
+
+  // 事件類型顏色對應（降低飽和度）
+  const eventColors = {
+    national: '#e6d700', // 黃色 - 降低飽和度
+    tax: '#e6a500',     // 橘色 - 降低飽和度
+    infra: '#5a7ae6',   // 藍色 - 降低飽和度
+    dev: '#5ae65a'      // 綠色 - 降低飽和度
+  };
+
+  const watermarkGroup=mainSvg.append("g").attr("class","watermark").attr("transform",`translate(${margin.left+20}, ${margin.top+30})`).style("opacity","0");
+  watermarkGroup.append("text").attr("x","0").attr("y","-10").attr("text-anchor","start").style("font-family","Microsoft JhengHei, 微軟正黑體, PingFang TC, 蘋方-繁, Heiti TC, 黑體-繁, STHeiti, 華康黑體, SimHei, 黑體, sans-serif").style("font-size","18px").style("font-weight","bold").style("fill","#003399").text("政大不動產研究中心");
+  watermarkGroup.append("text").attr("x","0").attr("y","15").attr("text-anchor","start").style("font-family","Arial, sans-serif").style("font-size","12px").style("fill","#003399").text("Center For Real Estate Research, NCCU");
+
+  const focus = mainSvg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
+
+
+  // 動態可用季
+  function getAvailableDataRange(){
+    const arr=[];
+    allQuarters.forEach((q,i)=>{
+      const d=rawNewData[i];
+      if(d&&d.Nation&&d.Nation.all){
+        const ok=Object.values(d.Nation).some(v=>typeof v==='number'&&v>0);
+        if(ok) arr.push({quarter:q,index:i});
+      }
+    });
+    return arr;
+  }
+  const availableData = getAvailableDataRange();
+
+  // 篩選狀態
+  let startIndex = 0;
+  let endIndex = availableData.length>0 ? availableData[availableData.length-1].index : allQuarters.length-1;
+  let selectedPlace = placeSelect.property('value');
+  let selectedDataType = deriveDataType();
+  let selectedEventTypes = getSelectedEventTypes();
+  let selectedQuarterKey = fullData[endIndex]?.Quarter || fullData[fullData.length-1]?.Quarter; // 右側欄預設鎖定最後一季
+  let isLocked = false; // 是否已鎖定特定季度
+
+  updateDropdownButtonText();
+
+  // scales / axes
+  const x=d3.scaleBand().range([0,width]).paddingInner(.5).paddingOuter(0);
+  const y=d3.scaleLinear().range([height,0]);
+
+  const xAxisGroup=focus.append("g").attr("class","x-axis").attr("transform",`translate(0,${height})`);
+  const yAxisGroup=focus.append("g").attr("class","y-axis");
+
+  focus.append("path").attr("class","line focus-line").attr("clip-path","url(#clip)");
+
+  // 主圖十字對照線（垂直線）
+  const mainCrosshair = focus.append("line")
+    .attr("class","crosshair-main")
+    .attr("x1",0)
+    .attr("x2",0)
+    .attr("y1",0)
+    .attr("y2",height)
+    .attr("stroke","#4e79a7")
+    .attr("stroke-width",3)
+    .style("opacity",0)
+    .style("pointer-events", "none")
+    .style("cursor", "pointer");
+
+
+  // 輔助：資料取值/分類
+  function deriveDataType(){ const a10=chkAge10.property('checked'), a20=chkAge20.property('checked'); if(a10) return 'age_10'; if(a20) return 'age_20'; return 'all'; }
+  function getValue(d){ const v=d?.[selectedPlace]?.[selectedDataType]; return (typeof v==='number')?v:null; }
+  function getSelectedEventTypes(){ const nodes=document.querySelectorAll('.event-chip.active'); return Array.from(nodes).map(el=>el.getAttribute('data-value')); }
+  function getEventCategory(e){ if(e.Category==='Tax') return 'tax'; if(e.Category==='Infrastructure'||e.Category==='Infra') return 'infra'; if(e.Category==='Develop'||e.Category==='Dev') return 'dev'; return 'national'; }
+  function formatWan(v){ return (v/10000).toFixed(1); }
+  function quarterToText(q){ return q.replace('_Q',' Q'); }
+
+  // 依目前模式取得某季要顯示的事件（已套用全國/縣市與 chip 篩選）
+  function pickEventsFor(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.dataset.value);
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    return row.events.map(ev=>{
+        const hasNational = ev.hasOwnProperty('Label');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // 根據模式決定顯示哪種事件
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 縣市模式：只顯示縣市事件
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // 全國模式：只顯示全國事件
+          if(hasNational) {
+            label = ev.Label || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        return {...ev, __label: label, __cat: cat };
+      })
+      .filter(e => e.__label && selected.includes(e.__cat));
+  }
+
+  // 為時間軸取得某季要顯示的事件（使用上方控制台的事件篩選）
+  function pickEventsForTimeline(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.dataset.value);
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    return row.events.map(ev=>{
+        const hasNational = ev.hasOwnProperty('Label');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // 根據模式決定顯示哪種事件
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 縣市模式：只顯示縣市事件
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // 全國模式：只顯示全國事件
+          if(hasNational) {
+            label = ev.Label || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        return {...ev, __label: label, __cat: cat };
+      })
+      .filter(e => e.__label && selected.includes(e.__cat));
+  }
+
+
+  // 十字對照功能
+  function updateCrosshair(mouseX) {
+    if(mouseX !== null) {
+      // 計算在主圖中的相對位置
+      const relativeX = mouseX - margin.left;
+      // 更新主圖上的垂直線
+      mainCrosshair
+        .attr("x1", relativeX)
+        .attr("x2", relativeX)
+        .style("opacity", 1)
+        .style("pointer-events", "all");
+    } else {
+      mainCrosshair
+        .style("opacity", 0)
+        .style("pointer-events", "none");
+    }
+  }
+
+  // 時間軸相關函數
+  function updateTimeline() {
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    
+    // 準備時間軸資料
+    timelineData = filteredData.map(d => {
+      const events = pickEventsForTimeline(d.Quarter);
+      const eventCounts = {
+        national: events.filter(e => e.__cat === 'national').length,
+        tax: events.filter(e => e.__cat === 'tax').length,
+        infra: events.filter(e => e.__cat === 'infra').length,
+        dev: events.filter(e => e.__cat === 'dev').length
+      };
+      const totalEvents = Object.values(eventCounts).reduce((a, b) => a + b, 0);
+      
+      return {
+        quarter: d.Quarter,
+        events: eventCounts,
+        totalEvents: totalEvents,
+        hasEvents: totalEvents > 0
+      };
+    });
+
+    timelineX.domain(timelineData.map(d => d.quarter));
+
+    // 清除現有內容
+    timelineSvg.selectAll("*").remove();
+
+    // 繪製時間軸線
+    timelineSvg.append("line")
+      .attr("class", "timeline-line")
+      .attr("x1", margin.left)
+      .attr("x2", width + margin.left)
+      .attr("y1", 30)
+      .attr("y2", 30);
+
+    // 繪製時間軸點
+    const points = timelineSvg.selectAll(".timeline-point")
+      .data(timelineData)
+      .enter()
+      .append("g")
+      .attr("class", "timeline-point")
+      .attr("transform", d => `translate(${timelineX(d.quarter) + timelineX.bandwidth()/2}, 30)`);
+
+    // 使用分割圓點函數繪製圓點
+    points.each(function(d) {
+      const radius = d.hasEvents ? 6 : 3;
+      drawSegmentedCircle(d3.select(this), d, radius);
+    });
+
+    // 移除季度標籤和事件數量標籤，只保留圓點
+
+    // 添加懸停效果
+    let hoverTimeout;
+    points
+      .on("mouseover", function(event, d) {
+        // 高亮當前點 - 增加所有子元素的stroke-width
+        d3.select(this).selectAll("circle, path")
+          .attr("stroke-width", 3);
+        
+        // 放大圓點
+        const scale = d.hasEvents ? 1.3 : 1.2;
+        d3.select(this).selectAll("circle, path")
+          .attr("transform", `scale(${scale})`);
+        
+        // 同步主圖十字線
+        const quarterX = timelineX(d.quarter) + timelineX.bandwidth()/2;
+        updateCrosshair(quarterX);
+        updateEventInfoFromMouse(quarterX);
+        
+        // 2秒後顯示季度資訊
+        hoverTimeout = setTimeout(() => {
+          const quarterText = d.quarter.replace('_Q', ' Q');
+          const eventTypes = Object.keys(d.events).filter(type => d.events[type] > 0);
+          const eventTypeText = eventTypes.map(type => {
+            const typeNames = { national: '全國重大事件', tax: '地方法律稅制', infra: '地方重大建設', dev: '地方土地開發' };
+            return `${typeNames[type]}(${d.events[type]})`;
+          }).join(', ');
+          
+          d3.select("#popupContent").html(`<strong>${quarterText}</strong><br>${eventTypeText}`);
+          d3.select("#popup").style("display","block").style("left",(event.clientX+10)+"px").style("top",(event.clientY-35)+"px");
+        }, 2000);
+      })
+      .on("mouseout", function(event, d) {
+        // 清除延遲
+        if(hoverTimeout) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = null;
+        }
+        
+        // 恢復原狀
+        d3.select(this).selectAll("circle, path")
+          .attr("stroke-width", 1)
+          .attr("transform", "scale(1)");
+        
+        // 隱藏十字線和彈窗
+        updateCrosshair(null);
+        d3.select("#popup").style("display","none");
+      })
+      .on("click", function(event, d) {
+        // 清除延遲
+        if(hoverTimeout) {
+          clearTimeout(hoverTimeout);
+          hoverTimeout = null;
+        }
+        
+        // 檢查是否為雙擊
+        const now = Date.now();
+        const lastClick = d3.select(this).datum()?.lastClickTime || 0;
+        const isDoubleClick = (now - lastClick) < 300;
+        
+        if(isDoubleClick) {
+          // 雙擊：解鎖
+          isLocked = false;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = 0;
+          } else {
+            d3.select(this).datum({ lastClickTime: 0 });
+          }
+          // 恢復到預設狀態（最後一季）
+          const mode = d3.select('input[name="timeMode"]:checked').property("value");
+          let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+          selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 解鎖後隱藏十字標
+          updateCrosshair(null);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
+          // 清除所有高亮
+          timelineSvg.selectAll(".timeline-point").classed("active", false);
+        } else {
+          // 單擊：鎖定到該季度
+          selectedQuarterKey = d.quarter;
+          isLocked = true;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = now;
+          } else {
+            d3.select(this).datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 鎖定後顯示十字標在該點位置
+          const quarterX = timelineX(d.quarter) + timelineX.bandwidth()/2;
+          updateCrosshair(quarterX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
+          // 高亮選中的點
+          timelineSvg.selectAll(".timeline-point").classed("active", false);
+          d3.select(this).classed("active", true);
+        }
+      });
+  }
+
+  // 繪製分割圓點的函數
+  function drawSegmentedCircle(group, data, radius) {
+    const eventTypes = Object.keys(data.events).filter(type => data.events[type] > 0);
+    
+    if (eventTypes.length === 0) {
+      // 沒有事件時顯示灰色圓點
+      group.append("circle")
+        .attr("r", radius)
+        .attr("fill", "#ccc")
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+    } else if (eventTypes.length === 1) {
+      // 只有一種事件類型時顯示單色圓點
+      group.append("circle")
+        .attr("r", radius)
+        .attr("fill", eventColors[eventTypes[0]])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+    } else if (eventTypes.length === 2) {
+      // 兩種事件類型時顯示左半圓和右半圓
+      const [type1, type2] = eventTypes;
+      
+      // 左半圓
+      group.append("path")
+        .attr("d", `M -${radius} 0 A ${radius} ${radius} 0 0 1 ${radius} 0 Z`)
+        .attr("fill", eventColors[type1])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 右半圓
+      group.append("path")
+        .attr("d", `M ${radius} 0 A ${radius} ${radius} 0 0 1 -${radius} 0 Z`)
+        .attr("fill", eventColors[type2])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+    } else if (eventTypes.length === 3) {
+      // 三種事件類型時各佔1/3
+      const [type1, type2, type3] = eventTypes;
+      
+      // 第一段 (0-120度)
+      group.append("path")
+        .attr("d", `M 0 -${radius} A ${radius} ${radius} 0 0 1 ${radius * 0.866} ${radius * 0.5} L 0 0 Z`)
+        .attr("fill", eventColors[type1])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 第二段 (120-240度)
+      group.append("path")
+        .attr("d", `M ${radius * 0.866} ${radius * 0.5} A ${radius} ${radius} 0 0 1 ${radius * -0.866} ${radius * 0.5} L 0 0 Z`)
+        .attr("fill", eventColors[type2])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 第三段 (240-360度)
+      group.append("path")
+        .attr("d", `M ${radius * -0.866} ${radius * 0.5} A ${radius} ${radius} 0 0 1 0 -${radius} L 0 0 Z`)
+        .attr("fill", eventColors[type3])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+    } else {
+      // 四種事件類型時各佔1/4
+      const [type1, type2, type3, type4] = eventTypes;
+      
+      // 第一段 (0-90度)
+      group.append("path")
+        .attr("d", `M 0 -${radius} A ${radius} ${radius} 0 0 1 ${radius} 0 L 0 0 Z`)
+        .attr("fill", eventColors[type1])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 第二段 (90-180度)
+      group.append("path")
+        .attr("d", `M ${radius} 0 A ${radius} ${radius} 0 0 1 0 ${radius} L 0 0 Z`)
+        .attr("fill", eventColors[type2])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 第三段 (180-270度)
+      group.append("path")
+        .attr("d", `M 0 ${radius} A ${radius} ${radius} 0 0 1 -${radius} 0 L 0 0 Z`)
+        .attr("fill", eventColors[type3])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+      
+      // 第四段 (270-360度)
+      group.append("path")
+        .attr("d", `M -${radius} 0 A ${radius} ${radius} 0 0 1 0 -${radius} L 0 0 Z`)
+        .attr("fill", eventColors[type4])
+        .attr("stroke", "#4e79a7")
+        .attr("stroke-width", 1);
+    }
+  }
+
+  // 根據滑鼠位置更新事件資訊
+  function updateEventInfoFromMouse(mouseX) {
+    if(mouseX === null) return;
+    
+    // 計算在主圖中的相對位置
+    const relativeX = mouseX - margin.left;
+    
+    // 根據X位置找到對應的季度
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    
+    // 找到最接近的數據點
+    let closestQuarter = null;
+    let minDistance = Infinity;
+    
+    filteredData.forEach(d => {
+      const quarterX = x(d.Quarter) + x.bandwidth()/2;
+      const distance = Math.abs(quarterX - relativeX);
+      if(distance < minDistance) {
+        minDistance = distance;
+        closestQuarter = d.Quarter;
+      }
+    });
+    
+    if(closestQuarter) {
+      if(!isLocked) {
+        // 未鎖定時：更新選中的季度
+        selectedQuarterKey = closestQuarter;
+        updateSidePanelFromQuarter(closestQuarter, filteredData);
+      } else {
+        // 已鎖定時：只更新十字標位置，但保持鎖定的季度不變
+        // 十字標會顯示，但右側資訊保持鎖定狀態
+      }
+    }
+  }
+
+  // 添加滑鼠事件到主圖
+  mainSvg
+    .on("mouseover", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateCrosshair(mouseX);
+      updateEventInfoFromMouse(mouseX);
+    })
+    .on("mousemove", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateCrosshair(mouseX);
+      updateEventInfoFromMouse(mouseX);
+    })
+    .on("mouseout", function() {
+      updateCrosshair(null);
+      // 滑鼠離開時，如果未鎖定則恢復到預設狀態
+      if(!isLocked) {
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        const lastQuarter = filteredData[filteredData.length-1]?.Quarter;
+        if(lastQuarter) {
+          updateSidePanelFromQuarter(lastQuarter, filteredData);
+        }
+      }
+    })
+    .on("click", function(event){
+      // 點擊空白處也可鎖定到當前滑鼠所在季度
+      const target = event.target;
+      const clickedDot = target && target.classList && target.classList.contains('dot');
+      const mouseX = d3.pointer(event, this)[0];
+      
+      console.log('主圖點擊事件觸發', { 
+        target: target.tagName, 
+        className: target.className,
+        clickedDot, 
+        mouseX,
+        isLocked 
+      });
+      
+      if(clickedDot){
+        // dots 自身已有 click handler 會鎖定
+        return;
+      }
+      
+      // 檢查是否為雙擊
+      const now = Date.now();
+      const lastClick = mainSvg.datum()?.lastClickTime || 0;
+      const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
+      
+      if(isDoubleClick) {
+        // 雙擊：解鎖
+        isLocked = false;
+        if(mainSvg.datum()) {
+          mainSvg.datum().lastClickTime = 0;
+        } else {
+          mainSvg.datum({ lastClickTime: 0 });
+        }
+        // 恢復到預設狀態（最後一季）
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+        updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+        // 解鎖後隱藏十字標
+        updateCrosshair(null);
+        // 更新狀態顯示
+        d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
+      } else {
+        // 單擊：鎖定最近的季度
+        const relativeX = mouseX - margin.left;
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        let closestQuarter=null, minDistance=Infinity;
+        filteredData.forEach(d=>{
+          const qx = x(d.Quarter)+x.bandwidth()/2;
+          const dist = Math.abs(qx-relativeX);
+          if(dist<minDistance){ minDistance=dist; closestQuarter=d.Quarter; }
+        });
+        if(closestQuarter){
+          selectedQuarterKey = closestQuarter;
+          isLocked = true;
+          if(mainSvg.datum()) {
+            mainSvg.datum().lastClickTime = now;
+          } else {
+            mainSvg.datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 鎖定後顯示十字標在該點位置
+          updateCrosshair(mouseX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
+        }
+      }
+    });
+
+  function applyYearRangeFilter(data){
+    const r=yearRangeSelect.property("value");
+    if(r==='all') return data;
+    const currentYear=(new Date()).getFullYear();
+    const back = r==='3Y'?3:(r==='5Y'?5:10);
+    const cutoff=currentYear-back;
+    return data.filter(d=>parseInt(d.Quarter.substring(0,4))>=cutoff);
+  }
+
+  function updateTimeModeControls(){
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    d3.select("#quarterControls").style("display", mode==='quarter'?null:'none');
+    d3.select("#yearControls").style("display", mode==='year'?null:'none');
+  }
+
+  // ======== 圖表繪製 ========
+  function updateChart(){
+    // 確保 selectedPlace 正確更新
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    selectedPlace = isCityMode ? d3.select('#placeSelect').property('value') : 'Nation';
+    selectedEventTypes=getSelectedEventTypes();
+    // 注意：不重置 isLocked，保持鎖定狀態
+
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+
+    x.domain(filteredData.map(d=>d.Quarter));
+    const yValues=filteredData.map(getValue).filter(v=>v!==null);
+    if(yValues.length>0){ y.domain([d3.min(yValues)*0.9, d3.max(yValues)*1.05]).nice(); } else { y.domain([0,100000]).nice(); }
+
+    // X 軸刻度：季別模式顯示 Q1 年 + Q3 季；年份模式顯示年份（Q1）
+    let tickValues;
+    if(mode==='year'){
+      tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+    }else{
+      tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')||d.Quarter.endsWith('Q3')).map(d=>d.Quarter);
+    }
+    const xAxis=d3.axisBottom(x).tickValues(tickValues.length>0?tickValues:null).tickFormat(d=>{
+      const year=d.substring(0,4), q=d.substring(5);
+      if(mode==='year'){ return year; }
+      return q==='Q1'?year:q; // Q1 顯示年份、Q3 顯示季度
+    }).tickSize(8).tickPadding(12);
+    const yAxis=d3.axisLeft(y).tickFormat(d=>formatWan(d)+"萬").tickSize(8).tickPadding(12);
+    xAxisGroup.transition().duration(450).call(xAxis).selectAll("text").style("text-anchor","middle").attr("dx","0").attr("dy","0.5em").style("font-size","14px").style("font-weight","500");
+    yAxisGroup.transition().duration(450).call(yAxis).selectAll("text").style("font-size","14px").style("font-weight","500");
+
+    // 折線
+    const lineGen=d3.line().x(d=>x(d.Quarter)+x.bandwidth()/2).y(d=>y(getValue(d))).defined(d=>getValue(d)!==null);
+    focus.select(".focus-line").datum(filteredData).transition().duration(450).attr("d",lineGen);
+
+    // 圓點（新增 click：鎖定季度 → 更新右側側欄）
+    const dotsData=filteredData.filter(d=>getValue(d)!==null);
+    const dots=focus.selectAll(".dot").data(dotsData, d=>d.Quarter);
+    dots.exit().remove();
+    dots.enter().append("circle").attr("class","dot").attr("r",5)
+      .on("mouseover",(event,d)=>{
+        const v=getValue(d); const valueText=(typeof v==='number')?`${formatWan(v)}萬/坪`:"無資料";
+        d3.select("#popupContent").html(`<strong>${quarterToText(d.Quarter)}</strong><br>中位數 ${valueText}`);
+        d3.select("#popup").style("display","block").style("left",(event.clientX+10)+"px").style("top",(event.clientY-35)+"px");
+      })
+      .on("mouseout",()=>d3.select("#popup").style("display","none"))
+      .on("click",(event,d)=>{
+        console.log('圓點點擊事件觸發', { quarter: d.Quarter, isLocked });
+        
+        // 檢查是否為雙擊
+        const now = Date.now();
+        const lastClick = d3.select(this).datum()?.lastClickTime || 0;
+        const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
+        
+        console.log('雙擊檢查', { now, lastClick, isDoubleClick });
+        
+        // 取得當前的篩選資料
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        
+        if(isDoubleClick) {
+          // 雙擊：解鎖
+          isLocked = false;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = 0;
+          } else {
+            d3.select(this).datum({ lastClickTime: 0 });
+          }
+          // 恢復到預設狀態（最後一季）
+          selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 解鎖後隱藏十字標
+          updateCrosshair(null);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
+        } else {
+          // 單擊：鎖定當前季度
+          selectedQuarterKey = d.Quarter;
+          isLocked = true;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = now;
+          } else {
+            d3.select(this).datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 鎖定後顯示十字標在該點位置
+          const mouseX = d3.pointer(event, mainSvg.node())[0];
+          updateCrosshair(mouseX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
+        }
+      })
+      .merge(dots)
+      .transition().duration(450)
+      .attr("cx",d=>x(d.Quarter)+x.bandwidth()/2)
+      .attr("cy",d=>y(getValue(d)));
+
+    // 不再在主圖疊事件圖示
+    focus.selectAll(".event-icon-text").remove();
+
+    // 右側欄：若尚未手動點擊，預設以範圍最後一季為主
+    if(!filteredData.find(d=>d.Quarter===selectedQuarterKey)){
+      selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+    }
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+    
+    // 更新時間軸
+    updateTimeline();
+  }
+
+  function resetAndRedraw(){
+    selectedEventTypes=getSelectedEventTypes();
+    selectedDataType=deriveDataType();
+
+
+    const avail=getAvailableDataRange();
+    if(avail.length>0){ startIndex=0; endIndex=avail[avail.length-1].index; } else { startIndex=0; endIndex=allQuarters.length-1; }
+    startSelect.property("value",startIndex);
+    endSelect.property("value",endIndex);
+
+    updateChartTitle();
+    updateChart();
+  }
+
+  function updateChartTitle(){
+    const isCity = d3.select('#filterToggle').property('checked');
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='全國';
+    }
+    const type=deriveDataType();
+    let suffix='實價登錄每坪單價中位數趨勢';
+    if(type==='age_10') suffix='屋齡 ≤ 10年 實價登錄每坪單價中位數趨勢';
+    else if(type==='age_20') suffix='屋齡 ≤ 20年 實價登錄每坪單價中位數趨勢';
+    d3.select("#chart-title").text(`${placeText} ${suffix}`);
+    d3.select("#side-title").text(`${placeText} 本期概覽`);
+  }
+
+
+
+  function getEventsForQuarter(qKey, usePlace){
+    // 確保 selectedPlace 是最新的值
+    const currentPlace = d3.select('#placeSelect').property('value');
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    const actualPlace = isCityMode ? currentPlace : 'Nation';
+    
+    const q = fullData.find(d=>d.Quarter===qKey);
+    if(!q||!q.events) return [];
+    const arr = q.events.map(ev=>{
+      const cat=getEventCategory(ev);
+      const label = usePlace ? (ev[`${actualPlace}Label`]||ev.Label||'') : (ev.Label||'');
+      return {...ev,__cat:cat,__label:label,full:ev};
+    }).filter(e=>e.__label);
+    // 依目前事件類型選擇過濾
+    return arr.filter(e=> selectedEventTypes.includes(e.__cat) || (usePlace && !e.Category));
+  }
+
+  // ======== 右側欄：由季度更新 ========
+  function updateSidePanelFromQuarter(qKey, filteredData){
+    // 確保 selectedPlace 是最新的值
+    selectedPlace = d3.select('#placeSelect').property('value');
+    if(!d3.select('#filterToggle').property('checked')) {
+      selectedPlace = 'Nation';
+    }
+    
+    // 更新標題：鎖定時顯示年度及季度
+    const isCity = d3.select('#filterToggle').property('checked');
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='全國';
+    }
+    
+    if(isLocked) {
+      d3.select("#side-title").text(`${placeText} ${quarterToText(qKey)} 概覽`);
+    } else {
+      d3.select("#side-title").text(`${placeText} 本期概覽`);
+    }
+    
+    // KPI：本期、YoY、QoQ、期間高低
+    const now = fullData.find(d=>d.Quarter===qKey);
+    if(!now){ return; }
+    const nowV = getValue(now);
+    d3.select('#kpi-now').text( (nowV!=null)? formatWan(nowV) : '—' );
+    d3.select('#kpi-quarter').text( quarterToText(qKey) );
+
+    // YoY（同季 -4）
+    const idx = fullData.findIndex(d=>d.Quarter===qKey);
+    const yoyIdx = idx-4;
+    let yoyText='—', yoyNote='—';
+    if(yoyIdx>=0){
+      const prevYear = fullData[yoyIdx];
+      const pv = getValue(prevYear);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        yoyText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
+        yoyNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevYear.Quarter)}`;
+        d3.select('#kpi-yoy').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-yoy').text(yoyText);
+    d3.select('#kpi-yoy-note').text(yoyNote);
+
+    // QoQ（上一季 -1）
+    let qoqText='—', qoqNote='—';
+    if(idx-1>=0){
+      const prevQ = fullData[idx-1];
+      const pv = getValue(prevQ);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        qoqText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
+        qoqNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevQ.Quarter)}`;
+        d3.select('#kpi-qoq').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-qoq').text(qoqText);
+    d3.select('#kpi-qoq-note').text(qoqNote);
+
+    // 期間最高/最低（以目前圖上範圍）
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    const dataScope = (mode==='quarter') ? fullData.slice(startIndex,endIndex+1) : applyYearRangeFilter(fullData);
+    const vals = dataScope.map(getValue).filter(v=>v!=null);
+    if(vals.length){
+      const hi = d3.max(vals), lo = d3.min(vals);
+      const hiQ = dataScope.find(d=>getValue(d)===hi)?.Quarter;
+      const loQ = dataScope.find(d=>getValue(d)===lo)?.Quarter;
+      d3.select('#kpi-hi-lo').text(`${formatWan(hi)} / ${formatWan(lo)}`);
+      d3.select('#kpi-hi-lo-note').text(`${hiQ?quarterToText(hiQ):'—'} / ${loQ?quarterToText(loQ):'—'}`);
+    }else{
+      d3.select('#kpi-hi-lo').text('—'); d3.select('#kpi-hi-lo-note').text('—');
+    }
+
+    // 事件清單（依目前是全國/縣市模式切換資料來源）
+    const usePlace = d3.select('#filterToggle').property('checked') && selectedPlace!=='Nation';
+    const evs = getEventsForQuarter(qKey, usePlace);
+    renderEventList(evs);
+    renderEventHighlights(evs);
+  }
+
+  function renderEventList(evs){
+    const el = d3.select('#events-list'); el.html('');
+    if(!evs.length){ el.append('div').attr('class','small').text('本季無符合篩選之事件'); return; }
+    evs.forEach(e=>{
+      const cat = e.__cat || 'national';
+      const div = el.append('div').attr('class','event-li');
+      div.append('div').attr('class','dotcat cat-'+cat);
+      const t = div.append('div').attr('class','event-text');
+      t.html(`<span class="badge">${catLabel(cat)}</span>${e.__label}`);
+    });
+  }
+  function renderEventHighlights(evs){
+    const el = d3.select('#events-top'); el.html('');
+    if(!evs.length){ 
+      el.append('div').attr('class','small').text('本季無符合篩選之事件'); 
+      return; 
+    }
+    
+    // 顯示第一個事件的詳細說明
+    const firstEvent = evs[0];
+    if(firstEvent.full && firstEvent.full.Detail) {
+      el.append('div').attr('class','event-detail')
+        .html(`<h4>${quarterToText(selectedQuarterKey)} - ${firstEvent.__label}</h4><p>${firstEvent.full.Detail}</p>`);
+    } else {
+      el.append('div').attr('class','event-detail')
+        .html(`<h4>${quarterToText(selectedQuarterKey)} - ${firstEvent.__label}</h4><p>無詳細說明</p>`);
+    }
+  }
+  function catLabel(cat){
+    if(cat==='tax') return '地方法律稅制';
+    if(cat==='infra') return '地方重大建設';
+    if(cat==='dev') return '地方土地開發';
+    return '全國重大事件';
+  }
+
+  // ======== 事件監聽 ========
+  placeSelect.on('change',()=>{ 
+    if(filterToggle.property('checked')) {
+      selectedPlace=placeSelect.property('value'); 
+      updateChartTitle(); 
+      resetAndRedraw(); 
+    }
+  });
+  function updateDropdownButtonText(){
+    const type=deriveDataType(); hiddenDataType.property('value',type);
+    const map={all:'全部屋齡 ▾', age_10:'屋齡 ≤ 10年 ▾', age_20:'屋齡 ≤ 20年 ▾'};
+    dropdownToggle.text(map[type]||'全部屋齡 ▾');
+  }
+  function onAge10Change(){ if(chkAge10.property('checked')) chkAge20.property('checked',false); selectedDataType=deriveDataType(); updateDropdownButtonText(); updateChartTitle(); resetAndRedraw(); }
+  function onAge20Change(){ if(chkAge20.property('checked')) chkAge10.property('checked',false); selectedDataType=deriveDataType(); updateDropdownButtonText(); updateChartTitle(); resetAndRedraw(); }
+  chkAge10.on('change',onAge10Change); chkAge20.on('change',onAge20Change);
+
+  dropdownToggle.on('click',()=>{ const shown=dropdownPanel.style('display')!=='none'; dropdownPanel.style('display', shown?'none':'block'); });
+  document.addEventListener('click',function(e){ const root=document.getElementById('filterDropdown'); if(!root.contains(e.target)){ dropdownPanel.style.display='none'; }});
+
+  filterToggle.on('change',()=>{ updateToggleState(); resetAndRedraw(); });
+  function updateToggleState(){
+    const isCity=!!filterToggle.property('checked');
+    const chips=d3.select('#eventChips');
+    const placeSel=d3.select('#placeSelect');
+    
+    // 顯示/隱藏縣市選擇器
+    placeSel.style('display', isCity?null:'none');
+    
+    if(isCity){
+      // 縣市模式：使用選擇的縣市
+      selectedPlace = placeSelect.property('value');
+    }else{
+      // 全國模式
+      selectedPlace='Nation';
+    }
+    
+    updateChartTitle();
+    chips.html('');
+    if(!isCity){
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('💡 全國重大事件');
+    }else{
+      chips.append('button').attr('type','button').attr('class','event-chip tax active').attr('data-value','tax').text('💡 地方法律稅制');
+      chips.append('button').attr('type','button').attr('class','event-chip infra active').attr('data-value','infra').text('💡 地方重大建設');
+      chips.append('button').attr('type','button').attr('class','event-chip dev active').attr('data-value','dev').text('💡 地方土地開發');
+    }
+    eventTypeButtons=d3.selectAll('.event-chip');
+    eventTypeButtons.on('click',function(){ const btn=d3.select(this); btn.classed('active', !btn.classed('active')); selectedEventTypes=getSelectedEventTypes(); updateChart(); });
+    
+    // 切換後立即更新右側欄
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+  }
+
+  yearRangeSelect.on('change',()=>{ resetAndRedraw(); });
+  timeModeButtons.on('change',()=>{ updateTimeModeControls(); resetAndRedraw(); });
+
+  startSelect.on('change',function(){ startIndex=+this.value; if(startIndex>endIndex){ endIndex=startIndex; endSelect.property('value',endIndex);} updateChart(); });
+  endSelect.on('change',function(){ endIndex=+this.value; if(endIndex<startIndex){ startIndex=endIndex; startSelect.property('value',startIndex);} updateChart(); });
+
+  d3.select("#closeDetailPopup").on("click",()=> d3.select("#detailPopup").style("display","none"));
+  d3.select("#data-logic-trigger").on("click",()=>{
+    const logicTitle="<h3>資料清理邏輯與圖示說明</h3>";
+    const logicText="<p style='text-align:left;line-height:1.6;'>本資料源自實價登錄，為求單價準確性，僅保留主要住宅類型（如公寓、住宅大樓）交易，並排除親友、特殊關係等交易。此外，亦剔除特殊物件（如僅車位、頂樓加蓋），且已對單價、總價與屋齡等極端值進行處理，確保趨勢具備市場參考性。</p><hr style='margin:15px 0;border:0;border-top:1px solid #eee;'><p style='text-align:left;line-height:1.8;'>&nbsp;&nbsp;<span class='event-icon-text'>💡</span> <b>黃色：</b>全國重大事件<br>&nbsp;&nbsp;<span class='event-icon-text orange-bulb'>💡</span> <b>橘色：</b>地方法律稅制<br>&nbsp;&nbsp;<span class='event-icon-text blue-bulb'>💡</span> <b>藍色：</b>地方重大建設<br>&nbsp;&nbsp;<span class='event-icon-text green-bulb'>💡</span> <b>綠色：</b>地方土地開發</p>";
+    d3.select("#detailContent").html(logicTitle+logicText);
+    d3.select("#detailPopup").style("display","block");
+  });
+
+  d3.select("#export-chart-btn").on("click",function(){
+    const watermark=mainSvg.select(".watermark"); watermark.style("opacity","0.6");
+    saveSvgAsPng(mainSvg.node(),"price-trend-chart.png",{backgroundColor:'#FFFFFF',scale:2})
+      .then(()=>{ watermark.style("opacity","0"); })
+      .catch(e=>{ console.error('匯出失敗:',e); alert('匯出失敗，請重試'); watermark.style("opacity","0"); });
+  });
+
+  // 初次渲染
+  updateToggleState();
+  updateTimeModeControls();
+  resetAndRedraw();
+
+  // splash 收合
+  if(window.__splashFailSafe){ clearTimeout(window.__splashFailSafe); window.__splashFailSafe=null; }
+  const splashScreen=document.getElementById('splash-screen'); const dashboard=document.querySelector('.dashboard-container');
+  if(splashScreen && !splashScreen.dataset.initialized){
+    splashScreen.dataset.initialized='true';
+    dashboard.style.display='block';
+    setTimeout(()=>{ splashScreen.style.opacity='0'; setTimeout(()=>{ if(splashScreen && splashScreen.style.opacity==='0'){ splashScreen.style.display='none'; }},3000); },100);
+  }
+
+  // 防截圖等（保留）
+  let screenshotTimeout; const watermark=mainSvg.select(".watermark");
+  document.addEventListener('contextmenu',function(e){ e.preventDefault(); watermark.style("opacity","0.8"); clearTimeout(screenshotTimeout); screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },2000); return false; });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'))||(e.ctrlKey&&(e.key==='u'||e.key==='s'))||e.key==='PrintScreen'){
+      e.preventDefault(); if(e.key==='s'){ alert('此網頁不允許儲存！'); } watermark.style("opacity","0.8"); clearTimeout(screenshotTimeout); screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },3000); return false;
+    }
+  });
+  document.addEventListener('dragstart',function(e){ if(e.target.tagName==='IMG'||e.target.tagName==='svg'){ e.preventDefault(); return false; }});
+  document.addEventListener('copy',function(e){ e.preventDefault(); alert('此網頁不允許複製內容！'); return false; });
+  document.addEventListener('cut',function(e){ e.preventDefault(); return false; });
+  document.addEventListener('paste',function(e){ e.preventDefault(); return false; });
+  document.addEventListener('selectstart',function(e){ e.preventDefault(); return false; });
+  setInterval(function(){
+    if(window.outerHeight-window.innerHeight>200 || window.outerWidth-window.innerWidth>200){
+      watermark.style("opacity","0.8"); setTimeout(()=>{ watermark.style("opacity","0"); },2000);
+    }
+  },1000);
+}
+</script>
+</html>

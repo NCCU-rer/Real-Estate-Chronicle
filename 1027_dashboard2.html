@@ -1,0 +1,3863 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>不動產大事紀 Dashboard</title>
+<!-- Foundation 6 CSS（作用域限制在 dashboard-container 內） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css" integrity="sha256-4AFYaiQuHxtMTpXl3pRN5YjE3J1I3qVex8hXPKfwqmc=" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com" rel="preconnect" />
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;family=Noto+Sans+TC:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet" />
+<script src="https://d3js.org/d3.v7.min.js"></script><script src="https://cdn.jsdelivr.net/npm/save-svg-as-png@1.4.17/lib/saveSvgAsPng.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async="async" defer="defer"></script><script src="dashboard_data.js"></script>
+<!-- Foundation 6 JS（僅初始化 dashboard 內的組件） -->
+<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js" integrity="sha256-7XQvJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJY=" crossorigin="anonymous"></script>
+<style type="text/css">/* ======== 你的原樣式（略調整） ======== */
+/* 移除全局 body 樣式，避免影響學校網站 */
+.dashboard-container, .dashboard-container *{font-family:"Inter","Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif}
+.dashboard-container h1{font-size:24px;color:#2c3e50;text-align:center;margin-bottom:20px}
+#splash-screen{position:fixed;inset:0;background:#f8f9fa;display:flex;justify-content:center;align-items:center;z-index:10000;opacity:1;transition:opacity 3s;flex-direction:column}
+#splash-screen .logo-and-text{display:inline-flex;align-items:center;margin-bottom:30px}
+.splash-logo{width:40px;margin-right:15px;opacity:0;transform:translateX(-20px);animation:fadeIn-slide 1.5s ease-out forwards}
+.splash-title{font-size:3em;color:#2c3e50;opacity:0;transform:translateY(20px);animation:fadeIn-float 1.5s ease-out forwards;margin:0;white-space:nowrap;margin-bottom:10px}
+.splash-subtitle{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:1.2em;color:#2A3689;opacity:0;transform:translateX(20px);line-height:1.4;animation:fadeIn-slide 1.5s ease-out forwards;font-weight:900;width:170px;text-align:justify;text-align-last:justify;margin:0}
+@keyframes fadeIn-float{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn-slide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.dashboard-container svg{border:1px solid #ddd;overflow:visible;width:100% !important;height:auto !important;max-width:100%;background:#fff;border-radius:8px;display:block}
+.line{fill:none;stroke:#4e79a7;stroke-width:3}
+.dot{fill:#4e79a7;stroke:#4e79a7;stroke-width:4;cursor:pointer;transition:all 0.3s;}
+.dot-highlight{fill:#FFD700 !important;stroke:#FFD700 !important;stroke-width:6 !important;filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));animation:glow 1.5s ease-in-out infinite;}
+.dot-has-events{fill:#4e79a7;stroke:#FFD700;stroke-width:2;cursor:pointer;transition:all 0.3s;}
+.dot-has-events:hover{stroke:#FFA500;stroke-width:3;}
+.dot-has-events.dot-highlight{fill:#FFD700 !important;stroke:#FFD700 !important;stroke-width:6 !important;filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));animation:glow 1.5s ease-in-out infinite;}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));}50%{filter:drop-shadow(0 0 20px rgba(255,215,0,1));}}
+.event-icon-text{font-size:20px;cursor:pointer;text-anchor:middle;display:inline-block}
+.event-icon-text.orange-bulb{filter:hue-rotate(350deg) saturate(5) brightness(1)}
+.event-icon-text.blue-bulb{filter:hue-rotate(180deg) saturate(2) brightness(1)}
+.event-icon-text.green-bulb{filter:hue-rotate(90deg) saturate(1) brightness(.95)}
+
+/* 事件類型顏色方塊樣式 */
+.color-block{display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;}
+.color-block.monetary{background-color:#A08090;}
+.color-block.fiscal{background-color:#D0B070;}
+.color-block.other{background-color:#407090;}
+.color-block.tax{background-color:#E09861;}
+.color-block.infra{background-color:#88B4CC;}
+.color-block.dev{background-color:#1C9A85;}
+.color-block.national{background-color:#f1c54e;}
+.color-block.macro{background-color:#88623E;}
+
+#popup{display:none;position:fixed;background:#fff;border:1px solid #ccc;padding:10px;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;pointer-events:none}
+#detailPopup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;width:320px;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+#detailPopup button{float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s}
+#detailPopup button:hover{background:#c0392b}
+#detailContent h3{font-size:18px;margin-top:0}
+#detailContent p{font-size:14px;line-height:1.6}
+.dashboard-container .x-axis .tick text,.dashboard-container .y-axis .tick text{font-size:14px}
+.dashboard-container .watermark{pointer-events:none;user-select:none;opacity:.8;font-weight:300;letter-spacing:.5px}
+
+.dashboard-container{max-width:1200px;margin:20px auto;padding:20px;border-radius:8px;background:#fff}
+/* 限制 Foundation Grid 僅作用於 dashboard-container，避免影響學校網站 */
+.dashboard-container .grid-container{padding:20px !important}
+.dashboard-container .grid-x{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  margin-left:-0.9375rem !important;
+  margin-right:-0.9375rem !important;
+  box-sizing:border-box !important;
+}
+.dashboard-container .grid-margin-x > .cell{
+  padding-left:0.9375rem !important;
+  padding-right:0.9375rem !important;
+  box-sizing:border-box !important;
+}
+/* 桌面版（769px+）：確保 medium-9 和 medium-3 並排顯示 */
+@media screen and (min-width: 769px) {
+  .dashboard-container .grid-x.grid-margin-x{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:start !important;
+    width:100% !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-3{
+    flex:0 0 25% !important;
+    max-width:25% !important;
+    width:25% !important;
+    min-width:25% !important;
+    display:block !important;
+    float:none !important;
+    box-sizing:border-box !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-9{
+    flex:0 0 75% !important;
+    max-width:75% !important;
+    width:75% !important;
+    min-width:75% !important;
+    display:block !important;
+    float:none !important;
+    box-sizing:border-box !important;
+  }
+}
+/* 手機版（≤ 480px）：所有 cell 都變成全寬，並調整順序讓概覽在趨勢圖上方 */
+@media screen and (max-width: 480px) {
+  .dashboard-container .cell{flex:0 0 100% !important;max-width:100% !important;width:100% !important}
+  .dashboard-container .grid-x.grid-margin-x{
+    flex-direction:column !important;
+    display:flex !important;
+  }
+  /* 手機版：讓本期概覽（medium-3）先顯示，趨勢圖（medium-9）後顯示 */
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-3{
+    order:1 !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-9{
+    order:2 !important;
+  }
+  /* 手機版：KPI 卡片 4x1 橫向排列（4 個卡片橫向排列成 1 行） */
+  .dashboard-container .kpi-row{
+    grid-template-columns:repeat(4, 1fr) !important;
+    gap:6px !important;
+  }
+  /* 手機版：KPI 卡片字體和間距調整 */
+  .dashboard-container .kpi{
+    padding:8px 6px !important;
+    font-size:11px !important;
+  }
+  .dashboard-container .kpi .label{
+    font-size:10px !important;
+    margin-bottom:3px !important;
+  }
+  .dashboard-container .kpi .val{
+    font-size:14px !important;
+    line-height:1.2 !important;
+  }
+  .dashboard-container .kpi .small{
+    font-size:9px !important;
+    margin-top:2px !important;
+  }
+}
+/* 平板直向（481px - 768px）：KPI 卡片 2x2 矩陣 */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .dashboard-container .kpi-row{
+    grid-template-columns:repeat(2, 1fr) !important;
+    gap:8px !important;
+  }
+}
+/* 確保 Grid 的 cell 在圖表區正確顯示 */
+.dashboard-container .cell #graph{width:100%;box-sizing:border-box}
+.dashboard-container .cell svg{width:100%;height:auto;max-width:100%}
+/* ======== 獨立 HTML 文件 - 不需要保護外部元素 ======== */
+/* 基礎樣式 */
+html, body {
+  font-family: "Inter", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+}
+#filter{background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;box-shadow:0 2px 4px rgba(0,0,0,.05);margin-bottom:16px}
+.dashboard-container .filter-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
+.dashboard-container .filter-group{margin:5px 15px;display:flex;align-items:center}
+.dashboard-container .filter-group strong{margin-right:8px;font-size:14px;color:#555;white-space:nowrap;line-height:1}
+#filter select, #filter .quarter-select{border-radius:4px;border:1px solid #ccc;padding:8px 12px;background:#fff;font-size:14px;height:38px;min-width:120px;box-sizing:border-box}
+.dashboard-container .btn-group label{display:inline-block;padding:8px 12px;margin:0;font-size:14px;font-weight:500;text-align:center;cursor:pointer;user-select:none;border:1px solid #ccc;color:#333;background:#fff;transition:.2s;height:38px;line-height:22px;box-sizing:border-box}
+.dashboard-container .btn-group input{display:none}
+.dashboard-container .btn-group input:checked+label{background:#4e79a7;color:#fff;border-color:#4e79a7}
+.dashboard-container .filter-dropdown{position:relative;display:inline-block}
+.dashboard-container .dropdown-button{border:1px solid #ddd;background:#fff;color:#333;cursor:pointer;padding:10px 16px;border-radius:8px;min-width:240px;text-align:left;height:42px;line-height:22px;font-size:15px;font-weight:500;transition:.2s}
+.dashboard-container .dropdown-panel{position:absolute;z-index:1200;top:48px;left:0;width:360px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:16px;user-select:none}
+.dashboard-container .panel-section{padding:12px 8px}
+.dashboard-container .option-row{display:block;font-size:15px;color:#333;padding:10px 8px;line-height:1.4;cursor:pointer;border-radius:6px;transition:.2s}
+.dashboard-container .option-row:hover{background:#f8f9fa}
+.dashboard-container .event-type-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.dashboard-container .event-chip{display:inline-block;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #ccc;color:#333;background:#fff;border-radius:16px;transition:.2s}
+.dashboard-container .event-chip.active{background:#e6eef7;color:#2c3e50;border-color:#a7bfdc}
+.dashboard-container .event-chip.monetary{border-color:#A08090;color:#8A6B7A}
+.dashboard-container .event-chip.monetary.active{background:rgba(160,128,144,.18);border-color:#A08090;color:#6B4F5C}
+.dashboard-container .event-chip.fiscal{border-color:#D0B070;color:#B8941F}
+.dashboard-container .event-chip.fiscal.active{background:rgba(208,176,112,.18);border-color:#D0B070;color:#8B6914}
+.dashboard-container .event-chip.other{border-color:#407090;color:#2C4A5C}
+.dashboard-container .event-chip.other.active{background:rgba(64,112,144,.18);border-color:#407090;color:#1E3A4A}
+.dashboard-container .event-chip.tax{border-color:#E09861;color:#C47A3A}
+.dashboard-container .event-chip.tax.active{background:rgba(224,152,97,.18);border-color:#E09861;color:#A05D2A}
+.dashboard-container .event-chip.infra{border-color:#88B4CC;color:#5A8BA8}
+.dashboard-container .event-chip.infra.active{background:rgba(136,180,204,.18);border-color:#88B4CC;color:#4A7A96}
+.dashboard-container .event-chip.dev{border-color:#1C9A85;color:#157A6B}
+.dashboard-container .event-chip.dev.active{background:rgba(28,154,133,.18);border-color:#1C9A85;color:#0F5C50}
+.dashboard-container .event-chip.national{border-color:#f1c54e;color:#b8941f}
+.dashboard-container .event-chip.national.active{background:rgba(241,197,78,.18);border-color:#f1c54e;color:#8b6914}
+.dashboard-container .event-chip.macro{border-color:#88623E;color:#6b4d2f}
+.dashboard-container .event-chip.macro.active{background:rgba(136,98,62,.18);border-color:#88623E;color:#5a3f25}
+.dashboard-container .action-buttons-container{display:flex;justify-content:flex-end;align-items:center;gap:15px;margin-top:12px}
+.dashboard-container .action-btn{font-size:14px;color:#555;cursor:pointer;border:1px solid #ccc;padding:5px 10px;border-radius:4px;background:#fff;transition:.2s}
+.dashboard-container .action-btn:hover{background:#f0f0f0;border-color:#999}
+.dashboard-container .action-btn#export-chart-btn, .dashboard-container .action-btn#share-btn, .dashboard-container .action-btn#rc-info-btn{font-size:18px;padding:8px 12px;min-width:40px;text-align:center;line-height:1}
+
+/* ======== 新增：Dashboard 兩欄版型與側欄卡片 ======== */
+.dashboard-layout{display:block;width:100%;box-sizing:border-box}
+.dashboard-layout > div{width:100%;box-sizing:border-box}
+/* 確保所有主網格布局使用相同的列寬，實現水平對齊 */
+.main-grid-layout{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:16px !important;
+  width:100%;
+  box-sizing:border-box;
+}
+.card{background:#fff;border:1px solid #eaeaea;border-radius:10px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.card h3{margin:0 0 10px 0;font-size:16px;color:#2c3e50}
+.kpi-row{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px}
+.kpi{border:1px solid #e0e0e0;border-radius:4px;padding:10px 12px;background:#fff;box-shadow:none}
+.kpi .label{font-size:12px;color:#6b7280;line-height:1.4;margin-bottom:4px}
+.kpi .val{font-size:18px;font-weight:700;color:#111827;line-height:1.2}
+.kpi .small{font-size:11px;color:#9ca3af;line-height:1.3;margin-top:2px}
+.kpi .delta.up{color:#0f9d58}
+.kpi .delta.down{color:#d93025}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #e5e7eb;color:#374151;background:#f9fafb;margin-right:6px}
+.event-li{display:flex;gap:8px;margin:8px 0;align-items:flex-start}
+.dotcat{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.cat-tax{background:#ff8c00}.cat-infra{background:#4169e1}.cat-dev{background:#32cd32}.cat-national{background:#f1c54e}.cat-macro{background:#88623E}
+.event-text{font-size:13px;line-height:1.5;color:#374151}
+.small{font-size:12px;color:#6b7280}
+.side-note{font-size:12px;color:#6b7280;margin-top:6px}
+
+/* ======== 響應式設計 ======== */
+
+/* 平板直向 (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px){
+  .dashboard-container{max-width:100%;padding:15px;margin:10px auto}
+  .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
+  .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
+  /* Grid: 平板以下時，篩選器和圖表都變成全寬 */
+  .dashboard-container .cell.small-12.medium-4, .dashboard-container .cell.small-12.medium-8{width:100% !important;flex:0 0 100% !important}
+  /* 圖表與概覽在平板以下時也變成上下布局 */
+  .dashboard-container .grid-x.grid-margin-x .cell.medium-9, 
+  .dashboard-container .grid-x.grid-margin-x .cell.medium-3{
+    width:100% !important;
+    flex:0 0 100% !important;
+    max-width:100% !important;
+  }
+  /* 確保 grid-x 在平板以下時是垂直布局 */
+  .dashboard-container .grid-x.grid-margin-x{
+    flex-direction:column !important;
+    flex-wrap:wrap !important;
+  }
+  .dashboard-container h1{font-size:20px;margin-bottom:15px}
+  /* 控制面板優化 */
+  #filter{padding:16px;margin-bottom:14px}
+  .dashboard-container .filter-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    margin:0;
+    width:100%;
+    gap:12px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:14px;
+    margin-right:8px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  #filter select, #filter .quarter-select{
+    flex:1;
+    min-width:150px;
+    max-width:100%;
+  }
+  .dashboard-container .btn-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    flex:1;
+    min-width:0;
+  }
+  .dashboard-container .btn-group label{
+    flex:1;
+    min-width:calc(50% - 3px);
+    padding:8px 10px;
+    font-size:13px;
+  }
+  .dashboard-container .event-type-buttons{
+    flex:1;
+    min-width:0;
+    gap:6px;
+  }
+  .dashboard-container .event-chip{
+    flex:1;
+    min-width:calc(50% - 3px);
+    padding:7px 10px;
+    font-size:12px;
+  }
+  .quarter-range-container{
+    display:flex;
+    gap:8px;
+    flex:1;
+    min-width:0;
+    align-items:center;
+  }
+  .quarter-select{
+    flex:1;
+    min-width:0;
+  }
+  .dashboard-container .toggle-container{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .dashboard-container .action-buttons-container{
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:0;
+  }
+  .kpi-row{grid-template-columns:repeat(2, 1fr) !important;gap:8px !important}
+  .kpi{border-radius:4px !important;padding:10px 12px !important;box-shadow:none !important}
+  .kpi .label{font-size:11px !important;line-height:1.4 !important}
+  .kpi .val{font-size:16px !important;line-height:1.2 !important}
+  .kpi .small{font-size:10px !important;line-height:1.3 !important}
+  .dashboard-container .action-buttons-container{justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .dashboard-container .action-btn{padding:8px 14px;font-size:13px}
+  .card{padding:12px}
+  .card h3{font-size:15px}
+  .event-timeline-year-group{width:130px !important}
+  .event-timeline-content{font-size:13px}
+  #sharePopup{width:350px}
+  svg{border-radius:8px;width:100% !important;max-width:100% !important;height:auto !important;display:block}
+  .dashboard-container .x-axis .tick text, .dashboard-container .y-axis .tick text{font-size:13px}
+  .dashboard-container .axis-label{font-size:14px !important}
+  .dashboard-container #chart-title{font-size:20px !important}
+  #side-title{font-size:20px !important}
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+}
+
+/* 平板橫向 (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px){
+  .dashboard-container{max-width:100%;padding:18px;margin:15px auto}
+  .dashboard-container h1{font-size:22px;margin-bottom:16px}
+  #filter{padding:18px;margin-bottom:16px}
+  .dashboard-container .filter-row{
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    margin:0;
+    gap:10px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:14px;
+    margin-right:8px;
+    white-space:nowrap;
+  }
+  #filter select, #filter .quarter-select{
+    min-width:140px;
+    max-width:200px;
+  }
+  .dashboard-container .btn-group{
+    display:flex;
+    gap:6px;
+  }
+  .dashboard-container .btn-group label{
+    padding:8px 12px;
+    font-size:13px;
+  }
+  .dashboard-container .event-type-buttons{
+    display:flex;
+    gap:8px;
+  }
+  .dashboard-container .event-chip{
+    padding:8px 12px;
+    font-size:12px;
+  }
+  .kpi-row{grid-template-columns:repeat(4, 1fr) !important;gap:10px !important}
+  .kpi{padding:12px 14px !important}
+  .kpi .label{font-size:12px !important}
+  .kpi .val{font-size:18px !important}
+  .kpi .small{font-size:11px !important}
+}
+
+/* 桌面螢幕 (1025px - 1200px) */
+@media (min-width: 1025px) and (max-width: 1200px){
+  .dashboard-container{max-width:1200px;padding:20px;margin:20px auto}
+}
+
+/* 大型螢幕 (1201px+) */
+@media (min-width: 1201px){
+  .dashboard-container{max-width:1440px;padding:24px;margin:24px auto}
+}
+
+/* 手機版 (≤ 480px) */
+@media (max-width: 480px){
+  /* 移除全局 html/body 樣式，避免影響外部導航欄 */
+  .dashboard-container{padding:10px;margin:5px auto;border-radius:0;position:relative;min-height:auto;overflow-x:hidden}
+  .dashboard-container h1{font-size:18px;margin-bottom:12px;padding:0 5px}
+  
+  /* Splash Screen 調整 */
+  .splash-title{font-size:2em !important}
+  .splash-subtitle{font-size:1em !important;width:auto !important;text-align:center !important}
+  .logo-and-text{flex-direction:column;text-align:center}
+  .splash-logo{margin-right:0;margin-bottom:10px}
+  
+  /* 控制面板優化 */
+  #filter{
+    padding:14px;
+    margin-bottom:12px;
+    border-radius:8px;
+  }
+  .dashboard-container .filter-row{
+    flex-direction:column;
+    gap:14px;
+    align-items:stretch;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    margin:0;
+    width:100%;
+    gap:10px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:13px;
+    margin-bottom:0;
+    margin-right:0;
+    color:#555;
+    font-weight:600;
+  }
+  .dashboard-container .toggle-container{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:4px 0;
+  }
+  .dashboard-container .toggle-text{
+    font-size:13px;
+    color:#555;
+  }
+  #filter select, #filter .quarter-select{
+    width:100%;
+    min-width:100%;
+    height:40px;
+    font-size:14px;
+    padding:8px 12px;
+    border-radius:6px;
+  }
+  .dashboard-container .btn-group{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    width:100%;
+  }
+  .dashboard-container .btn-group label{
+    flex:none;
+    min-width:0;
+    padding:10px 8px;
+    font-size:13px;
+    height:40px;
+    border-radius:6px;
+    text-align:center;
+  }
+  .dashboard-container .event-type-buttons{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    width:100%;
+  }
+  .dashboard-container .event-chip{
+    padding:10px 8px;
+    font-size:12px;
+    white-space:normal;
+    text-align:center;
+    border-radius:6px;
+    min-width:0;
+  }
+  .quarter-range-container{
+    display:flex;
+    gap:10px;
+    width:100%;
+    align-items:center;
+  }
+  .quarter-select{
+    flex:1;
+    min-width:0;
+  }
+  .range-separator{
+    font-size:13px;
+    white-space:nowrap;
+    color:#555;
+    font-weight:500;
+  }
+  .dashboard-container .action-buttons-container{
+    width:100%;
+    justify-content:center;
+    gap:10px;
+  }
+  
+  /* 圖表區域 */
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+  svg{border-radius:6px;width:100% !important;max-width:100% !important;min-width:0;height:auto !important;touch-action:pan-y;display:block}
+  /* Grid: 手機版確保 cell 全寬 */
+  .dashboard-container .cell{width:100% !important;flex:0 0 100% !important}
+  .dashboard-container .x-axis .tick text{font-size:9px !important}
+  .dashboard-container .y-axis .tick text{font-size:8px !important}
+  .dashboard-container .axis-label{font-size:10px !important}
+  .dashboard-container #chart-title{font-size:15px !important}
+  #side-title{font-size:15px !important}
+  #popup{max-width:200px;font-size:12px;padding:8px}
+  #popupContent{font-size:12px;line-height:1.4}
+  
+  /* 兩欄布局改為單欄 */
+  .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
+  .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
+  
+  /* 按鈕和狀態提示 */
+  .action-buttons-container{flex-direction:column;align-items:stretch;gap:8px;margin-top:10px}
+  .action-btn{width:100%;padding:10px;font-size:14px;text-align:center}
+  .side-note{font-size:11px;text-align:center !important}
+  
+  /* 卡片樣式 */
+  .card{padding:10px;border-radius:8px}
+  .card h3{font-size:14px;margin-bottom:8px}
+  
+  /* KPI 卡片 */
+  .kpi-row{grid-template-columns:1fr 1fr !important;gap:8px !important}
+  .kpi{border-radius:4px !important;padding:8px 10px !important;box-shadow:none !important}
+  .kpi .label{font-size:11px !important;line-height:1.4 !important}
+  .kpi .val{font-size:15px !important;line-height:1.2 !important}
+  .kpi .small{font-size:10px !important;line-height:1.3 !important}
+  
+  /* 事件時間軸 */
+  #event-timeline-panel{margin-bottom:12px}
+  #event-timeline-title{font-size:16px;margin-bottom:10px}
+  .event-timeline-events{padding:8px;gap:8px}
+  .event-timeline-year-group{width:120px !important;padding:6px}
+  .event-timeline-year-header{font-size:14px;padding:4px;margin-bottom:8px}
+  .event-timeline-items{max-height:120px}
+  .event-timeline-item{padding:5px;min-height:45px}
+  .event-timeline-quarter{font-size:10px;margin-bottom:4px}
+  .event-timeline-content{font-size:12px;line-height:1.4}
+  .event-timeline-tag{font-size:9px;padding:2px 6px}
+  
+  /* 事件說明面板 */
+  #event-detail-panel{max-height:250px}
+  #event-detail-title{font-size:14px}
+  #event-detail-content{font-size:12px}
+  .event-detail-item{padding:6px;margin-bottom:8px}
+  .event-detail-tag{font-size:10px;padding:2px 6px;margin-right:6px}
+  
+  /* 彈出視窗 */
+  #detailPopup{width:90% !important;max-width:400px !important;max-height:80vh !important;padding:15px;left:50% !important;transform:translate(-50%, -50%) !important}
+  #sharePopup{width:90% !important;max-width:350px !important;padding:15px}
+  .share-option{width:100% !important;min-width:100% !important;margin-bottom:8px}
+  
+  /* 下拉選單 */
+  .dashboard-container .dropdown-button{width:100%;min-width:100%}
+  .dashboard-container .dropdown-panel{width:calc(100% - 20px);left:10px;right:10px;max-width:calc(100vw - 20px)}
+  
+  /* 其他調整 */
+  .side-note{margin-top:8px}
+  
+  /* 觸控優化 */
+  .dot{cursor:pointer;touch-action:manipulation}
+  .dashboard-container button, .dashboard-container .event-chip, .event-timeline-item{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(78,121,167,0.2)}
+  #filter select, #filter .quarter-select, .dashboard-container .dropdown-button{cursor:pointer;touch-action:manipulation}
+  
+  /* 確保在手機上可以水平滾動圖表 */
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-width:thin;box-sizing:border-box}
+  
+  /* 確保 dashboard-container 不會阻止滾動 */
+  .dashboard-container{overflow:visible !important;height:auto !important;max-height:none !important}
+  .dashboard-layout{overflow:visible !important}
+  
+  /* 資訊按鈕現在在控制面板中，使用 action-btn 樣式 */
+  
+  /* 資訊遮罩響應式 */
+  #rc-info-overlay{padding:50px 15px 20px 15px !important}
+  #rc-info-overlay > div{max-width:100% !important;margin-top:0 !important}
+  #rc-info-overlay h2{font-size:22px !important;margin-bottom:20px !important;padding-top:0 !important}
+  #rc-info-overlay #rc-info-content{font-size:14px !important;padding-top:0 !important}
+  #rc-close-info-overlay{width:32px !important;height:32px !important;top:15px !important;right:15px !important;font-size:18px !important;position:fixed !important}
+}
+
+/* ===== 橫向提示畫面樣式 ===== */
+#rotate-screen-prompt{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  z-index:10000;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  text-align:center;
+  color:#fff;
+  backdrop-filter:blur(10px);
+}
+#rotate-screen-prompt.show{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  animation:fadeInPrompt 0.3s ease-in;
+}
+@keyframes fadeInPrompt{
+  from{opacity:0}
+  to{opacity:1}
+}
+#rotate-screen-prompt .rotate-icon{
+  font-size:80px;
+  margin-bottom:20px;
+  animation:rotate-hint 2s ease-in-out infinite;
+}
+@keyframes rotate-hint{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(90deg)}
+}
+#rotate-screen-prompt h2{
+  font-size:22px;
+  margin-bottom:15px;
+  color:#fff;
+  font-weight:600;
+  margin-top:0;
+}
+#rotate-screen-prompt p{
+  font-size:16px;
+  line-height:1.6;
+  color:#e0e0e0;
+  max-width:300px;
+  margin:0 auto 25px;
+}
+#rotate-screen-prompt .desktop-suggestion{
+  font-size:15px;
+  line-height:1.6;
+  color:#ffd700;
+  max-width:300px;
+  margin:0 auto 20px;
+  font-weight:500;
+  padding:12px;
+  background:rgba(255,215,0,0.1);
+  border-radius:8px;
+  border:1px solid rgba(255,215,0,0.3);
+}
+#rotate-screen-prompt .close-prompt{
+  position:absolute;
+  top:15px;
+  right:15px;
+  background:rgba(255,255,255,0.2);
+  border:none;
+  color:#fff;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  font-size:24px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background 0.3s;
+  line-height:1;
+  padding:0;
+  z-index:10001;
+}
+#rotate-screen-prompt .close-prompt:hover,
+#rotate-screen-prompt .close-prompt:active{
+  background:rgba(255,255,255,0.3);
+}
+#rotate-screen-prompt .continue-btn{
+  background:#4e79a7;
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.3s;
+  margin-top:10px;
+}
+#rotate-screen-prompt .continue-btn:hover,
+#rotate-screen-prompt .continue-btn:active{
+  background:#40668c;
+}
+
+/* ===== 平板提示畫面樣式 ===== */
+#tablet-prompt{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  z-index:10001;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  text-align:center;
+  color:#fff;
+  backdrop-filter:blur(10px);
+}
+#tablet-prompt.show{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  animation:fadeInPrompt 0.3s ease-in;
+}
+#tablet-prompt .tablet-icon{
+  font-size:80px;
+  margin-bottom:20px;
+}
+#tablet-prompt h2{
+  font-size:22px;
+  margin-bottom:20px;
+  color:#fff;
+  font-weight:600;
+  margin-top:0;
+}
+#tablet-prompt p{
+  font-size:15px;
+  line-height:1.6;
+  color:#ffd700;
+  max-width:350px;
+  margin:0 auto 30px;
+  font-weight:500;
+  padding:15px 20px;
+  background:rgba(255,215,0,0.15);
+  border-radius:10px;
+  border:2px solid rgba(255,215,0,0.4);
+}
+#tablet-prompt .close-prompt{
+  position:absolute;
+  top:15px;
+  right:15px;
+  background:rgba(255,255,255,0.2);
+  border:none;
+  color:#fff;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  font-size:24px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background 0.3s;
+  line-height:1;
+  padding:0;
+  z-index:10001;
+}
+#tablet-prompt .close-prompt:hover,
+#tablet-prompt .close-prompt:active{
+  background:rgba(255,255,255,0.3);
+}
+#tablet-prompt .continue-btn{
+  background:#4e79a7;
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.3s;
+  margin-top:10px;
+}
+#tablet-prompt .continue-btn:hover,
+#tablet-prompt .continue-btn:active{
+  background:#40668c;
+}
+
+/* 確保在手機（≤ 480px）和桌面（≥ 1025px）上不顯示平板提示 */
+@media (max-width: 480px), (min-width: 1025px) {
+  #tablet-prompt,
+  #tablet-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* 確保在平板橫向（≥ 769px）和桌面上不顯示橫向提示 */
+@media (min-width: 769px) {
+  #rotate-screen-prompt,
+  #rotate-screen-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* 手機橫向時不顯示提示 */
+@media (max-width: 480px) and (orientation: landscape) {
+  #rotate-screen-prompt,
+  #rotate-screen-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* ===== 事件說明樣式 ===== */
+.event-detail{ padding:10px; background:#f8f9fa; border-radius:6px; margin-top:8px; }
+.event-detail h4{ margin:0 0 8px 0; font-size:14px; color:#2c3e50; }
+.event-detail p{ margin:0; font-size:13px; line-height:1.5; color:#555; }
+
+/* Toggle Switch 樣式 */
+.dashboard-container .toggle-container{ display:flex; align-items:center; gap:8px; }
+.dashboard-container .toggle-switch{ position:relative; display:inline-block; width:50px; height:24px; }
+.dashboard-container .toggle-switch input{ opacity:0; width:0; height:0; }
+.dashboard-container .slider{ position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px; }
+.dashboard-container .slider:before{ position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+.dashboard-container input:checked + .slider{ background-color:#4e79a7; }
+.dashboard-container input:checked + .slider:before{ transform:translateX(26px); }
+.dashboard-container .toggle-text{ font-size:14px; font-weight:500; color:#555; }
+
+/* 事件時間軸樣式 */
+.timeline-svg{ width:100%; height:60px; }
+.timeline-point{ cursor:pointer; transition:all 0.2s; }
+.timeline-point:hover{ stroke-width:3; }
+.timeline-point.active{ stroke-width:4; stroke:#4e79a7; }
+.timeline-line{ stroke:#ddd; stroke-width:2; }
+
+/* 事件時間軸面板樣式 - 水平布局，年份為列，横向排列 */
+#event-timeline-panel{ overflow:hidden; }
+#event-timeline-title{ font-size:20px; font-weight:700; color:#2c3e50; text-align:center; margin-bottom:12px; }
+.event-timeline-events{ display:flex !important; overflow-x:auto !important; gap:12px; font-size:13px; padding:10px; scrollbar-width:thin; flex-wrap:nowrap !important; }
+.event-timeline-year-group{ display:flex !important; flex-direction:column !important; width:150px !important; flex-shrink:0 !important; border:1px solid #d0d0d0; border-radius:8px; padding:8px; background:#fafafa; }
+.event-timeline-year-header{ font-size:16px; font-weight:600; color:#2c3e50; margin-bottom:12px; text-align:center; padding-bottom:8px; border-bottom:3px solid #4e79a7; background:linear-gradient(to right, #e3f2fd, #ffffff); border-radius:4px; padding-top:6px; }
+.event-timeline-items{ display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:auto; }
+.event-timeline-item{ display:flex; flex-direction:column; gap:4px; padding:6px; min-height:50px; border:1px solid #ddd; border-left-width:4px; border-radius:6px; cursor:pointer; transition:all 0.2s; background:#fff; flex-shrink:0; }
+.event-timeline-item:hover{ background:#f0f7ff; box-shadow:0 2px 6px rgba(78,121,167,0.15); transform:translateY(-1px); }
+.event-timeline-clicked{ background:#e8f4fd !important; border-color:#2196F3 !important; border-width:2px !important; box-shadow:0 2px 8px rgba(33,150,243,0.3) !important; }
+.event-type-monetary{ border-left-color:#A08090; }
+.event-type-fiscal{ border-left-color:#D0B070; }
+.event-type-other{ border-left-color:#407090; }
+.event-type-tax{ border-left-color:#E09861; }
+.event-type-infra{ border-left-color:#88B4CC; }
+.event-type-dev{ border-left-color:#1C9A85; }
+.event-type-national{ border-left-color:#f1c54e; }
+.event-type-macro{ border-left-color:#88623E; }
+.event-timeline-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.event-timeline-dot.monetary{ background:#A08090; }
+.event-timeline-dot.fiscal{ background:#D0B070; }
+.event-timeline-dot.other{ background:#407090; }
+.event-timeline-dot.tax{ background:#E09861; }
+.event-timeline-dot.infra{ background:#88B4CC; }
+.event-timeline-dot.dev{ background:#1C9A85; }
+.event-timeline-dot.national{ background:#f1c54e; }
+.event-timeline-dot.macro{ background:#88623E; }
+.event-timeline-quarter{ font-size:11px; color:#666; font-weight:600; margin-bottom:6px; text-transform:uppercase; }
+.event-timeline-content{ line-height:1.5; font-size:14px; color:#333; font-weight:500; }
+.event-timeline-tag{ display:inline-block; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:600; margin-bottom:4px; }
+.event-timeline-tag.monetary{ background:rgba(160,128,144,0.15); color:#8A6B7A; border:1px solid #A08090; }
+.event-timeline-tag.fiscal{ background:rgba(208,176,112,0.15); color:#B8941F; border:1px solid #D0B070; }
+.event-timeline-tag.other{ background:rgba(64,112,144,0.15); color:#2C4A5C; border:1px solid #407090; }
+.event-timeline-tag.tax{ background:rgba(224,152,97,0.15); color:#C47A3A; border:1px solid #E09861; }
+.event-timeline-tag.infra{ background:rgba(136,180,204,0.15); color:#5A8BA8; border:1px solid #88B4CC; }
+.event-timeline-tag.dev{ background:rgba(28,154,133,0.15); color:#157A6B; border:1px solid #1C9A85; }
+.event-timeline-tag.national{ background:rgba(241,197,78,0.15); color:#b8941f; border:1px solid #f1c54e; }
+.event-timeline-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
+.event-timeline-current{ background:#e3f2fd !important; border-color:#4e79a7 !important; border-width:2px !important; box-shadow:0 2px 8px rgba(78,121,167,0.2) !important; }
+
+/* 事件說明面板樣式 */
+#event-detail-panel{ min-height:150px; max-height:300px; overflow-y:auto; }
+#event-detail-content{ font-size:13px; line-height:1.6; }
+.event-detail-quarter{ font-weight:600; color:#4e79a7; margin-bottom:8px; font-size:14px; }
+.event-detail-item{ margin-bottom:12px; padding:8px; background:#f8f9fa; border-radius:4px; border-left:3px solid #4e79a7; }
+.event-detail-item:last-child{ margin-bottom:0; }
+.event-detail-tag{ display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600; margin-right:8px; }
+.event-detail-tag.monetary{ background:rgba(255,215,0,0.15); color:#b8860b; border:1px solid #ffd700; }
+.event-detail-tag.fiscal{ background:rgba(255,107,53,0.15); color:#d2691e; border:1px solid #ff6b35; }
+.event-detail-tag.other{ background:rgba(74,144,226,0.15); color:#191970; border:1px solid #4a90e2; }
+.event-detail-tag.tax{ background:rgba(255,140,0,0.15); color:#d2691e; border:1px solid #ff8c00; }
+.event-detail-tag.infra{ background:rgba(65,105,225,0.15); color:#191970; border:1px solid #4169e1; }
+.event-detail-tag.dev{ background:rgba(50,205,50,0.15); color:#228b22; border:1px solid #32cd32; }
+.event-detail-tag.national{ background:rgba(241,197,78,0.15); color:#b8941f; border:1px solid #f1c54e; }
+.event-detail-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
+.event-detail-label{ font-weight:600; color:#2c3e50; margin-bottom:4px; }
+
+/* ======== 防截圖/複製（保留你的原設定） ======== */
+.dashboard-container{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dashboard-container *{-webkit-user-select:none !important;-moz-user-select:none !important;-ms-user-select:none !important;user-select:none !important}
+button,input,select,textarea{-webkit-user-select:text !important;-moz-user-select:text !important;-ms-user-select:text !important;user-select:text !important}
+</style>
+</head>
+<body>
+<!-- Splash -->
+<div id="splash-screen">
+<div>
+<h1 class="splash-title">不動產大事紀</h1>
+
+<div class="logo-and-text"><img alt="國立政治大學不動產研究中心 Logo" class="splash-logo" src="https://nccu.fun4.com.tw/content/img/logo.svg" />
+<p class="splash-subtitle">國立政治大學<br />
+不動產研究中心</p>
+</div>
+</div>
+</div>
+<!-- 橫向提示畫面（僅在手機直向時顯示） -->
+
+<div id="rotate-screen-prompt"><button aria-label="關閉" class="close-prompt" id="close-rotate-prompt">&times;</button>
+
+<div class="rotate-icon">📱</div>
+
+<h2>請將手機轉為橫向</h2>
+
+<p>為了獲得更好的瀏覽體驗，建議您將手機轉為橫向模式查看此儀表板。</p>
+
+<p class="desktop-suggestion">建議使用電腦以獲得更完整的瀏覽體驗</p>
+<button class="continue-btn" id="continue-portrait">繼續使用直向模式</button></div>
+<!-- 平板提示畫面（僅在平板使用時顯示） -->
+
+<div id="tablet-prompt"><button aria-label="關閉" class="close-prompt" id="close-tablet-prompt">&times;</button>
+
+<div class="tablet-icon">💻</div>
+
+<h2>建議使用電腦</h2>
+
+<p>建議使用電腦以獲得更完整的瀏覽體驗</p>
+<button class="continue-btn" id="continue-tablet">繼續使用平板</button></div>
+<!-- Dashboard -->
+
+<div class="dashboard-container" style="display:none;">
+<h1>不動產大事紀</h1>
+<!-- 篩選器區（全寬） -->
+<div id="filter">
+<div class="filter-row">
+<div class="filter-group" id="placeGroup">
+<div class="toggle-container no-border"><span class="toggle-text">全國</span> <label class="toggle-switch"> <input id="filterToggle" type="checkbox" /> <span class="slider"></span> </label> <span class="toggle-text">縣市</span></div>
+<select id="placeSelect" style="margin-left:15px;"><option value="Taipei">台北市</option><option value="NewTaipei">新北市</option><option value="Taoyuan">桃園市</option><option value="Taichung">台中市</option><option value="Tainan">台南市</option><option value="Kaohsiung">高雄市</option><option value="Hsinchu">新竹縣市</option> </select></div>
+
+<div class="filter-group"><strong>時間範圍模式:</strong>
+
+<div class="btn-group" id="timeModeButtons"><input checked="checked" id="quarterMode" name="timeMode" type="radio" value="quarter" /><label for="quarterMode">季別選擇</label> <input id="yearMode" name="timeMode" type="radio" value="year" /><label for="yearMode">年份範圍</label></div>
+</div>
+
+<div class="filter-group" id="quarterControls"><strong>季別範圍:</strong>
+
+<div class="quarter-range-container"><select class="quarter-select" id="startSelect"></select> <span class="range-separator">至</span> <select class="quarter-select" id="endSelect"></select></div>
+</div>
+
+<div class="filter-group" id="yearControls" style="display:none;"><strong>年份範圍:</strong>
+
+<div class="btn-group" id="yearRangeButtons"><input checked="checked" id="allYears" name="yearRange" type="radio" value="all" /><label for="allYears">全部年份</label> <input id="year3Y" name="yearRange" type="radio" value="3Y" /><label for="year3Y">近3年</label> <input id="year5Y" name="yearRange" type="radio" value="5Y" /><label for="year5Y">近5年</label> <input id="year10Y" name="yearRange" type="radio" value="10Y" /><label for="year10Y">近10年</label></div>
+</div>
+</div>
+
+<div class="filter-row">
+<div class="filter-group"><strong>事件類型:</strong>
+
+<div class="event-type-buttons" id="eventChips"><button class="event-chip national active" data-value="national" type="button">💡 政策法規</button><button class="event-chip macro active" data-value="macro" type="button">💡 宏觀經濟與社會事件</button></div>
+</div>
+<div class="filter-group">
+<div class="action-buttons-container" style="margin: 0; gap: 10px;"><button class="action-btn" id="export-chart-btn" title="匯出圖片">📥</button><button class="action-btn" id="share-btn" title="分享">🔗</button><button class="action-btn" id="rc-info-btn" title="顯示資訊">ⓘ</button></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 提示和狀態（全寬） -->
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0; margin-bottom: 16px;">
+<div class="side-note" id="lock-status" style="color: #e74c3c; font-weight: bold; margin: 0; text-align: left;">狀態：未鎖定</div>
+<div class="side-note" id="kpi-extra" style="margin: 0; text-align: left;">提示：移動滑鼠查看各季資料，點擊圓點鎖定，雙擊解鎖</div>
+</div>
+<!-- 事件時間軸和事件說明並排（在趨勢圖上方） -->
+<div class="main-grid-layout" id="top-grid" style="margin-bottom: 16px; width: 100%;">
+  <div class="card" id="event-timeline-panel">
+    <h3 id="event-timeline-title">事件時間軸</h3>
+    <div id="event-timeline-events">&nbsp;</div>
+  </div>
+  <div class="card" id="event-detail-panel">
+    <h3 id="event-detail-title">事件說明</h3>
+    <div id="event-detail-content">&nbsp;</div>
+  </div>
+</div>
+<!-- 趨勢圖與概覽並排 -->
+<div class="grid-x grid-margin-x" style="align-items: start; width: 100%;">
+<!-- 本期概覽（左側，佔較小寬度） -->
+<div class="cell small-12 medium-3">
+<div id="overview-section" style="display: flex; flex-direction: column; gap: 0; padding-top: 0;">
+<div class="card" style="margin-top: 0; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,.03);">
+<h3 id="side-title" style="margin-top: 0; margin-bottom: 12px; padding-top: 0; line-height: 1.3; font-size: 16px; font-weight: 600; color: #2c3e50;">本期概覽</h3>
+<div class="kpi-row">
+<div class="kpi">
+<div class="label">本期中位數（萬/坪）</div>
+<div class="val" id="kpi-now">&mdash;</div>
+<div class="small" id="kpi-quarter">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">與去年同期（YoY）</div>
+<div class="val" id="kpi-yoy">&mdash;</div>
+<div class="small" id="kpi-yoy-note">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">與上一季（QoQ）</div>
+<div class="val" id="kpi-qoq">&mdash;</div>
+<div class="small" id="kpi-qoq-note">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">期間最高 / 最低</div>
+<div class="val" id="kpi-hi-lo">&mdash;</div>
+<div class="small" id="kpi-hi-lo-note">&mdash;</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 趨勢圖（右側，佔較大寬度） -->
+<div class="cell small-12 medium-9">
+<div id="bottom-grid" style="margin-bottom: 0; padding-top: 0;">
+<div id="graph" style="display: flex; flex-direction: column; width: 100%;">&nbsp;</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="popup">
+<div id="popupContent">&nbsp;</div>
+</div>
+
+<div id="detailPopup"><button id="closeDetailPopup">X</button>
+
+<div id="detailContent">&nbsp;</div>
+</div>
+<!-- 分享面板 -->
+
+<div id="sharePopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);border-radius:8px;width:400px;text-align:center;"><button id="closeSharePopup" style="float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s">X</button>
+
+<h3 style="margin-top:0;font-size:18px;color:#2c3e50;">分享到</h3>
+
+<div id="shareButtonsContainer" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px;align-items:center;">
+  <button class="share-option" data-platform="copy" style="padding:12px 20px;border:2px solid #4e79a7;background:#fff;color:#4e79a7;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;transition:.2s;flex:1;min-width:120px;">🔗 複製連結</button>
+</div>
+</div>
+<!-- 遮罩層 -->
+
+<div id="shareOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1999;">&nbsp;</div>
+
+
+<!-- 資訊遮罩 Overlay -->
+<div id="rc-info-overlay" class="rc-info-overlay">
+  <div class="rc-info-overlay-container">
+    <button id="rc-close-info-overlay" class="rc-close-info-overlay" aria-label="關閉">×</button>
+    <div id="rc-info-content" class="rc-info-content">
+      <h2 style="color:#fff;margin-top:0;margin-bottom:24px;font-size:28px;border-bottom:2px solid rgba(255,255,255,0.3);padding-bottom:12px;text-align:center;padding-top:0;">說明</h2>
+      
+      <!-- 資料清理邏輯 -->
+      <div style="margin-bottom:32px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">資料清理邏輯與圖示說明</h3>
+        <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
+          本資料源自實價登錄，為求單價準確性，僅保留主要住宅類型（如公寓、住宅大樓）交易，並排除親友、特殊關係等交易。此外，亦剔除特殊物件（如僅車位、頂樓加蓋），且已對單價、總價與屋齡等極端值進行處理，確保趨勢具備市場參考性。
+        </p>
+        <hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.2);">
+        <div style="font-size:15px;line-height:1.8;">
+          <p style="margin-bottom:12px;"><strong>全國事件類型：</strong></p>
+          <ul style="margin-left:20px;margin-bottom:20px;padding-left:20px;list-style:none;">
+            <li style="margin-bottom:8px;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>政策法規</strong></li>
+            <li style="margin-bottom:0;"><span class="color-block macro" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88623E;"></span><strong>宏觀經濟與社會事件</strong></li>
+          </ul>
+          <p style="margin-bottom:12px;"><strong>地方事件類型：</strong></p>
+          <ul style="margin-left:20px;margin-bottom:0;padding-left:20px;list-style:none;">
+            <li style="margin-bottom:8px;"><span class="color-block tax" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#E09861;"></span><strong>例行性稅基調整</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block infra" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88B4CC;"></span><strong>重大建設</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block dev" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#1C9A85;"></span><strong>土地規劃與開發</strong></li>
+            <li style="margin-bottom:0;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>政策法規</strong></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 免責聲明 -->
+      <div style="margin-bottom:24px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">免責聲明</h3>
+        <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
+          本中心建立不動產大事紀，旨在提供資料市場對於不動產相關事件紀錄之彙整，並加以房價中位數聯合呈現，以便民眾或專家學者參考。然由於房價影響因素眾多，事件的發生對住宅價格影響可能有提前或滯延的關係，表中呈現事件與價格趨勢並非有絕對關係，僅以事件紀錄方式呈現。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* RC Overlay 命名空間化樣式 */
+/* rc-info-btn 現在使用 action-btn 樣式，無需單獨定義 */
+
+.rc-info-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 20px 40px 20px;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.rc-info-overlay.fade-out {
+  opacity: 0;
+}
+
+.rc-info-overlay-container {
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  margin-top: 0;
+}
+
+.rc-close-info-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 9999;
+}
+
+.rc-close-info-overlay:hover {
+  background: #c0392b;
+}
+
+.rc-info-content {
+  line-height: 1.8;
+  color: #fff;
+  text-align: left;
+  max-width: 700px;
+  margin: 0 auto;
+  padding-top: 0;
+}
+
+.rc-info-content h2 {
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 28px;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  padding-bottom: 12px;
+  text-align: center;
+  padding-top: 0;
+}
+
+.rc-info-content h3 {
+  color: #fff;
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 8px;
+}
+
+.rc-info-content p {
+  font-size: 15px;
+  line-height: 1.8;
+  margin: 0;
+  text-align: justify;
+}
+
+.rc-info-content ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.rc-info-content li {
+  margin-bottom: 8px;
+}
+
+.rc-info-content hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.rc-info-content > div {
+  margin-bottom: 32px;
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.rc-info-content > div:last-child {
+  margin-bottom: 24px;
+}
+</style>
+</div>
+<script>
+// 分享功能
+function initShareFeature() {
+  const sharePopup = document.getElementById('sharePopup');
+  const shareOverlay = document.getElementById('shareOverlay');
+  const shareBtn = document.getElementById('share-btn');
+  const closeShareBtn = document.getElementById('closeSharePopup');
+  
+  if(!shareBtn) return;
+  
+  function copyShareLink() {
+    const pageUrl = window.location.href;
+    
+    const fallbackCopy = () => {
+      const textarea = document.createElement('textarea');
+      textarea.value = pageUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('連結已複製到剪貼簿！');
+    };
+    
+    if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(pageUrl).then(() => {
+        alert('連結已複製到剪貼簿！');
+      }).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }
+  
+  function hideSharePopup() {
+    if(sharePopup) sharePopup.style.display = 'none';
+    if(shareOverlay) shareOverlay.style.display = 'none';
+  }
+  
+  shareBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    copyShareLink();
+  });
+  if(closeShareBtn) closeShareBtn.addEventListener('click', hideSharePopup);
+  if(shareOverlay) shareOverlay.addEventListener('click', hideSharePopup);
+  
+  document.querySelectorAll('.share-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const platform = this.dataset.platform;
+      
+      switch(platform) {
+        case 'copy':
+          copyShareLink();
+          break;
+      }
+      
+      hideSharePopup();
+    });
+    
+    btn.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+    });
+    btn.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = 'none';
+    });
+  });
+}
+
+function initInlineShareLinks() {
+  const facebookLink = document.getElementById('inlineFacebookLink');
+  const lineButton = document.getElementById('inlineLineButton');
+  const lineFallback = document.getElementById('inlineLineFallback');
+  
+  if(!facebookLink && !lineButton && !lineFallback) return;
+  
+  const defaultShareUrl = 'https://nccu.fun4.com.tw/article/detail/2506025893274';
+  const pageUrl = window.location.href;
+  const usePageUrl = /^https?:/i.test(pageUrl);
+  const shareUrl = usePageUrl ? pageUrl : defaultShareUrl;
+  const encodedUrl = encodeURIComponent(shareUrl);
+  
+  if(facebookLink) {
+    facebookLink.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  }
+  
+  if(lineFallback) {
+    lineFallback.href = `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`;
+    lineFallback.style.display = 'inline-flex';
+  }
+  
+  if(lineButton) {
+    lineButton.setAttribute('data-url', shareUrl);
+    let retryCount = 0;
+    const maxRetries = 50;
+    
+    function initLineButton() {
+      retryCount++;
+      if(window.LineIt) {
+        try {
+          if(typeof window.LineIt.loadButton === 'function') {
+            window.LineIt.loadButton();
+          } else if(typeof window.LineIt.parse === 'function') {
+            window.LineIt.parse();
+          } else if(typeof window.LineIt.render === 'function') {
+            window.LineIt.render();
+          }
+          lineButton.style.display = 'inline-flex';
+          if(lineFallback) lineFallback.style.display = 'none';
+        } catch(err) {
+          console.warn('LINE 分享按鈕初始化失敗', err);
+          lineButton.style.display = 'inline-flex';
+        }
+      } else if(retryCount < maxRetries) {
+        setTimeout(initLineButton, 100);
+      } else {
+        console.warn('LINE 腳本載入逾時，請檢查網路狀態');
+        lineButton.style.display = 'inline-flex';
+        if(lineFallback) lineFallback.style.display = 'inline-flex';
+      }
+    }
+    
+    initLineButton();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // 初始化 Foundation 6（僅作用於 dashboard-container）
+  if (typeof Foundation !== 'undefined') {
+    // 只在 dashboard-container 內初始化 Foundation
+    const dashboardContainer = document.querySelector('.dashboard-container');
+    if (dashboardContainer) {
+      Foundation.reInit(dashboardContainer);
+    }
+  }
+  
+  // ======== 橫向提示檢測（僅在手機直向時顯示） ========
+  const rotatePrompt = document.getElementById('rotate-screen-prompt');
+  const closeBtn = document.getElementById('close-rotate-prompt');
+  const continueBtn = document.getElementById('continue-portrait');
+  
+  // 關閉按鈕處理
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (rotatePrompt) {
+        rotatePrompt.classList.remove('show');
+        rotatePrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('rotate-prompt-dismissed', 'true');
+        console.log('橫向提示已關閉');
+      }
+    });
+  }
+  
+  // 繼續使用直向模式按鈕
+  if (continueBtn) {
+    continueBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (rotatePrompt) {
+        rotatePrompt.classList.remove('show');
+        rotatePrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('rotate-prompt-dismissed', 'true');
+        console.log('用戶選擇繼續使用直向模式');
+      }
+    });
+  }
+  
+  function checkOrientation() {
+    if (!rotatePrompt) {
+      console.error('找不到 rotate-screen-prompt 元素');
+      return;
+    }
+    
+    // 檢查是否為手機（寬度小於768px）
+    const width = window.innerWidth || document.documentElement.clientWidth;
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const isMobile = width <= 768;
+    
+    // 檢查是否為直向（高度大於寬度）
+    const isPortrait = height > width;
+    
+    // 也檢查 orientation API（如果有）
+    let orientationPortrait = false;
+    if (window.orientation !== undefined) {
+      orientationPortrait = (window.orientation === 0 || window.orientation === 180);
+    }
+    
+    // 最終判斷是否為直向
+    const finalIsPortrait = isPortrait || orientationPortrait;
+    
+    // 檢查用戶是否已選擇關閉提示（使用 sessionStorage，每次會話都顯示一次）
+    // 改用 sessionStorage 而不是 localStorage，這樣每次關閉瀏覽器重新打開都會顯示
+    const dismissed = sessionStorage.getItem('rotate-prompt-dismissed') === 'true';
+    
+    // 調試信息
+    console.log('📱 橫向提示檢測:', {
+      width: width,
+      height: height,
+      isMobile: isMobile,
+      isPortrait: finalIsPortrait,
+      dismissed: dismissed,
+      orientation: window.orientation
+    });
+    
+    // 根據情況顯示或隱藏橫向提示
+    if (isMobile && finalIsPortrait && !dismissed) {
+      // 手機直向且未關閉提示時，顯示橫向提示
+      console.log('✅ 顯示橫向提示');
+      rotatePrompt.classList.add('show');
+      // 強制設置樣式確保顯示（使用 setProperty 方法）
+      rotatePrompt.style.setProperty('display', 'flex', 'important');
+      rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+      rotatePrompt.style.setProperty('opacity', '1', 'important');
+      rotatePrompt.style.setProperty('z-index', '10000', 'important');
+      rotatePrompt.style.setProperty('position', 'fixed', 'important');
+      rotatePrompt.style.setProperty('inset', '0', 'important');
+      console.log('橫向提示樣式已設置');
+    } else {
+      // 其他情況隱藏提示
+      console.log('❌ 隱藏橫向提示 - 原因:', {
+        isMobile: isMobile,
+        isPortrait: finalIsPortrait,
+        dismissed: dismissed
+      });
+      rotatePrompt.classList.remove('show');
+      rotatePrompt.style.setProperty('display', 'none', 'important');
+    }
+  }
+  
+  // 立即檢查（不等待 splash）
+  checkOrientation();
+  
+  // 等待 DOM 完全載入後再檢查一次
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(checkOrientation, 500);
+    });
+  } else {
+    setTimeout(checkOrientation, 500);
+  }
+  
+  // 等待 splash screen 消失後再檢查一次
+  function checkAfterSplash() {
+    const splashScreen = document.getElementById('splash-screen');
+    if (splashScreen) {
+      console.log('等待 splash screen 消失...');
+      // 監聽 splash 的消失
+      const checkSplash = setInterval(function() {
+        const splashDisplay = getComputedStyle(splashScreen).display;
+        const splashOpacity = getComputedStyle(splashScreen).opacity;
+        const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+        const splashFaded = parseFloat(splashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+        
+        if (splashHidden || splashFaded) {
+          clearInterval(checkSplash);
+          console.log('Splash screen 已消失，檢查橫向提示');
+          setTimeout(function() {
+            checkOrientation();
+            // 強制確保顯示（如果需要）
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const height = window.innerHeight || document.documentElement.clientHeight;
+            const isMobile = width <= 768;
+            const isPortrait = height > width;
+            if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+              rotatePrompt.classList.add('show');
+              rotatePrompt.style.setProperty('display', 'flex', 'important');
+              rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+              rotatePrompt.style.setProperty('opacity', '1', 'important');
+              rotatePrompt.style.setProperty('z-index', '10000', 'important');
+              rotatePrompt.style.setProperty('position', 'fixed', 'important');
+              rotatePrompt.style.setProperty('inset', '0', 'important');
+            }
+          }, 300);
+        }
+      }, 100);
+      
+      // 最多等待 10 秒
+      setTimeout(function() {
+        clearInterval(checkSplash);
+        console.log('10秒超時，強制檢查橫向提示');
+        checkOrientation();
+      }, 10000);
+    } else {
+      console.log('沒有 splash screen，直接檢查橫向提示');
+      // 沒有 splash，直接檢查
+      setTimeout(function() {
+        checkOrientation();
+        // 強制確保顯示（如果需要）
+        const width = window.innerWidth || document.documentElement.clientWidth;
+        const height = window.innerHeight || document.documentElement.clientHeight;
+        const isMobile = width <= 768;
+        const isPortrait = height > width;
+        if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+          rotatePrompt.classList.add('show');
+          rotatePrompt.style.setProperty('display', 'flex', 'important');
+          rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+          rotatePrompt.style.setProperty('opacity', '1', 'important');
+          rotatePrompt.style.setProperty('z-index', '10000', 'important');
+          rotatePrompt.style.setProperty('position', 'fixed', 'important');
+          rotatePrompt.style.setProperty('inset', '0', 'important');
+        }
+      }, 1500);
+    }
+  }
+  
+  // 延遲執行，確保所有元素都已載入
+  setTimeout(checkAfterSplash, 1000);
+  
+  // 額外檢查：在頁面完全載入後再次檢查
+  window.addEventListener('load', function() {
+    console.log('頁面載入完成 - 再次檢查橫向提示');
+    setTimeout(function() {
+      checkOrientation();
+      // 強制確保顯示（如果需要）
+      const width = window.innerWidth || document.documentElement.clientWidth;
+      const height = window.innerHeight || document.documentElement.clientHeight;
+      const isMobile = width <= 768;
+      const isPortrait = height > width;
+      if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+        rotatePrompt.classList.add('show');
+        rotatePrompt.style.setProperty('display', 'flex', 'important');
+        rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+        rotatePrompt.style.setProperty('opacity', '1', 'important');
+        rotatePrompt.style.setProperty('z-index', '10000', 'important');
+        rotatePrompt.style.setProperty('position', 'fixed', 'important');
+        rotatePrompt.style.setProperty('inset', '0', 'important');
+      }
+    }, 1500);
+  });
+  
+  // 監聽視窗大小和方向變化
+  let resizeTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(checkOrientation, 200);
+  });
+  
+  window.addEventListener('orientationchange', function() {
+    // 方向改變時延遲一下再檢查，確保尺寸已更新
+    setTimeout(function() {
+      checkOrientation();
+      // 強制確保顯示（如果需要）
+      const width = window.innerWidth || document.documentElement.clientWidth;
+      const height = window.innerHeight || document.documentElement.clientHeight;
+      const isMobile = width <= 768;
+      const isPortrait = height > width;
+      if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+        rotatePrompt.classList.add('show');
+        rotatePrompt.style.setProperty('display', 'flex', 'important');
+        rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+        rotatePrompt.style.setProperty('opacity', '1', 'important');
+        rotatePrompt.style.setProperty('z-index', '10000', 'important');
+        rotatePrompt.style.setProperty('position', 'fixed', 'important');
+        rotatePrompt.style.setProperty('inset', '0', 'important');
+      }
+    }, 500);
+  });
+  
+  // ======== 平板提示檢測（僅在平板使用時顯示） ========
+  const tabletPrompt = document.getElementById('tablet-prompt');
+  const closeTabletBtn = document.getElementById('close-tablet-prompt');
+  const continueTabletBtn = document.getElementById('continue-tablet');
+  
+  // 關閉按鈕處理
+  if (closeTabletBtn) {
+    closeTabletBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tabletPrompt) {
+        tabletPrompt.classList.remove('show');
+        tabletPrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('tablet-prompt-dismissed', 'true');
+        console.log('平板提示已關閉');
+      }
+    });
+  }
+  
+  // 繼續使用平板按鈕
+  if (continueTabletBtn) {
+    continueTabletBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tabletPrompt) {
+        tabletPrompt.classList.remove('show');
+        tabletPrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('tablet-prompt-dismissed', 'true');
+        console.log('用戶選擇繼續使用平板');
+      }
+    });
+  }
+  
+  function checkTablet() {
+    if (!tabletPrompt) {
+      console.error('找不到 tablet-prompt 元素');
+      return;
+    }
+    
+    // 檢查是否為平板（寬度在 769px 到 992px 之間）
+    const width = window.innerWidth || document.documentElement.clientWidth;
+    const isTablet = width > 768 && width <= 992;
+    
+    // 檢查用戶是否已選擇關閉提示
+    const dismissed = sessionStorage.getItem('tablet-prompt-dismissed') === 'true';
+    
+    // 調試信息
+    console.log('💻 平板提示檢測:', {
+      width: width,
+      isTablet: isTablet,
+      dismissed: dismissed
+    });
+    
+    // 根據情況顯示或隱藏平板提示
+    if (isTablet && !dismissed) {
+      console.log('✅ 顯示平板提示');
+      tabletPrompt.classList.add('show');
+      // 強制設置樣式確保顯示（使用內聯樣式覆蓋所有 CSS）
+      tabletPrompt.style.setProperty('display', 'flex', 'important');
+      tabletPrompt.style.setProperty('visibility', 'visible', 'important');
+      tabletPrompt.style.setProperty('opacity', '1', 'important');
+      tabletPrompt.style.setProperty('z-index', '10001', 'important');
+      tabletPrompt.style.setProperty('position', 'fixed', 'important');
+      tabletPrompt.style.setProperty('inset', '0', 'important');
+      console.log('平板提示樣式已設置');
+    } else {
+      console.log('❌ 隱藏平板提示 - 原因:', {
+        isTablet: isTablet,
+        dismissed: dismissed,
+        width: width
+      });
+      tabletPrompt.classList.remove('show');
+      tabletPrompt.style.setProperty('display', 'none', 'important');
+    }
+  }
+  
+  // 等待 splash screen 消失後再檢查
+  function checkTabletAfterSplash() {
+    const splashScreen = document.getElementById('splash-screen');
+    
+    if (splashScreen) {
+      // 監聽 splash 的消失
+      const checkSplash = setInterval(function() {
+        const splashDisplay = getComputedStyle(splashScreen).display;
+        const splashOpacity = getComputedStyle(splashScreen).opacity;
+        const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+        const splashFaded = splashOpacity === '0' || splashScreen.style.opacity === '0';
+        
+        if (splashHidden || splashFaded) {
+          clearInterval(checkSplash);
+          // splash 消失後立即檢查並顯示平板提示
+          setTimeout(function() {
+            checkTablet();
+            // 強制確保顯示（如果需要）
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const isTablet = width > 768 && width <= 992;
+            if (isTablet && tabletPrompt && !sessionStorage.getItem('tablet-prompt-dismissed')) {
+              tabletPrompt.classList.add('show');
+              tabletPrompt.style.setProperty('display', 'flex', 'important');
+              tabletPrompt.style.setProperty('visibility', 'visible', 'important');
+              tabletPrompt.style.setProperty('opacity', '1', 'important');
+              tabletPrompt.style.setProperty('z-index', '10001', 'important');
+              tabletPrompt.style.setProperty('position', 'fixed', 'important');
+              tabletPrompt.style.setProperty('inset', '0', 'important');
+            }
+          }, 300);
+        }
+      }, 100);
+      
+      // 最多等待 10 秒後強制檢查
+      setTimeout(function() {
+        clearInterval(checkSplash);
+        checkTablet();
+      }, 10000);
+    } else {
+      // 沒有 splash，直接檢查
+      setTimeout(checkTablet, 1500);
+    }
+  }
+  
+  // 初始檢查（延遲執行，確保 splash 已處理）
+  setTimeout(checkTabletAfterSplash, 500);
+  
+  // 額外檢查：在頁面完全載入後再次檢查
+  window.addEventListener('load', function() {
+    setTimeout(checkTablet, 2000);
+  });
+  
+  // 監聽視窗大小變化
+  let resizeTabletTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTabletTimeout);
+    resizeTabletTimeout = setTimeout(checkTablet, 200);
+  });
+  
+  loadDashboardData()
+    .then(apiData=>{
+      console.log('本地資料載入成功，準備初始化圖表');
+      console.log('資料結構:', {
+        hasNewData: !!apiData.newData,
+        newDataLength: apiData.newData ? (Array.isArray(apiData.newData) ? apiData.newData.length : 'not array') : 'missing',
+        keys: Object.keys(apiData)
+      });
+      initializeChart(apiData);
+    })
+    .catch(error=>{
+      console.error('讀取本地資料時發生問題:');
+      console.error('錯誤類型:', error.constructor.name);
+      console.error('錯誤訊息:', error.message);
+      console.error('錯誤堆疊:', error.stack);
+      console.error('完整錯誤對象:', error);
+      
+      // 檢查是否是檔案存取或伺服器設定問題
+      let errorMsg = '本地資料載入失敗';
+      if(error.message === 'Failed to fetch'){
+        errorMsg = '無法讀取 json 檔案。可能的原因：\n';
+        errorMsg += '1. 本地檔案不存在或路徑錯誤\n';
+        errorMsg += '2. 預覽伺服器未正確提供靜態檔案\n';
+        errorMsg += '3. 瀏覽器阻擋檔案讀取（file:// 導覽限制）';
+      } else if(error.message){
+        errorMsg += ': ' + error.message;
+      } else if(error.name){
+        errorMsg += ': ' + error.name;
+      }
+      
+      const dashboard=document.querySelector('.dashboard-container');dashboard.style.display='block';
+      const banner=document.createElement('div');
+      banner.innerHTML=errorMsg.replace(/\n/g, '<br>') + '<br>請檢查 json 檔案或預覽伺服器設定。';
+      banner.setAttribute('style','max-width:1200px;margin:10px auto;padding:10px 14px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:6px;white-space:pre-line;');
+      document.body.insertBefore(banner,dashboard);
+      const splashScreen=document.getElementById('splash-screen');if(splashScreen){splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+    });
+
+  window.__splashFailSafe=setTimeout(()=>{
+    const splashScreen=document.getElementById('splash-screen');
+    const dashboard=document.querySelector('.dashboard-container');
+    if(splashScreen&&splashScreen.style.display!=='none'){dashboard.style.display='block';splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+  },8000);
+  
+  // 初始化分享功能
+  initShareFeature();
+  initInlineShareLinks();
+  
+  // 初始化資訊按鈕功能
+  initInfoButton();
+});
+
+// 資訊按鈕功能（RC Overlay 命名空間化）
+function initInfoButton() {
+  const infoBtn = document.getElementById('rc-info-btn');
+  const infoOverlay = document.getElementById('rc-info-overlay');
+  const closeInfoBtn = document.getElementById('rc-close-info-overlay');
+  
+  if (!infoBtn || !infoOverlay) return;
+  
+  // 按鈕現在在控制面板中，無需額外設定
+  
+  // 檢測是否為桌面裝置（視窗寬度大於 992px）
+  function isDesktop() {
+    return window.innerWidth > 992;
+  }
+  
+  // 檢測是否為觸控裝置
+  function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }
+  
+  let hoverTimeout;
+  let leaveTimeout;
+  let isOverlayVisible = false;
+  
+  // 顯示遮罩
+  function showInfoOverlay() {
+    // 確保移除淡出類別並重置 opacity
+    infoOverlay.classList.remove('fade-out');
+    infoOverlay.style.opacity = '1';
+    infoOverlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    isOverlayVisible = true;
+  }
+  
+  // 隱藏遮罩
+  function hideInfoOverlay() {
+    // 添加淡出效果
+    infoOverlay.classList.add('fade-out');
+    setTimeout(() => {
+      infoOverlay.style.display = 'none';
+      infoOverlay.classList.remove('fade-out');
+      document.body.style.overflow = '';
+      isOverlayVisible = false;
+    }, 500); // 等待淡出動畫完成
+  }
+  
+  // 清除所有延遲計時器
+  function clearAllTimeouts() {
+    clearTimeout(hoverTimeout);
+    clearTimeout(leaveTimeout);
+  }
+  
+  // 桌面版 hover 互動（含微延遲，不卡頓）
+  if (isDesktop() && !isTouchDevice()) {
+    const hoverTarget = infoBtn;
+    
+    // 滑鼠進入按鈕
+    hoverTarget.addEventListener('mouseenter', function() {
+      clearAllTimeouts();
+      
+      // 延遲顯示遮罩（微延遲，避免卡頓）
+      hoverTimeout = setTimeout(() => {
+        if (!isOverlayVisible) {
+          showInfoOverlay();
+        }
+      }, 200); // 從 300ms 改為 200ms，更流暢
+    });
+    
+    // 滑鼠離開按鈕
+    hoverTarget.addEventListener('mouseleave', function(e) {
+      
+      clearTimeout(hoverTimeout);
+      
+      // 檢查滑鼠移動到的目標元素
+      const relatedTarget = e.relatedTarget;
+      
+      // 如果滑鼠移動到遮罩或其子元素上，不清除遮罩
+      if (relatedTarget && (relatedTarget === infoOverlay || infoOverlay.contains(relatedTarget))) {
+        return;
+      }
+      
+      // 延遲關閉，給用戶時間移動滑鼠到遮罩上（微延遲）
+      clearTimeout(leaveTimeout);
+      leaveTimeout = setTimeout(() => {
+        if (infoOverlay.style.display === 'none' || !isOverlayVisible) return;
+        
+        // 使用 document.elementFromPoint 檢查當前滑鼠位置下的元素
+        const currentElement = document.elementFromPoint(e.clientX || 0, e.clientY || 0);
+        if (currentElement && (currentElement === infoOverlay || infoOverlay.contains(currentElement))) {
+          return; // 滑鼠在遮罩上，不清除
+        }
+        
+        hideInfoOverlay();
+      }, 100); // 從 150ms 改為 100ms，更流暢
+    });
+    
+    // 遮罩 hover 時保持顯示
+    infoOverlay.addEventListener('mouseenter', function() {
+      clearAllTimeouts();
+      isOverlayVisible = true;
+    });
+    
+    // 滑鼠離開遮罩時自動關閉
+    infoOverlay.addEventListener('mouseleave', function() {
+      hideInfoOverlay();
+    });
+    
+    // 點擊遮罩背景關閉（桌面版）
+    infoOverlay.addEventListener('click', function(e) {
+      if (e.target === infoOverlay) {
+        hideInfoOverlay();
+      }
+    });
+  }
+  
+  // 點擊按鈕顯示/隱藏遮罩（所有裝置）
+  infoBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    clearAllTimeouts();
+    if (!isOverlayVisible) {
+      showInfoOverlay();
+    } else {
+      hideInfoOverlay();
+    }
+  });
+  
+  // 關閉按鈕（所有裝置）
+  if (closeInfoBtn) {
+    closeInfoBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      hideInfoOverlay();
+    });
+  }
+  
+  // 行動裝置：點擊遮罩背景關閉
+  if (!isDesktop() || isTouchDevice()) {
+    infoOverlay.addEventListener('click', function(e) {
+      if (e.target === infoOverlay) {
+        hideInfoOverlay();
+      }
+    });
+  }
+  
+  // ESC 鍵關閉（所有裝置）
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && (infoOverlay.style.display === 'flex' || infoOverlay.style.display === 'block')) {
+      hideInfoOverlay();
+    }
+  });
+  
+  // 頁面載入時自動顯示遮罩，然後自動淡出
+  function showInfoOverlayOnLoad() {
+    // 等待 splash screen 消失後再顯示
+    const splashScreen = document.getElementById('splash-screen');
+    const checkSplash = setInterval(function() {
+      const splashDisplay = getComputedStyle(splashScreen).display;
+      const splashOpacity = getComputedStyle(splashScreen).opacity;
+      const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+      const splashFaded = parseFloat(splashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+      
+      // 如果 splash screen 還在顯示，確保說明頁面不顯示
+      if (!splashHidden && !splashFaded) {
+        if (isOverlayVisible) {
+          hideInfoOverlay();
+        }
+        return; // 繼續等待
+      }
+      
+      if (splashHidden || splashFaded) {
+        clearInterval(checkSplash);
+        // Splash screen 已消失，等待一小段時間後顯示資訊遮罩
+        setTimeout(() => {
+          // 再次確認 splash screen 已完全消失
+          const finalSplashDisplay = getComputedStyle(splashScreen).display;
+          const finalSplashOpacity = getComputedStyle(splashScreen).opacity;
+          const finalSplashHidden = splashScreen.style.display === 'none' || finalSplashDisplay === 'none';
+          const finalSplashFaded = parseFloat(finalSplashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+          
+          if (finalSplashHidden || finalSplashFaded) {
+            // 確保移除淡出類別
+            infoOverlay.classList.remove('fade-out');
+            showInfoOverlay();
+            isOverlayVisible = true;
+            
+            // 60秒後自動淡出
+            setTimeout(() => {
+              if (isOverlayVisible) {
+                hideInfoOverlay();
+              }
+            }, 60000); // 顯示60秒後自動淡出
+          }
+        }, 800); // 增加等待時間到0.8秒，確保 splash screen 完全消失
+      }
+    }, 100);
+    
+    // 最多等待12秒，如果splash screen還沒消失，也顯示資訊遮罩
+    setTimeout(() => {
+      clearInterval(checkSplash);
+      // 再次確認 splash screen 狀態
+      const finalCheck = document.getElementById('splash-screen');
+      const finalDisplay = getComputedStyle(finalCheck).display;
+      const finalOpacity = getComputedStyle(finalCheck).opacity;
+      const finalHidden = finalCheck.style.display === 'none' || finalDisplay === 'none';
+      const finalFaded = parseFloat(finalOpacity) <= 0.01 || finalCheck.style.opacity === '0';
+      
+      if ((finalHidden || finalFaded) && !isOverlayVisible) {
+        infoOverlay.classList.remove('fade-out');
+        showInfoOverlay();
+        isOverlayVisible = true;
+        
+        // 60秒後自動淡出
+        setTimeout(() => {
+          if (isOverlayVisible) {
+            hideInfoOverlay();
+          }
+        }, 60000);
+      }
+    }, 12000);
+  }
+  
+  // 啟動自動顯示功能
+  showInfoOverlayOnLoad();
+}
+
+function initializeChart(apiData){
+  // ======== 取用你的資料結構 ========
+  let rawNewData = apiData.newData || [];
+  if(Array.isArray(rawNewData) && rawNewData.length>0 && Array.isArray(rawNewData[0])){ rawNewData = rawNewData[0]; }
+  const nationalEvents = apiData.oldLabelData || [];
+  const taipeiEvents = apiData.taipeiData || [];
+  const newtaipeiEvents = apiData.newtaipeiData || [];
+  const taoyuanEvents = apiData.taoyuanData || [];
+  const hsinchuEvents = apiData.hsinchuData || [];
+  const taichungEvents = apiData.taichungData || [];
+  const tainanEvents = apiData.tainanData || [];
+  const kaohsiungEvents = apiData.kaohsiungData || [];
+
+  const allEvents = [...nationalEvents,...taipeiEvents,...newtaipeiEvents,...taoyuanEvents,...hsinchuEvents,...taichungEvents,...tainanEvents,...kaohsiungEvents];
+
+  // 調試信息
+  console.log('API資料載入成功:');
+  console.log('- 房價資料筆數:', rawNewData.length);
+  console.log('- 事件資料筆數:', allEvents.length);
+
+  function processData(){
+    const dataMap=new Map();
+    
+    // 先處理有房價資料的季度
+    rawNewData.forEach(d=>{
+      const newD={...d};
+      if(newD.HsinchuCity||newD.HsinchuCounty){ newD.Hsinchu=newD.HsinchuCity||newD.HsinchuCounty; delete newD.HsinchuCity; delete newD.HsinchuCounty; }
+      dataMap.set(newD.Quarter,{...newD,events:[]});
+    });
+    
+    // 處理所有事件，但只包含2013年及以後的事件
+    let processedEventsCount = 0;
+    let filteredEventsCount = 0;
+    allEvents.forEach(ev=>{ 
+      processedEventsCount++;
+      
+      // 檢查事件是否有有效的Quarter
+      if (!ev.Quarter || typeof ev.Quarter !== 'string') {
+        console.warn('發現無效的事件Quarter:', ev);
+        return; // 跳過這個事件
+      }
+      
+      // 檢查事件的年份，只處理2013年及以後的事件
+      const eventYear = parseInt(ev.Quarter.substring(0, 4));
+      if(eventYear >= 2013) {
+        filteredEventsCount++;
+        if(dataMap.has(ev.Quarter)){
+          // 如果該季度已有房價資料，直接添加事件
+          dataMap.get(ev.Quarter).events.push(ev);
+        } else {
+          // 如果該季度沒有房價資料但有事件，創建一個只有事件的資料點
+          dataMap.set(ev.Quarter, {
+            Quarter: ev.Quarter,
+            events: [ev],
+            // 為沒有房價資料的季度設置預設值
+            Nation: { all: null },
+            Taipei: { all: null },
+            NewTaipei: { all: null },
+            Taoyuan: { all: null },
+            Hsinchu: { all: null },
+            Taichung: { all: null },
+            Tainan: { all: null },
+            Kaohsiung: { all: null }
+          });
+        }
+      }
+    });
+    
+    console.log('事件處理統計:');
+    console.log('- 總事件數:', processedEventsCount);
+    console.log('- 2013年後事件數:', filteredEventsCount);
+    console.log('- 處理後資料點數:', dataMap.size);
+    
+    const arr=Array.from(dataMap.values());
+    arr.sort((a,b)=>{
+      const [ya,qa]=a.Quarter.split('_'); const [yb,qb]=b.Quarter.split('_');
+      if(ya!==yb) return (+ya)-(+yb);
+      return qa.localeCompare(qb);
+    });
+    return arr;
+  }
+
+  const fullData = processData();
+
+  // ======== 快捷存取 DOM ========
+  const placeSelect = d3.select('#placeSelect');
+  const filterToggle = d3.select('#filterToggle');
+  const yearRangeButtons = d3.selectAll('input[name="yearRange"]');
+  // 屋齡篩選已移除，固定使用全部屋齡
+  const timeModeButtons = d3.selectAll('input[name="timeMode"]');
+  let eventTypeButtons = d3.selectAll('.event-chip');
+
+  // ======== 狀態 ========
+  // 響應式尺寸計算（增大圖表尺寸，讓刻度字和軸標題更清楚）
+  function getResponsiveDimensions(){
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
+    
+    // 獲取 #graph 容器的實際寬度
+    const graphElement = document.getElementById('graph');
+    const graphWidth = graphElement ? graphElement.getBoundingClientRect().width : (window.innerWidth || document.documentElement.clientWidth);
+    
+    if(isMobile){
+      // 手機版：使用實際螢幕寬度，但確保有足夠空間
+      const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+      const availableWidth = screenWidth - 20; // 留出左右邊距
+      return {
+        margin: {top:50,right:25,bottom:100,left:70}, // 稍微減少 margin
+        baseWidth: availableWidth,
+        baseHeight: 360 // 減少高度，讓圖表更小
+      };
+    } else if(isTablet){
+      // 平板版：使用圖表容器的實際寬度
+      const availableWidth = graphWidth > 0 ? graphWidth : (window.innerWidth - 40);
+      return {
+        margin: {top:60,right:70,bottom:85,left:90}, // 稍微減少 margin
+        baseWidth: Math.max(600, Math.min(1100, availableWidth)), // 根據實際容器寬度調整
+        baseHeight: 580 // 減少高度，讓圖表更小
+      };
+    } else {
+      // 桌面版：使用圖表容器的實際寬度（考慮右側面板350px + gap 16px）
+      const availableWidth = graphWidth > 0 ? graphWidth : 1000;
+      return {
+        margin: {top:65,right:110,bottom:90,left:115}, // 稍微減少 margin
+        baseWidth: availableWidth,
+        baseHeight: 520 // 減少高度，讓圖表更小
+      };
+    }
+  }
+  
+  let responsiveDims = getResponsiveDimensions();
+  let margin = responsiveDims.margin;
+  let width = responsiveDims.baseWidth - margin.left - margin.right;
+  let height = responsiveDims.baseHeight - margin.top - margin.bottom;
+  
+  // 視窗大小改變時重新計算（將在 SVG 創建後設置）
+  let resizeHandler = null;
+
+  const allQuarters = rawNewData.map(d=>d.Quarter);
+  const startSelect = d3.select("#startSelect");
+  const endSelect = d3.select("#endSelect");
+  allQuarters.forEach((q,i)=>{startSelect.append('option').attr('value',i).text(q); endSelect.append('option').attr('value',i).text(q);});
+
+  const mainSvg = d3.select("#graph").append("svg")
+    .attr("viewBox",`0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
+    .attr("preserveAspectRatio","xMidYMid meet")
+    .style("width", "100%")
+    .style("height", "auto");
+  mainSvg.append("defs").append("clipPath").attr("id","clip").append("rect").attr("width",width).attr("height",height);
+  // 根據裝置類型設定軸標籤位置和字體大小
+  const isMobileInit = window.innerWidth <= 768;
+  const isTabletInit = window.innerWidth > 768 && window.innerWidth <= 992;
+  const yLabelX = isMobileInit ? 5 : 35; // 調整位置以容納字體
+  const xLabelY = isMobileInit ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30; // 調整位置以容納字體
+  const titleFontSize = isMobileInit ? 16 : (isTabletInit ? 20 : 22);
+  const axisLabelFontSize = isMobileInit ? 11 : (isTabletInit ? 14 : 16);
+  
+  // 標題位置根據 margin.top 動態調整，確保位置合適且不會被遮擋
+  // 標題應該在圖表頂部上方，留出適當的間距
+  const titleY = isMobileInit ? 28 : (isTabletInit ? 35 : 38);
+  mainSvg.append("text")
+    .attr("id","chart-title")
+    .style("font-size",`${titleFontSize}px`)
+    .style("font-weight","bold")
+    .style("text-anchor","middle")
+    .style("fill","#2c3e50")
+    .attr("x",(width+margin.left+margin.right)/2)
+    .attr("y",titleY);
+  mainSvg.append("text").attr("class","axis-label").attr("x",yLabelX).attr("y",margin.top+height/2).attr("text-anchor","middle").attr("transform",`rotate(-90, ${yLabelX}, ${margin.top+height/2})`).style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("每坪單價（萬元）");
+  mainSvg.append("text").attr("class","axis-label").attr("x",margin.left+width/2).attr("y",xLabelY).attr("text-anchor","middle").style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("時間（季別）");
+
+
+  const watermarkGroup=mainSvg.append("g").attr("class","watermark").attr("transform",`translate(${margin.left+20}, ${margin.top+30})`).style("opacity","0");
+  watermarkGroup.append("text").attr("x","0").attr("y","-10").attr("text-anchor","start").style("font-family","Noto Sans TC, Microsoft JhengHei, sans-serif").style("font-size","18px").style("font-weight","bold").style("fill","#003399").text("政大不動產研究中心");
+  watermarkGroup.append("text").attr("x","0").attr("y","15").attr("text-anchor","start").style("font-family","Inter, Arial, sans-serif").style("font-size","12px").style("fill","#003399").text("Center For Real Estate Research, NCCU");
+
+  const focus = mainSvg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
+
+  // 計算響應式字體大小的函數（根據 SVG 實際縮放比例）
+  function getResponsiveFontSize(baseSize, isMobile = false) {
+    if (!mainSvg || !mainSvg.node()) return baseSize;
+    
+    const svgNode = mainSvg.node();
+    const viewBox = svgNode.getAttribute('viewBox');
+    if (!viewBox) return baseSize;
+    
+    const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+    const actualWidth = svgNode.getBoundingClientRect().width;
+    const scale = actualWidth / vbWidth;
+    
+    // 根據縮放比例調整字體大小，但保持合理範圍（增大範圍以支持更大的字體）
+    const scaledSize = baseSize * scale;
+    const minSize = isMobile ? 10 : 14;
+    const maxSize = isMobile ? 18 : 24;
+    
+    return Math.max(minSize, Math.min(maxSize, scaledSize));
+  }
+
+  // 動態可用季
+  function getAvailableDataRange(){
+    const arr=[];
+    allQuarters.forEach((q,i)=>{
+      const d=rawNewData[i];
+      if(d&&d.Nation&&d.Nation.all){
+        const ok=Object.values(d.Nation).some(v=>typeof v==='number'&&v>0);
+        if(ok) arr.push({quarter:q,index:i});
+      }
+    });
+    return arr;
+  }
+  const availableData = getAvailableDataRange();
+
+  // 篩選狀態
+  let startIndex = 0;
+  let endIndex = availableData.length>0 ? availableData[availableData.length-1].index : allQuarters.length-1;
+  let selectedPlace = placeSelect.property('value');
+  let selectedDataType = deriveDataType();
+  let selectedEventTypes = getSelectedEventTypes();
+  let selectedQuarterKey = fullData[endIndex]?.Quarter || fullData[fullData.length-1]?.Quarter; // 右側欄預設鎖定最後一季
+  let isLocked = false; // 是否已鎖定特定季度
+  let lastRenderedQuarter = null; // 記錄上次渲染的季度，避免重複渲染
+  let lastUpdatedKpiQuarter = null; // 記錄上次更新KPI的季度，避免重複更新導致閃爍
+
+  // scales / axes
+  // 初始化時設置 paddingInner（會在 updateChart 中根據裝置類型動態更新）
+  const x=d3.scaleBand().range([0,width]).paddingInner(0.5).paddingOuter(0);
+  const y=d3.scaleLinear().range([height,0]);
+
+  const xAxisGroup=focus.append("g").attr("class","x-axis").attr("transform",`translate(0,${height})`);
+  const yAxisGroup=focus.append("g").attr("class","y-axis");
+
+  focus.append("path").attr("class","line focus-line").attr("clip-path","url(#clip)");
+
+  // 主圖十字對照線（垂直線）
+  const mainCrosshair = focus.append("line")
+    .attr("class","crosshair-main")
+    .attr("x1",0)
+    .attr("x2",0)
+    .attr("y1",0)
+    .attr("y2",height)
+    .attr("stroke","#4e79a7")
+    .attr("stroke-width",3)
+    .style("opacity",0)
+    .style("pointer-events", "none")
+    .style("cursor", "pointer");
+
+
+  // 輔助：資料取值/分類
+  function deriveDataType(){
+    // 固定使用全部屋齡
+    return 'all';
+  }
+  function getValue(d){ 
+    const v=d?.[selectedPlace]?.[selectedDataType]; 
+    return (typeof v==='number' && v > 0)?v:null; 
+  }
+  function getSelectedEventTypes(){ const nodes=document.querySelectorAll('.event-chip.active'); return Array.from(nodes).map(el=>el.getAttribute('data-value')); }
+  function getEventCategory(e){ 
+    // 處理全國事件的Category分類
+    if(e.Category) {
+      let categories = [];
+      
+      // 處理陣列格式
+      if(Array.isArray(e.Category)) {
+        categories = e.Category;
+      } 
+      // 處理字串格式
+      else if(typeof e.Category === 'string') {
+        categories = [e.Category];
+      }
+      
+      // 檢查所有分類值
+      for(let category of categories) {
+        // 去除前後空格
+        category = category.trim();
+        
+        // 「政策法規」統一歸類為全國事件
+        if(category === '政策法規') return 'national';
+        // 「宏觀經濟與社會事件」歸類為 'macro'
+        if(category === '宏觀經濟與社會事件') return 'macro';
+        
+        // 處理地方事件的分類
+        if(category === '例行性稅基調整') return 'tax';      // 地方法律稅制
+        if(category === '重大建設') return 'infra';            // 地方重大建設
+        if(category === '土地規劃與開發') return 'dev';        // 地方土地開發
+      }
+    }
+    
+    // 預設為全國事件（政策法規）
+    return 'national'; 
+  }
+  function formatWan(v){ return (v/10000).toFixed(1); }
+  function quarterToText(q){ return q.replace('_Q',' Q'); }
+  
+  // 檢查某個季度是否有事件
+  function hasEventsForQuarter(quarterKey) {
+    const row = fullData.find(d => d.Quarter === quarterKey);
+    if (!row || !row.events) return false;
+    
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el => el.dataset.value);
+    
+    return row.events.some(ev => {
+      const hasNational = ev.hasOwnProperty('Label');
+      const hasPlace = ev.hasOwnProperty(`${place}Label`);
+      
+      let label = '';
+      if (showCity && place !== 'Nation') {
+        if (hasPlace) {
+          label = ev[`${place}Label`] || '';
+        }
+      } else {
+        if (hasNational) {
+          label = ev.Label || '';
+        }
+      }
+      
+      const cat = getEventCategory(ev);
+      return label && selected.includes(cat);
+    });
+  }
+
+  // 依目前模式取得某季要顯示的事件（已套用全國/縣市與 chip 篩選）
+  function pickEventsFor(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.dataset.value);
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    return row.events.map(ev=>{
+        // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+        const hasNational = ev.hasOwnProperty('Label');
+        const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // 根據模式決定顯示哪種事件
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 縣市模式：只顯示縣市事件
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // 全國模式：只顯示全國事件
+          // 優先使用 Label，如果沒有則使用 NationalLabel
+          if(hasNational) {
+            label = ev.Label || '';
+          } else if(hasNationalLabel) {
+            label = ev.NationalLabel || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        return {...ev, __label: label, __cat: cat };
+      })
+      .filter(e => e.__label && selected.includes(e.__cat));
+  }
+
+  // 為時間軸取得某季要顯示的事件（使用上方控制台的事件篩選）
+  function pickEventsForTimeline(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    // 使用與 getSelectedEventTypes 相同的方法獲取選中的事件類型
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.getAttribute('data-value'));
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    // 調試信息 - 只在有事件時輸出，且只輸出關鍵信息
+    if(row.events.length > 0) {
+      const hasMacroEvents = row.events.some(ev => {
+        const cat = getEventCategory(ev);
+        return cat === 'macro';
+      });
+      if(hasMacroEvents) {
+        console.log(`📋 pickEventsForTimeline [${quarterKey}]:`, {
+          模式: showCity ? `縣市模式 (${place})` : '全國模式',
+          選中的事件類型按鈕: selected,
+          該季度總事件數: row.events.length,
+          包含宏觀經濟事件: true
+        });
+      }
+    }
+
+    return row.events.map(ev=>{
+        // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+        const hasNational = ev.hasOwnProperty('Label');
+        const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // 根據模式決定顯示哪種事件
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 縣市模式：只顯示縣市事件
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // 全國模式：只顯示全國事件
+          // 優先使用 Label，如果沒有則使用 NationalLabel
+          if(hasNational) {
+            label = ev.Label || '';
+          } else if(hasNationalLabel) {
+            label = ev.NationalLabel || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        const result = {...ev, __label: label, __cat: cat, full: ev };
+        
+        // 特別關注宏觀經濟與社會事件 - 詳細調試
+        if(cat === 'macro' || (ev.Category && (JSON.stringify(ev.Category).includes('宏觀') || ev.Category === '宏觀經濟與社會事件'))) {
+          const eventInfo = {
+            季度: quarterKey,
+            事件標籤: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '無標籤',
+            Category原始值: ev.Category,
+            識別出的分類: cat,
+            提取的標籤: label,
+            有Label: hasNational,
+            有NationalLabel: hasNationalLabel,
+            有縣市標籤: hasPlace,
+            選中的類型: selected,
+            是否通過過濾: label && selected.includes(cat),
+            過濾條件1_有標籤: !!label,
+            過濾條件2_類型匹配: selected.includes(cat),
+            所有按鈕狀態: Array.from(document.querySelectorAll('.event-chip')).map(el => ({
+              文字: el.textContent.trim(),
+              dataValue: el.getAttribute('data-value'),
+              isActive: el.classList.contains('active')
+            }))
+          };
+          console.log('🔍 宏觀經濟與社會事件檢測:', eventInfo);
+          
+          // 如果被過濾，顯示詳細原因
+          if(!label || !selected.includes(cat)) {
+            console.log(`  ⚠️ 宏觀經濟事件被過濾 [${quarterKey}]:`, {
+              標籤: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '無標籤',
+              分類: cat,
+              選中類型: selected,
+              原因: !label ? '❌ 無標籤（不符合模式）' : !selected.includes(cat) ? `❌ 類型不匹配（需要選中 ${cat} 按鈕，當前選中: ${selected.join(', ')}）` : '未知'
+            });
+          } else {
+            console.log(`  ✅ 宏觀經濟事件通過 [${quarterKey}]:`, {
+              標籤: label,
+              分類: cat
+            });
+          }
+        }
+        
+        return result;
+      })
+      .filter(e => {
+        const match = e.__label && selected.includes(e.__cat);
+        // 只對宏觀經濟事件輸出通過信息
+        if(match && e.__cat === 'macro') {
+          console.log(`  ✅ 宏觀經濟事件通過過濾 [${quarterKey}]:`, {
+            標籤: e.__label,
+            分類: e.__cat
+          });
+        }
+        return match;
+      });
+  }
+
+
+  // 十字對照功能
+  function updateCrosshair(mouseX, clientX = null, updateTooltip = true) {
+    if(mouseX !== null) {
+      // 計算在主圖中的相對位置
+      const relativeX = mouseX - margin.left;
+      // 更新主圖上的垂直線
+      mainCrosshair
+        .attr("x1", relativeX)
+        .attr("x2", relativeX)
+        .style("opacity", 1)
+        .style("pointer-events", "all");
+      
+      // 只在需要更新tooltip時才設置（十字軸移動時更新，圓點hover時不更新）
+      if(updateTooltip && selectedQuarterKey) {
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let currentFilteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        const d = currentFilteredData.find(d => d.Quarter === selectedQuarterKey);
+        if(d) {
+          const v = getValue(d);
+          const valueText = (typeof v === 'number') ? `${formatWan(v)}萬/坪` : "無資料";
+          
+          // 計算 tooltip 位置，顯示在圖表頂部，不遮擋趨勢線
+          const svgRect = mainSvg.node().getBoundingClientRect();
+          
+          // X位置：跟隨十字軸位置，但稍微偏移以避免遮擋
+          let tooltipX;
+          if(clientX !== null) {
+            tooltipX = clientX - 40; // 在十字軸左側
+          } else {
+            tooltipX = svgRect.left + relativeX + margin.left - 40;
+          }
+          
+          // Y位置：固定在圖表頂部（不跟隨數據點，避免遮擋折線）
+          const tooltipY = svgRect.top + margin.top - 45; // 顯示在圖表頂部上方
+          
+          d3.select("#popupContent").html(`<strong>${quarterToText(selectedQuarterKey)}</strong><br>中位數 ${valueText}`);
+          d3.select("#popup")
+            .style("display", "block")
+            .style("left", `${tooltipX}px`)
+            .style("top", `${tooltipY}px`);
+        }
+      }
+    } else {
+      mainCrosshair
+        .style("opacity", 0)
+        .style("pointer-events", "none");
+      d3.select("#popup").style("display", "none");
+    }
+  }
+
+
+  // 根據滑鼠位置更新事件資訊
+  function updateEventInfoFromMouse(mouseX, event = null) {
+    if(mouseX === null) {
+      return;
+    }
+    
+    // 計算在主圖中的相對位置
+    const relativeX = mouseX - margin.left;
+    
+    // 根據X位置找到對應的季度
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    
+    // 找到最接近的數據點（擴大觸發範圍，提升靈敏度）
+    let closestQuarter = null;
+    let minDistance = Infinity;
+    
+    filteredData.forEach(d => {
+      const quarterX = x(d.Quarter) + x.bandwidth()/2;
+      const distance = Math.abs(quarterX - relativeX);
+      if(distance < minDistance) {
+        minDistance = distance;
+        closestQuarter = d.Quarter;
+      }
+    });
+    
+    // 提升靈敏度：只要滑鼠在圖表範圍內就顯示十字軸（不限制距離）
+    if(relativeX >= 0 && relativeX <= width) {
+      // 只要在圖表範圍內，就顯示十字軸並更新到最接近的季度
+      if(closestQuarter) {
+        selectedQuarterKey = closestQuarter;
+        const clientX = event ? event.clientX : null;
+        // 始終顯示十字軸，提升靈敏度
+        updateCrosshair(mouseX, clientX);
+      } else {
+        // 如果找不到季度，仍然顯示十字軸在當前位置
+        const clientX = event ? event.clientX : null;
+        updateCrosshair(mouseX, clientX);
+      }
+    } else {
+      // 滑鼠離開圖表範圍，隱藏十字軸
+      updateCrosshair(null);
+    }
+    
+    if(closestQuarter) {
+      // 只在未鎖定時更新事件時間軸，並避免重複渲染
+      if(!isLocked && closestQuarter !== lastRenderedQuarter) {
+        lastRenderedQuarter = closestQuarter;
+        renderEventTimeline(closestQuarter, filteredData);
+        renderEventDetail(closestQuarter, filteredData);
+      }
+      
+      // 無論是否鎖定，都要更新選中的季度（用於十字標顯示）
+      selectedQuarterKey = closestQuarter;
+      
+      // 如果未鎖定，更新圓點高亮（跟隨當前十字軸位置）
+      if(!isLocked) {
+        // 移除所有圓點的高亮
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        // 高亮當前十字軸所在的圓點
+        const currentDot = d3.selectAll('.dot').filter(function(d) {
+          return d.Quarter === closestQuarter;
+        });
+        currentDot.classed('dot-highlight', true);
+        
+        // 高亮時保持事件外框效果
+        currentDot.each(function(d) {
+          const dot = d3.select(this);
+          if (hasEventsForQuarter(d.Quarter)) {
+            dot.classed('dot-has-events', true);
+          }
+        });
+        
+        // 更新KPI和事件時間軸
+        // 只在季度改變時更新KPI，避免頻繁更新導致閃爍
+        if(closestQuarter !== lastUpdatedKpiQuarter) {
+          lastUpdatedKpiQuarter = closestQuarter;
+          updateSidePanelFromQuarter(closestQuarter, filteredData);
+        }
+      }
+      // 如果已鎖定，不更新圓點高亮（保持鎖定時的高亮狀態）
+    } else {
+      lastRenderedQuarter = null;
+      lastUpdatedKpiQuarter = null;
+    }
+  }
+
+  // 觸控事件處理變數
+  let touchStartY = null;
+  let touchStartX = null;
+  let isVerticalScroll = false;
+  
+  // 觸控開始
+  function handleTouchStart(event) {
+    if(event.touches.length === 1) {
+      touchStartY = event.touches[0].clientY;
+      touchStartX = event.touches[0].clientX;
+      isVerticalScroll = false;
+      
+      // 觸控開始時也更新十字軸位置
+      const svgRect = mainSvg.node().getBoundingClientRect();
+      const touchClientX = event.touches[0].clientX;
+      const touchClientY = event.touches[0].clientY;
+      
+      // 檢查觸控點是否在 SVG 範圍內
+      if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+         touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+        const relativeX = touchClientX - svgRect.left;
+        updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+        // 暫時不阻止預設行為，等待 touchmove 判斷是否為滾動
+      }
+    }
+  }
+  
+  // 觸控移動
+  function handleTouchMove(event) {
+    if(event.touches.length === 1 && touchStartY !== null && touchStartX !== null) {
+      const touchY = event.touches[0].clientY;
+      const touchX = event.touches[0].clientX;
+      const deltaY = Math.abs(touchY - touchStartY);
+      const deltaX = Math.abs(touchX - touchStartX);
+      
+      // 如果垂直移動距離明顯大於水平移動距離（2倍以上），則視為垂直滾動
+      if(deltaY > deltaX * 2 && deltaY > 15) {
+        isVerticalScroll = true;
+        // 允許頁面滾動，不阻止預設行為
+        return;
+      }
+      
+      // 水平移動或移動距離很小，處理十字軸
+      if(!isVerticalScroll) {
+        // 檢查觸控點是否在 SVG 範圍內
+        const svgRect = mainSvg.node().getBoundingClientRect();
+        const touchClientX = event.touches[0].clientX;
+        const touchClientY = event.touches[0].clientY;
+        
+        // 如果觸控點在 SVG 範圍內
+        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+           touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+          // 如果是明顯的水平移動，阻止預設行為並處理十字軸
+          if(deltaX > 10 || (deltaX > 5 && deltaX > deltaY)) {
+            event.preventDefault();
+            const relativeX = touchClientX - svgRect.left;
+            updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+          } else if(deltaY < 5 && deltaX < 5) {
+            // 移動很小，可能是初始觸控，也處理十字軸
+            const relativeX = touchClientX - svgRect.left;
+            updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+          }
+        }
+      }
+    }
+  }
+  
+  // 觸控結束
+  function handleTouchEnd(event) {
+    // 檢查是否為點擊（移動距離很小）
+    if(touchStartY !== null && touchStartX !== null && event.changedTouches.length === 1) {
+      const touchEndY = event.changedTouches[0].clientY;
+      const touchEndX = event.changedTouches[0].clientX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+      const deltaX = Math.abs(touchEndX - touchStartX);
+      
+      // 如果移動距離很小（視為點擊），且不是垂直滾動，且觸控點在 SVG 範圍內，阻止預設行為防止頁面滾動
+      if(!isVerticalScroll && deltaY < 10 && deltaX < 10) {
+        const svgRect = mainSvg.node().getBoundingClientRect();
+        const touchClientX = event.changedTouches[0].clientX;
+        const touchClientY = event.changedTouches[0].clientY;
+        
+        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+           touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+          // 阻止預設行為，防止頁面滾動
+          event.preventDefault();
+        }
+      }
+    }
+    
+    touchStartY = null;
+    touchStartX = null;
+    isVerticalScroll = false;
+  }
+
+  // 添加滑鼠和觸控事件到主圖
+  mainSvg
+    .on("mouseover", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateEventInfoFromMouse(mouseX, event);
+    })
+    .on("mousemove", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateEventInfoFromMouse(mouseX, event);
+    })
+    .on("touchstart", handleTouchStart)
+    .on("touchmove", handleTouchMove)
+    .on("touchend", handleTouchEnd)
+    .on("touchcancel", handleTouchEnd)
+    .on("mouseout", function() {
+      updateCrosshair(null);
+      lastRenderedQuarter = null; // 重置，允許下次渲染
+      lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+      // 滑鼠離開時，如果未鎖定則恢復到預設狀態並移除圓點高亮
+      if(!isLocked) {
+        // 移除圓點高亮效果
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        const lastQuarter = filteredData[filteredData.length-1]?.Quarter;
+        if(lastQuarter) {
+          updateSidePanelFromQuarter(lastQuarter, filteredData);
+        }
+      }
+    })
+    .on("click", function(event){
+      // 在手機上點擊時阻止預設行為，防止頁面滾動
+      if(window.innerWidth <= 768) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      // 點擊空白處也可鎖定到當前滑鼠所在季度
+      const target = event.target;
+      const clickedDot = target && target.classList && target.classList.contains('dot');
+      const mouseX = d3.pointer(event, this)[0];
+      
+      console.log('主圖點擊事件觸發', { 
+        target: target.tagName, 
+        className: target.className,
+        clickedDot, 
+        mouseX,
+        isLocked 
+      });
+      
+      if(clickedDot){
+        // dots 自身已有 click handler 會鎖定
+        return;
+      }
+      
+      // 檢查是否為雙擊
+      const now = Date.now();
+      const lastClick = mainSvg.datum()?.lastClickTime || 0;
+      const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
+      
+      if(isDoubleClick) {
+        // 雙擊：解鎖
+        isLocked = false;
+        if(mainSvg.datum()) {
+          mainSvg.datum().lastClickTime = 0;
+        } else {
+          mainSvg.datum({ lastClickTime: 0 });
+        }
+        // 恢復到預設狀態（最後一季）
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+        updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+        // 移除圓點高亮效果
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        // 解鎖後隱藏十字標
+        updateCrosshair(null);
+        lastRenderedQuarter = null; // 重置，允許下次渲染
+        lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+        // 更新狀態顯示
+        d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
+      } else {
+        // 單擊：鎖定最近的季度
+        const relativeX = mouseX - margin.left;
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        let closestQuarter=null, minDistance=Infinity;
+        filteredData.forEach(d=>{
+          const qx = x(d.Quarter)+x.bandwidth()/2;
+          const dist = Math.abs(qx-relativeX);
+          if(dist<minDistance){ minDistance=dist; closestQuarter=d.Quarter; }
+        });
+        if(closestQuarter){
+          selectedQuarterKey = closestQuarter;
+          isLocked = true;
+          if(mainSvg.datum()) {
+            mainSvg.datum().lastClickTime = now;
+          } else {
+            mainSvg.datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          lastRenderedQuarter = selectedQuarterKey; // 記錄當前季度
+          renderEventTimeline(selectedQuarterKey, filteredData);
+          renderEventDetail(selectedQuarterKey, filteredData);
+          // 移除其他點的高亮效果
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 高亮對應的數據點
+          const targetDot = d3.selectAll('.dot').filter(function(d) {
+            return d.Quarter === selectedQuarterKey;
+          });
+          targetDot.classed('dot-highlight', true);
+          
+          // 高亮時保持事件外框效果
+          targetDot.each(function(d) {
+            const dot = d3.select(this);
+            if (hasEventsForQuarter(d.Quarter)) {
+              dot.classed('dot-has-events', true);
+            }
+          });
+          // 鎖定後顯示十字標在該點位置
+          updateCrosshair(mouseX, event.clientX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
+        }
+      }
+    });
+
+  function applyYearRangeFilter(data){
+    const selected = d3.select('input[name="yearRange"]:checked').property('value');
+    const r = selected || 'all';
+    if(r==='all') return data;
+    const currentYear=(new Date()).getFullYear();
+    const back = r==='3Y'?3:(r==='5Y'?5:10);
+    const cutoff=currentYear-back;
+    return data.filter(d=>parseInt(d.Quarter.substring(0,4))>=cutoff);
+  }
+
+  function updateTimeModeControls(){
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    d3.select("#quarterControls").style("display", mode==='quarter'?null:'none');
+    d3.select("#yearControls").style("display", mode==='year'?null:'none');
+  }
+
+  // ======== 圖表繪製 ========
+  function updateChart(){
+    // 確保 selectedPlace 正確更新
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    selectedPlace = isCityMode ? d3.select('#placeSelect').property('value') : 'Nation';
+    selectedEventTypes=getSelectedEventTypes();
+    // 注意：不重置 isLocked，保持鎖定狀態
+
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+
+    // 根據裝置類型動態調整 paddingInner 和圓點大小
+    const isMobileNow = window.innerWidth <= 768;
+    x.paddingInner(isMobileNow ? 0.7 : 0.5); // 手機版增加間距
+
+    x.domain(filteredData.map(d=>d.Quarter));
+    const yValues=filteredData.map(getValue).filter(v=>v!==null);
+    if(yValues.length>0){ y.domain([d3.min(yValues)*0.9, d3.max(yValues)*1.05]).nice(); } else { y.domain([0,100000]).nice(); }
+
+    // X 軸刻度：根據裝置類型調整顯示密度（減少密度，避免擠在一起）
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
+    let tickValues;
+    if(mode==='year'){
+      tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+      // 根據裝置類型減少刻度密度
+      if(isMobile && tickValues.length > 4){
+        // 手機版：每2-3年顯示一次
+        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 3){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 3));
+      } else if(isTablet && tickValues.length > 6){
+        // 平板版：每2年顯示一次
+        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 2){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+      } else if(!isMobile && !isTablet && tickValues.length > 8){
+        // 桌面版：每2年顯示一次（如果超過8個）
+        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 2){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+      }
+    }else{
+      if(isMobile){
+        // 手機版季別模式：只顯示每年Q1（顯示年份），減少刻度密度
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 如果還是太多，每兩年顯示一次
+        if(tickValues.length > 6){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }else if(isTablet){
+        // 平板版：只顯示每年Q1，如果太多則每兩年顯示一次
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        if(tickValues.length > 8){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }else{
+        // 桌面版：只顯示每年Q1（減少密度，避免擠在一起）
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 如果超過10個，每兩年顯示一次
+        if(tickValues.length > 10){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }
+    }
+    
+    const xAxis=d3.axisBottom(x).tickValues(tickValues.length>0?tickValues:null).tickFormat(d=>{
+      const year=d.substring(0,4), q=d.substring(5);
+      if(mode==='year'){ return year; }
+      if(isMobile){
+        // 手機版只顯示年份，避免文字過長
+        return year;
+      }
+      return q==='Q1'?year:q; // Q1 顯示年份、Q3 顯示季度
+    }).tickSize(8).tickPadding(isMobile ? 22 : 14); // 增加 tickPadding 以容納更大的字體
+    
+    // Y軸：減少刻度數量，避免擠在一起，增加 tickPadding 以容納更大的字體
+    // 根據裝置類型控制 Y 軸刻度數量（isTablet 已在上面聲明）
+    let yTickCount;
+    if(isMobile){
+      yTickCount = 5; // 手機版：5個刻度
+    } else if(isTablet){
+      yTickCount = 6; // 平板版：6個刻度
+    } else {
+      yTickCount = 7; // 桌面版：7個刻度
+    }
+    const yAxis=d3.axisLeft(y)
+      .ticks(yTickCount) // 限制刻度數量
+      .tickFormat(d=>formatWan(d)+"萬")
+      .tickSize(8)
+      .tickPadding(isMobile ? 20 : 14);
+    
+    // 根據裝置類型設置X軸文字樣式（響應式字體大小）
+    const xAxisText = xAxisGroup.transition().duration(450).call(xAxis).selectAll("text");
+    const baseXFontSize = isMobile ? 9 : (isTablet ? 13 : 15); // 字體大小
+    const responsiveXFontSize = getResponsiveFontSize(baseXFontSize, isMobile);
+    
+    if(isMobile){
+      // 手機版：旋轉文字並增加間距，字體更大
+      xAxisText
+        .style("text-anchor","end")
+        .attr("dx","-8px")
+        .attr("dy","14px") // 增加間距
+        .style("font-size",`${responsiveXFontSize}px`)
+        .style("font-weight","600") // 增加字體粗細
+        .style("transform","rotate(-45deg)")
+        .style("transform-origin","center top");
+    }else{
+      // 桌面版：正常顯示，字體更大
+      xAxisText
+        .style("text-anchor","middle")
+        .attr("dx","0")
+        .attr("dy","0.6em") // 增加間距
+        .style("font-size",`${responsiveXFontSize}px`)
+        .style("font-weight","600") // 增加字體粗細
+        .style("transform","")
+        .style("transform-origin","");
+    }
+    
+    // Y 軸刻度（響應式字體大小）
+    const yAxisText = yAxisGroup.transition().duration(450).call(yAxis).selectAll("text");
+    const baseYFontSize = isMobile ? 8 : (isTablet ? 13 : 15); // 字體大小
+    const responsiveYFontSize = getResponsiveFontSize(baseYFontSize, isMobile);
+    yAxisText.style("font-size",`${responsiveYFontSize}px`).style("font-weight","600");
+
+    // 折線
+    const lineGen=d3.line().x(d=>x(d.Quarter)+x.bandwidth()/2).y(d=>y(getValue(d))).defined(d=>getValue(d)!==null);
+    focus.select(".focus-line").datum(filteredData).transition().duration(450).attr("d",lineGen);
+
+    // 圓點（新增 click：鎖定季度 → 更新右側側欄）
+    // 只顯示有房價資料的季度
+    const dotsData=filteredData.filter(d=>getValue(d)!==null);
+    const dots=focus.selectAll(".dot").data(dotsData, d=>d.Quarter);
+    dots.exit().remove();
+    // 根據裝置類型調整圓點大小
+    const isMobileDot = window.innerWidth <= 768;
+    const dotRadius = isMobileDot ? 3.5 : 5; // 手機版圓點稍小
+    
+    dots.enter().append("circle").attr("class", function(d) {
+      // 檢查該季度是否有事件，決定使用哪個樣式
+      return hasEventsForQuarter(d.Quarter) ? "dot dot-has-events" : "dot";
+    }).attr("r", dotRadius)
+      .on("mouseover",(event,d)=>{
+        const v=getValue(d); const valueText=(typeof v==='number')?`${formatWan(v)}萬/坪`:"無資料";
+        d3.select("#popupContent").html(`<strong>${quarterToText(d.Quarter)}</strong><br>中位數 ${valueText}`);
+        // 顯示popup在圓點右上角（緊貼圓點）
+        d3.select("#popup")
+          .style("display", "block")
+          .style("left", (event.clientX + 15) + "px")
+          .style("top", (event.clientY - 50) + "px");
+        const mouseX = d3.pointer(event, mainSvg.node())[0];
+        // 顯示十字軸，但不更新tooltip位置（因為圓點已經設置了位置）
+        updateCrosshair(mouseX, event.clientX, false);
+      })
+      .on("mouseout",(event)=>{
+        d3.select("#popup").style("display","none");
+        // 隱藏十字軸
+        updateCrosshair(null);
+      })
+      .on("click",(event,d)=>{
+        // 在手機上點擊時阻止預設行為，防止頁面滾動
+        if(window.innerWidth <= 768) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        
+        console.log('圓點點擊事件觸發', { quarter: d.Quarter, isLocked });
+        
+        // 檢查是否為雙擊
+        const now = Date.now();
+        const lastClick = d3.select(this).datum()?.lastClickTime || 0;
+        const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
+        
+        console.log('雙擊檢查', { now, lastClick, isDoubleClick });
+        
+        // 取得當前的篩選資料
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        
+        if(isDoubleClick) {
+          // 雙擊：解鎖
+          isLocked = false;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = 0;
+          } else {
+            d3.select(this).datum({ lastClickTime: 0 });
+          }
+          // 恢復到預設狀態（最後一季）
+          selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 移除圓點高亮效果
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 解鎖後隱藏十字標
+          updateCrosshair(null);
+          lastRenderedQuarter = null; // 重置，允許下次渲染
+          lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
+        } else {
+          // 單擊：鎖定當前季度
+          selectedQuarterKey = d.Quarter;
+          isLocked = true;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = now;
+          } else {
+            d3.select(this).datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          lastRenderedQuarter = selectedQuarterKey; // 記錄當前季度
+          renderEventTimeline(selectedQuarterKey, filteredData);
+          renderEventDetail(selectedQuarterKey, filteredData);
+          // 移除其他點的高亮效果
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 高亮當前圓點
+          d3.select(this).classed('dot-highlight', true);
+          
+          // 高亮時保持事件外框效果
+          const currentDot = d3.select(this);
+          if (hasEventsForQuarter(d.Quarter)) {
+            currentDot.classed('dot-has-events', true);
+          }
+          // 鎖定後顯示十字標在該點位置
+          const mouseX = d3.pointer(event, mainSvg.node())[0];
+          updateCrosshair(mouseX, event.clientX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
+        }
+      })
+      .merge(dots)
+      .attr("class", function(d) {
+        // 檢查該季度是否有事件，決定使用哪個樣式
+        const isHighlighted = d3.select(this).classed('dot-highlight');
+        const hasEvents = hasEventsForQuarter(d.Quarter);
+        
+        if (isHighlighted && hasEvents) {
+          return "dot dot-has-events dot-highlight";
+        } else if (isHighlighted) {
+          return "dot dot-highlight";
+        } else if (hasEvents) {
+          return "dot dot-has-events";
+        } else {
+          return "dot";
+        }
+      })
+      .attr("r", dotRadius) // 確保所有圓點都使用正確的半徑
+      .transition().duration(450)
+      .attr("cx",d=>x(d.Quarter)+x.bandwidth()/2)
+      .attr("cy",d=>y(getValue(d)));
+
+    // 不再在主圖疊事件圖示
+    focus.selectAll(".event-icon-text").remove();
+
+    // 右側欄：若尚未手動點擊，預設以範圍最後一季為主
+    if(!filteredData.find(d=>d.Quarter===selectedQuarterKey)){
+      selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+    }
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+    
+    // 初始化渲染事件時間軸和事件說明
+    // 在模式切換或篩選條件改變時，總是重新渲染事件時間軸
+    renderEventTimeline(selectedQuarterKey, filteredData);
+    renderEventDetail(selectedQuarterKey, filteredData);
+  }
+
+  function resetAndRedraw(){
+    selectedEventTypes=getSelectedEventTypes();
+    selectedDataType=deriveDataType();
+
+
+    const avail=getAvailableDataRange();
+    if(avail.length>0){ startIndex=0; endIndex=avail[avail.length-1].index; } else { startIndex=0; endIndex=allQuarters.length-1; }
+    startSelect.property("value",startIndex);
+    endSelect.property("value",endIndex);
+
+    updateChartTitle();
+    updateChart();
+  }
+
+  function updateChartTitle(){
+    const isCity = d3.select('#filterToggle').property('checked');
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='全國';
+    }
+    // 固定使用全部屋齡，無需檢查屋齡類型
+    d3.select("#chart-title").text('實價登錄成屋每坪單價');
+    d3.select("#side-title").text(`${placeText} 本期概覽`);
+  }
+
+
+
+  function getEventsForQuarter(qKey, usePlace){
+    // 確保 selectedPlace 是最新的值
+    const currentPlace = d3.select('#placeSelect').property('value');
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    const actualPlace = isCityMode ? currentPlace : 'Nation';
+    
+    const q = fullData.find(d=>d.Quarter===qKey);
+    if(!q||!q.events) return [];
+    const arr = q.events.map(ev=>{
+      const cat=getEventCategory(ev);
+      
+      // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+      const hasNational = ev.hasOwnProperty('Label');
+      const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+      const hasPlace = ev.hasOwnProperty(`${actualPlace}Label`);
+      
+      // 根據模式決定顯示哪種事件標籤
+      let label = '';
+      if(usePlace && actualPlace !== 'Nation') {
+        // 縣市模式：優先使用縣市標籤，如果沒有則使用全國標籤
+        if(hasPlace) {
+          label = ev[`${actualPlace}Label`] || '';
+        } else if(hasNational) {
+          label = ev.Label || '';
+        } else if(hasNationalLabel) {
+          label = ev.NationalLabel || '';
+        }
+      } else {
+        // 全國模式：只顯示全國事件
+        // 優先使用 Label，如果沒有則使用 NationalLabel
+        if(hasNational) {
+          label = ev.Label || '';
+        } else if(hasNationalLabel) {
+          label = ev.NationalLabel || '';
+        }
+      }
+      
+      return {...ev,__cat:cat,__label:label,full:ev};
+    }).filter(e=>e.__label);
+    // 依目前事件類型選擇過濾
+    return arr.filter(e=> selectedEventTypes.includes(e.__cat) || (usePlace && !e.Category));
+  }
+
+  // ======== 右側欄：由季度更新 ========
+  function updateSidePanelFromQuarter(qKey, filteredData){
+    // 保存當前篩選條件，避免在計算過程中變更
+    const savedPlace = d3.select('#placeSelect').property('value');
+    const savedFilterToggle = d3.select('#filterToggle').property('checked');
+    const savedPlaceForCalc = savedFilterToggle ? savedPlace : 'Nation';
+    const savedDataType = selectedDataType;
+    
+    // 暫時更新 selectedPlace 和 selectedDataType 用於計算
+    const originalPlace = selectedPlace;
+    const originalDataType = selectedDataType;
+    
+    selectedPlace = savedPlaceForCalc;
+    
+    // 更新標題：鎖定時顯示年度及季度
+    const isCity = savedFilterToggle;
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='全國';
+    }
+    
+    if(isLocked) {
+      d3.select("#side-title").text(`${placeText} ${quarterToText(qKey)} 概覽`);
+    } else {
+      d3.select("#side-title").text(`${placeText} 本期概覽`);
+    }
+    
+    // KPI：本期、YoY、QoQ、期間高低
+    const now = fullData.find(d=>d.Quarter===qKey);
+    if(!now){ return; }
+    const nowV = getValue(now);
+    d3.select('#kpi-now').text( (nowV!=null)? formatWan(nowV) : '—' );
+    d3.select('#kpi-quarter').text( quarterToText(qKey) );
+    
+    // 如果該季度沒有房價資料，顯示特殊提示
+    if(nowV == null) {
+      d3.select('#kpi-yoy').text('—').attr('class','val');
+      d3.select('#kpi-yoy-note').text('該季度無房價資料');
+      d3.select('#kpi-qoq').text('—').attr('class','val');
+      d3.select('#kpi-qoq-note').text('該季度無房價資料');
+      d3.select('#kpi-hi-lo').text('—');
+      d3.select('#kpi-hi-lo-note').text('該季度無房價資料');
+      return;
+    }
+
+    // YoY（同季 -4）
+    const idx = fullData.findIndex(d=>d.Quarter===qKey);
+    const yoyIdx = idx-4;
+    let yoyText='—', yoyNote='—';
+    if(yoyIdx>=0){
+      const prevYear = fullData[yoyIdx];
+      const pv = getValue(prevYear);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        yoyText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
+        yoyNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevYear.Quarter)}`;
+        d3.select('#kpi-yoy').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-yoy').text(yoyText);
+    d3.select('#kpi-yoy-note').text(yoyNote);
+
+    // QoQ（上一季 -1）
+    let qoqText='—', qoqNote='—';
+    if(idx-1>=0){
+      const prevQ = fullData[idx-1];
+      const pv = getValue(prevQ);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        qoqText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
+        qoqNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevQ.Quarter)}`;
+        d3.select('#kpi-qoq').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-qoq').text(qoqText);
+    d3.select('#kpi-qoq-note').text(qoqNote);
+
+    // 期間最高/最低（以目前圖上範圍）
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    const dataScope = (mode==='quarter') ? fullData.slice(startIndex,endIndex+1) : applyYearRangeFilter(fullData);
+    const vals = dataScope.map(getValue).filter(v=>v!=null);
+    if(vals.length){
+      const hi = d3.max(vals), lo = d3.min(vals);
+      const hiQ = dataScope.find(d=>getValue(d)===hi)?.Quarter;
+      const loQ = dataScope.find(d=>getValue(d)===lo)?.Quarter;
+      d3.select('#kpi-hi-lo').text(`${formatWan(hi)} / ${formatWan(lo)}`);
+      d3.select('#kpi-hi-lo-note').text(`${hiQ?quarterToText(hiQ):'—'} / ${loQ?quarterToText(loQ):'—'}`);
+    }else{
+      d3.select('#kpi-hi-lo').text('—'); d3.select('#kpi-hi-lo-note').text('—');
+    }
+
+    // 恢復原始值
+    selectedPlace = originalPlace;
+    selectedDataType = originalDataType;
+
+  }
+  function catLabel(cat){
+    if(cat==='tax') return '例行性稅基調整';
+    if(cat==='infra') return '重大建設';
+    if(cat==='dev') return '土地規劃與開發';
+    if(cat==='national') return '政策法規';
+    if(cat==='macro') return '宏觀經濟與社會事件';
+    // 保留舊的分類以向後兼容
+    if(cat==='monetary') return '貨幣政策';
+    if(cat==='fiscal') return '財政政策';
+    if(cat==='other') return '其他';
+    return '政策法規';
+  }
+  
+  // 渲染事件時間軸（顯示2013年及以後的所有事件）
+  function renderEventTimeline(currentQuarter, filteredData) {
+    // 獲取當前的選中事件類型
+    const currentSelectedEventTypes = getSelectedEventTypes();
+    
+    // 獲取當前季度在 fullData 中的索引
+    const currentIdx = fullData.findIndex(d => d.Quarter === currentQuarter);
+    if(currentIdx === -1) {
+      return;
+    }
+    
+    // 顯示所有有事件的季度，不限於filteredData
+    const eventsInRange = [];
+    const yearsFound = new Set(); // 追蹤找到的年份
+    
+    fullData.forEach(d => {
+      // 檢查 Quarter 格式並提取年份（支援 2023_Q1 格式）
+      let dYear;
+      if (d.Quarter && typeof d.Quarter === 'string') {
+        const yearMatch = d.Quarter.match(/^(\d{4})/);
+        dYear = yearMatch ? parseInt(yearMatch[1]) : null;
+      } else {
+        console.warn('⚠️ 無效的 Quarter 格式:', d.Quarter);
+        return;
+      }
+      
+      if (dYear) {
+        yearsFound.add(dYear);
+      }
+      
+      const evs = pickEventsForTimeline(d.Quarter);
+      evs.forEach(ev => {
+        // 從季度字符串提取季度數字（支援 2023_Q1 格式）
+        let quarterNum = null;
+        const qMatch = d.Quarter.match(/Q(\d)/);
+        if (qMatch) {
+          quarterNum = parseInt(qMatch[1]);
+        }
+        
+        eventsInRange.push({
+          ...ev,
+          quarter: d.Quarter,
+          year: dYear,
+          quarterNum: quarterNum
+        });
+      });
+    });
+    
+    // 統計宏觀經濟事件
+    const macroEvents = eventsInRange.filter(ev => ev.__cat === 'macro');
+    
+    // 調試信息 - 添加年份資訊
+    console.log('📊 事件時間軸狀態:', {
+      當前季度: currentQuarter,
+      選中事件類型: currentSelectedEventTypes,
+      找到的事件數: eventsInRange.length,
+      宏觀經濟事件數: macroEvents.length,
+      宏觀經濟事件列表: macroEvents.map(ev => ({
+        季度: ev.quarter,
+        標籤: ev.__label,
+        分類: ev.__cat
+      })),
+      總資料季度數: fullData.length,
+      找到的年份: Array.from(yearsFound).sort((a, b) => a - b),
+      年份數量: yearsFound.size,
+      模式: d3.select('#filterToggle').property('checked') ? `縣市模式 (${d3.select('#placeSelect').property('value')})` : '全國模式'
+    });
+    
+    // 如果應該有宏觀經濟事件但沒有顯示，輸出警告
+    if(macroEvents.length === 0 && currentSelectedEventTypes.includes('macro')) {
+      console.warn('⚠️ 已選中宏觀經濟事件按鈕，但未找到任何宏觀經濟事件', {
+        選中類型: currentSelectedEventTypes,
+        建議: '請確認 JSON 資料中是否有 Category 為「宏觀經濟與社會事件」的事件'
+      });
+    }
+    
+    // 如果沒有找到事件，提供更詳細的調試信息
+    if(eventsInRange.length === 0) {
+      console.warn('⚠️ 事件時間軸：沒有找到任何事件', {
+        選中事件類型: currentSelectedEventTypes,
+        模式: d3.select('#filterToggle').property('checked') ? `縣市模式 (${d3.select('#placeSelect').property('value')})` : '全國模式',
+        建議: '請確認已選中對應的事件類型按鈕'
+      });
+    }
+    
+    // 更新標題
+    d3.select('#event-timeline-title')
+      .text(`事件時間軸`);
+    
+    // 按年份分组
+    const eventsByYear = {};
+    eventsInRange.forEach(ev => {
+      if(!eventsByYear[ev.year]) {
+        eventsByYear[ev.year] = [];
+      }
+      eventsByYear[ev.year].push(ev);
+    });
+    
+    // 渲染事件
+    const eventsEl = d3.select('#event-timeline-events');
+    eventsEl.html('');
+    // 確保使用橫向排列
+    eventsEl.style('display', 'flex').style('overflow-x', 'auto').style('flex-wrap', 'nowrap');
+    
+    // 检查是否选择了任何事件类型
+    if(currentSelectedEventTypes.length === 0) {
+      eventsEl.append('div')
+        .attr('class', 'small')
+        .style('text-align', 'center')
+        .style('padding', '20px')
+        .style('color', '#999')
+        .text('未選取事件類型');
+      return;
+    }
+    
+    if(eventsInRange.length === 0) {
+      eventsEl.append('div')
+        .attr('class', 'small')
+        .text('此期間無事件');
+      return;
+    }
+    
+    // 按年份排序并渲染 - 水平布局
+    const years = Object.keys(eventsByYear).map(y => parseInt(y)).sort((a, b) => a - b);
+    
+    years.forEach(year => {
+      const yearEvents = eventsByYear[year];
+      
+      // 创建年份组
+      const yearGroup = eventsEl.append('div')
+        .attr('class', 'event-timeline-year-group');
+      
+      // 年份标题
+      yearGroup.append('div')
+        .attr('class', 'event-timeline-year-header')
+        .text(year);
+      
+      // 该年份下的事件容器
+      const itemsContainer = yearGroup.append('div')
+        .attr('class', 'event-timeline-items');
+      
+      // 渲染该年份的每个事件
+      yearEvents.forEach((ev) => {
+        const isCurrent = ev.quarter === currentQuarter;
+        const item = itemsContainer.append('div')
+          .attr('class', `event-timeline-item event-type-${ev.__cat} ${isCurrent ? 'event-timeline-current' : ''}`)
+          .style('cursor', 'pointer')
+          .on('click', function() {
+            // 更新選中的季度並重新渲染事件說明（與十字標移動時的邏輯一致）
+            selectedQuarterKey = ev.quarter;
+            lastRenderedQuarter = ev.quarter;
+            
+            const mode = d3.select('input[name="timeMode"]:checked').property("value");
+            let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+            
+            // 更新全國概覽數據（這是關鍵！）
+            updateSidePanelFromQuarter(ev.quarter, filteredData);
+            
+            // 更新事件說明（顯示該季度的所有事件）
+            renderEventDetail(ev.quarter, filteredData);
+            
+            // 移除所有高亮效果（包括十字軸高亮和點擊高亮）
+            d3.selectAll('.event-timeline-item').classed('event-timeline-current', false).classed('event-timeline-clicked', false);
+            // 移除所有數據點的光暈效果
+            d3.selectAll('.dot').classed('dot-highlight', false);
+            
+            // 高亮點擊的事件
+            d3.select(this).classed('event-timeline-clicked', true);
+            
+            // 高亮趨勢圖上對應的數據點（如果該季度有房價資料）
+            const targetDot = d3.selectAll('.dot').filter(function(d) {
+              return d.Quarter === ev.quarter;
+            });
+            if(targetDot.size() > 0) {
+              targetDot.classed('dot-highlight', true);
+              
+              // 高亮時保持事件外框效果
+              targetDot.each(function(d) {
+                const dot = d3.select(this);
+                if (hasEventsForQuarter(d.Quarter)) {
+                  dot.classed('dot-has-events', true);
+                }
+              });
+            }
+            
+            // 如果該季度沒有房價資料，隱藏十字軸
+            const hasPriceData = getValue(fullData.find(d => d.Quarter === ev.quarter)) !== null;
+            if(!hasPriceData) {
+              updateCrosshair(null);
+            }
+          });
+        
+        // 季度
+        const quarterPart = ev.quarter.substring(5);
+        item.append('div')
+          .attr('class', 'event-timeline-quarter')
+          .text(quarterPart);
+        
+        // 事件標題（不再顯示類型標籤）
+        item.append('div')
+          .attr('class', 'event-timeline-content')
+          .text(ev.__label || '事件');
+      });
+    });
+    
+    // 定位到當前季度的視圖（横向往左对齐）
+    const currentItem = eventsEl.select('.event-timeline-current').node();
+    if(currentItem) {
+      currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+  
+  // 渲染事件說明（當前季度詳細信息）
+  function renderEventDetail(currentQuarter, filteredData) {
+    const currentSelectedEventTypes = getSelectedEventTypes();
+    const detailEl = d3.select('#event-detail-content');
+    detailEl.html('');
+    
+    // 更新標題
+    d3.select('#event-detail-title')
+      .text(`事件說明 (${currentQuarter.replace('_', ' ')})`);
+    
+    // 檢查是否選擇了事件類型
+    if(currentSelectedEventTypes.length === 0) {
+      detailEl.append('div')
+        .attr('class', 'small')
+        .style('text-align', 'center')
+        .style('padding', '20px')
+        .style('color', '#999')
+        .text('未選取事件類型');
+      return;
+    }
+    
+    // 獲取當前季度的事件
+    const events = pickEventsForTimeline(currentQuarter);
+    
+    if(events.length === 0) {
+      detailEl.append('div')
+        .attr('class', 'small')
+        .text('此季度無事件');
+      return;
+    }
+    
+    // 渲染每個事件（不再顯示季度標題）
+    events.forEach(ev => {
+      const item = detailEl.append('div')
+        .attr('class', 'event-detail-item');
+      
+      // 只顯示標籤（不顯示事件標題）
+      const header = item.append('div')
+        .style('margin-bottom', '8px');
+      header.append('span')
+        .attr('class', `event-detail-tag ${ev.__cat}`)
+        .text(catLabel(ev.__cat));
+      
+      // 顯示詳細說明
+      if(ev.full && ev.full.Detail) {
+        item.append('div')
+          .style('font-size', '12px')
+          .style('color', '#555')
+          .style('line-height', '1.6')
+          .html(ev.full.Detail);
+      }
+    });
+  }
+  
+  // ======== 事件監聽 ========
+  placeSelect.on('change',()=>{ 
+    if(filterToggle.property('checked')) {
+      selectedPlace=placeSelect.property('value'); 
+      updateChartTitle(); 
+      resetAndRedraw(); 
+    }
+  });
+  // 屋齡篩選已移除，固定使用全部屋齡
+  // selectedDataType 已設為 'all'，無需更新
+
+  filterToggle.on('change',()=>{ updateToggleState(); resetAndRedraw(); });
+  function updateToggleState(){
+    const isCity=!!filterToggle.property('checked');
+    const chips=d3.select('#eventChips');
+    const placeSel=d3.select('#placeSelect');
+    
+    // 顯示/隱藏縣市選擇器
+    placeSel.style('display', isCity?null:'none');
+    
+    if(isCity){
+      // 縣市模式：使用選擇的縣市
+      selectedPlace = placeSelect.property('value');
+    }else{
+      // 全國模式
+      selectedPlace='Nation';
+    }
+    
+    updateChartTitle();
+    chips.html('');
+    if(!isCity){
+      // 全國模式：顯示政策法規和宏觀經濟與社會事件按鈕
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('💡 政策法規');
+      chips.append('button').attr('type','button').attr('class','event-chip macro active').attr('data-value','macro').text('💡 宏觀經濟與社會事件');
+    }else{
+      // 縣市模式：顯示四個地方事件類型按鈕
+      chips.append('button').attr('type','button').attr('class','event-chip tax active').attr('data-value','tax').text('💡 例行性稅基調整');
+      chips.append('button').attr('type','button').attr('class','event-chip infra active').attr('data-value','infra').text('💡 重大建設');
+      chips.append('button').attr('type','button').attr('class','event-chip dev active').attr('data-value','dev').text('💡 土地規劃與開發');
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('💡 政策法規');
+    }
+    eventTypeButtons=d3.selectAll('.event-chip');
+    eventTypeButtons.on('click',function(){ const btn=d3.select(this); btn.classed('active', !btn.classed('active')); selectedEventTypes=getSelectedEventTypes(); updateChart(); });
+    
+    // 切換後立即更新右側欄
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+    
+    // 重新渲染事件時間軸和事件說明
+    renderEventTimeline(selectedQuarterKey, filteredData);
+    renderEventDetail(selectedQuarterKey, filteredData);
+  }
+
+  yearRangeButtons.on('change',()=>{ resetAndRedraw(); });
+  timeModeButtons.on('change',()=>{ updateTimeModeControls(); resetAndRedraw(); });
+
+  startSelect.on('change',function(){ startIndex=+this.value; if(startIndex>endIndex){ endIndex=startIndex; endSelect.property('value',endIndex);} updateChart(); });
+  endSelect.on('change',function(){ endIndex=+this.value; if(endIndex<startIndex){ startIndex=endIndex; startSelect.property('value',startIndex);} updateChart(); });
+
+  d3.select("#closeDetailPopup").on("click",()=> d3.select("#detailPopup").style("display","none"));
+
+  d3.select("#export-chart-btn").on("click",function(){
+    const watermark=mainSvg.select(".watermark"); watermark.style("opacity","0.6");
+    
+    // 創建一個臨時容器來包含所有四個版面（事件時間軸、事件說明、趨勢圖、本期概覽）
+    const topGrid = document.getElementById('top-grid');
+    const bottomGrid = document.getElementById('bottom-grid');
+    const overviewSection = document.getElementById('overview-section');
+    
+    if(!topGrid || !bottomGrid) {
+      alert('無法找到所有版面，請重試');
+      watermark.style("opacity","0");
+      return;
+    }
+    
+    // 創建臨時容器
+    const exportContainer = document.createElement('div');
+    exportContainer.style.position = 'absolute';
+    exportContainer.style.left = '-9999px';
+    exportContainer.style.top = '0';
+    exportContainer.style.width = topGrid.offsetWidth + 'px';
+    exportContainer.style.backgroundColor = '#ffffff';
+    exportContainer.style.padding = '20px';
+    document.body.appendChild(exportContainer);
+    
+    // 複製所有版面到臨時容器
+    const topGridClone = topGrid.cloneNode(true);
+    const bottomGridClone = bottomGrid.cloneNode(true);
+    exportContainer.appendChild(topGridClone);
+    exportContainer.appendChild(bottomGridClone);
+    
+    // 如果「本期概覽」存在，也加入導出
+    if(overviewSection) {
+      const overviewClone = overviewSection.cloneNode(true);
+      exportContainer.appendChild(overviewClone);
+    }
+    
+    // 使用 html2canvas 截取包含所有四個版面的區域
+    if(typeof html2canvas !== 'undefined') {
+      html2canvas(exportContainer, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        width: exportContainer.scrollWidth,
+        height: exportContainer.scrollHeight
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'price-trend-dashboard.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        // 清理臨時容器
+        document.body.removeChild(exportContainer);
+        watermark.style("opacity","0");
+      }).catch(e => {
+        console.error('匯出失敗:',e); 
+        alert('匯出失敗，請重試'); 
+        // 清理臨時容器
+        if(exportContainer.parentNode) {
+          document.body.removeChild(exportContainer);
+        }
+        watermark.style("opacity","0");
+      });
+    } else {
+      // 如果 html2canvas 不可用，則回退到只匯出 SVG
+      saveSvgAsPng(mainSvg.node(),"price-trend-chart.png",{backgroundColor:'#FFFFFF',scale:2})
+        .then(()=>{ watermark.style("opacity","0"); })
+        .catch(e=>{ console.error('匯出失敗:',e); alert('匯出失敗，請重試'); watermark.style("opacity","0"); });
+      // 清理臨時容器
+      if(exportContainer.parentNode) {
+        document.body.removeChild(exportContainer);
+      }
+    }
+  });
+
+  // 初次渲染
+  updateToggleState();
+  updateTimeModeControls();
+  resetAndRedraw();
+
+  // 響應式調整：視窗大小改變時重新計算
+  let resizeTimeout;
+  resizeHandler = function(){
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function(){
+      responsiveDims = getResponsiveDimensions();
+      const newMargin = responsiveDims.margin;
+      const newWidth = responsiveDims.baseWidth - newMargin.left - newMargin.right;
+      const newHeight = responsiveDims.baseHeight - newMargin.top - newMargin.bottom;
+      
+      // 更新全域變數
+      margin = newMargin;
+      width = newWidth;
+      height = newHeight;
+      
+      // 更新 SVG 尺寸
+      if(mainSvg && mainSvg.node()){
+        mainSvg
+          .attr("viewBox", `0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
+          .style("width", "100%")
+          .style("height", "auto");
+        
+        // 更新座標軸範圍和間距
+        const isMobileResize = window.innerWidth <= 768;
+        x.paddingInner(isMobileResize ? 0.7 : 0.5);
+        x.range([0, width]);
+        y.range([height, 0]);
+        
+        // 更新 clipPath
+        mainSvg.select("#clip rect").attr("width", width).attr("height", height);
+        
+        // 更新標題位置和字體大小
+        const isMobileResizeTitle = window.innerWidth <= 768;
+        const isTabletResizeTitle = window.innerWidth > 768 && window.innerWidth <= 992;
+        const titleFontSizeResize = isMobileResizeTitle ? 16 : (isTabletResizeTitle ? 20 : 22);
+        const titleYResize = isMobileResizeTitle ? 28 : (isTabletResizeTitle ? 35 : 38);
+        mainSvg.select("#chart-title")
+          .attr("x", (width+margin.left+margin.right)/2)
+          .attr("y", titleYResize)
+          .style("font-size", `${titleFontSizeResize}px`);
+        
+        // 更新座標軸標籤位置和字體大小（根據裝置類型調整）
+        const isMobileResizeLabel = window.innerWidth <= 768;
+        const isTabletResizeLabel = window.innerWidth > 768 && window.innerWidth <= 992;
+        const yLabelXResize = isMobileResizeLabel ? 5 : 35; // 調整位置以容納字體
+        const xLabelYResize = isMobileResizeLabel ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30;
+        const axisLabelFontSizeResize = isMobileResizeLabel ? 11 : (isTabletResizeLabel ? 14 : 16);
+        
+        mainSvg.select(".axis-label").each(function(){
+          const el = d3.select(this);
+          if(el.attr("transform") && el.attr("transform").includes("rotate")){
+            // Y軸標籤
+            el.attr("x", yLabelXResize)
+              .attr("y", margin.top + height/2)
+              .attr("transform", `rotate(-90, ${yLabelXResize}, ${margin.top + height/2})`)
+              .style("font-size", `${axisLabelFontSizeResize}px`);
+          } else {
+            // X軸標籤
+            el.attr("x", margin.left + width/2)
+              .attr("y", xLabelYResize)
+              .style("font-size", `${axisLabelFontSizeResize}px`);
+          }
+        });
+        
+        // 更新 focus group 位置
+        focus.attr("transform", `translate(${margin.left},${margin.top})`);
+        
+        // 更新十字軸
+        mainCrosshair.attr("y2", height);
+        
+        // 更新 watermark 位置
+        const watermarkGroup = mainSvg.select(".watermark");
+        if(watermarkGroup.node()){
+          watermarkGroup.attr("transform", `translate(${margin.left+20}, ${margin.top+30})`);
+        }
+        
+        // 更新刻度字體大小（在 updateChart 中會重新計算，這裡確保響應式字體大小正確）
+        // 重新繪製（updateChart 會處理所有刻度字體大小的更新）
+        updateChart();
+      }
+    }, 250); // 250ms debounce
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  // splash 收合
+  if(window.__splashFailSafe){ clearTimeout(window.__splashFailSafe); window.__splashFailSafe=null; }
+  const splashScreen=document.getElementById('splash-screen'); const dashboard=document.querySelector('.dashboard-container');
+  if(splashScreen && !splashScreen.dataset.initialized){
+    splashScreen.dataset.initialized='true';
+    dashboard.style.display='block';
+    setTimeout(()=>{ splashScreen.style.opacity='0'; setTimeout(()=>{ if(splashScreen && splashScreen.style.opacity==='0'){ splashScreen.style.display='none'; }},3000); },100);
+  }
+
+  // 防截圖等（僅限制在 dashboard 區域內）
+  let screenshotTimeout; const watermark=mainSvg.select(".watermark");
+  document.addEventListener('contextmenu',function(e){ 
+    // 只在 dashboard 區域內阻止右鍵
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      watermark.style("opacity","0.8"); 
+      clearTimeout(screenshotTimeout); 
+      screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },2000); 
+      return false; 
+    }
+  });
+  document.addEventListener('keydown',function(e){
+    // 只在 dashboard 區域內阻止快捷鍵
+    if(e.target.closest('.dashboard-container') || document.activeElement.closest('.dashboard-container')){
+      if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'))||(e.ctrlKey&&(e.key==='u'||e.key==='s'))||e.key==='PrintScreen'){
+        e.preventDefault(); 
+        if(e.key==='s'){ alert('此網頁不允許儲存！'); } 
+        watermark.style("opacity","0.8"); 
+        clearTimeout(screenshotTimeout); 
+        screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },3000); 
+        return false;
+      }
+    }
+  });
+  document.addEventListener('dragstart',function(e){ 
+    // 只在 dashboard 區域內阻止拖拽
+    if(e.target.closest('.dashboard-container') && (e.target.tagName==='IMG'||e.target.tagName==='svg')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('copy',function(e){ 
+    // 只在 dashboard 區域內阻止複製
+    if(e.target.closest('.dashboard-container') || window.getSelection().toString().length > 0 && window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('.dashboard-container')){
+      e.preventDefault(); 
+      alert('此網頁不允許複製內容！'); 
+      return false; 
+    }
+  });
+  document.addEventListener('cut',function(e){ 
+    // 只在 dashboard 區域內阻止剪下
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('paste',function(e){ 
+    // 只在 dashboard 區域內阻止貼上
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('selectstart',function(e){ 
+    // 只在 dashboard 區域內阻止選擇
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  setInterval(function(){
+    if(window.outerHeight-window.innerHeight>200 || window.outerWidth-window.innerWidth>200){
+      watermark.style("opacity","0.8"); setTimeout(()=>{ watermark.style("opacity","0"); },2000);
+    }
+  },1000);
+}
+</script>
+</body>
+</html>

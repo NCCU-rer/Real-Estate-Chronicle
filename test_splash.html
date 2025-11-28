@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試 Splash Screen 修復</title>
+    <script src="dashboard_data.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 3s ease-in-out;
+            flex-direction: column;
+        }
+        
+        .dashboard-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-button {
+            background-color: #4e79a7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .test-button:hover {
+            background-color: #40668c;
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div>
+            <h1 style="font-size: 3em; color: #2c3e50; margin-bottom: 30px;">地政大事記</h1>
+            <p style="font-size: 1.2em; color: #2A3689;">測試頁面載入中...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-container" style="display:none;">
+        <h1>測試頁面載入成功！</h1>
+        <p>如果您看到這個頁面，表示 splash screen 修復成功。</p>
+        <p>這個頁面模擬了原始頁面的載入邏輯，但沒有 API 呼叫。</p>
+        
+        <div>
+            <button class="test-button" onclick="testSplash()">重新測試 Splash Screen</button>
+            <button class="test-button" onclick="testAPI()">測試 API 載入</button>
+        </div>
+        
+        <div id="status" style="margin-top: 20px; padding: 10px; background-color: #e8f5e8; border-radius: 5px;">
+            狀態：頁面載入完成
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('頁面載入完成，開始測試 splash screen 邏輯');
+            
+            // 模擬 API 載入（成功情況）
+            setTimeout(() => {
+                console.log('模擬 API 載入成功');
+                initializePage();
+            }, 2000); // 2秒後載入完成
+            
+            // 安全機制：5秒後強制顯示
+            window.__splashFailSafe = setTimeout(() => {
+                console.log('安全超時觸發');
+                forceShowDashboard();
+            }, 5000);
+        });
+
+        function initializePage() {
+            console.log('初始化頁面');
+            const splashScreen = document.getElementById('splash-screen');
+            const dashboard = document.querySelector('.dashboard-container');
+            
+            if (splashScreen && !splashScreen.dataset.initialized) {
+                splashScreen.dataset.initialized = 'true';
+                dashboard.style.display = 'block';
+                console.log('Dashboard 已顯示');
+                
+                setTimeout(() => {
+                    console.log('開始隱藏 splash screen');
+                    splashScreen.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        if (splashScreen && splashScreen.style.opacity === '0') {
+                            splashScreen.style.display = 'none';
+                            console.log('Splash screen 已完全隱藏');
+                        }
+                    }, 3000);
+                }, 100);
+            }
+            
+            // 清除安全超時
+            if (window.__splashFailSafe) {
+                clearTimeout(window.__splashFailSafe);
+                window.__splashFailSafe = null;
+            }
+        }
+
+        function forceShowDashboard() {
+            console.log('強制顯示 dashboard');
+            const splashScreen = document.getElementById('splash-screen');
+            const dashboard = document.querySelector('.dashboard-container');
+            
+            if (splashScreen && splashScreen.style.display !== 'none') {
+                dashboard.style.display = 'block';
+                splashScreen.style.opacity = '0';
+                setTimeout(() => {
+                    if (splashScreen && splashScreen.style.opacity === '0') {
+                        splashScreen.style.display = 'none';
+                    }
+                }, 3000);
+            }
+        }
+
+        function testSplash() {
+            // 重新顯示 splash screen
+            const splashScreen = document.getElementById('splash-screen');
+            const dashboard = document.querySelector('.dashboard-container');
+            
+            splashScreen.style.display = 'flex';
+            splashScreen.style.opacity = '1';
+            dashboard.style.display = 'none';
+            splashScreen.dataset.initialized = 'false';
+            
+            // 重新開始載入流程
+            setTimeout(() => {
+                initializePage();
+            }, 2000);
+        }
+
+        function testAPI() {
+            const status = document.getElementById('status');
+            status.innerHTML = '狀態：正在測試 API 載入...';
+            status.style.backgroundColor = '#fff3cd';
+            
+            // 模擬資料載入
+            loadDashboardData()
+            .then(() => {
+                status.innerHTML = '狀態：本地資料載入成功！';
+                status.style.backgroundColor = '#e8f5e8';
+            })
+            .catch(error => {
+                status.innerHTML = '狀態：本地資料載入失敗 - ' + error.message;
+                status.style.backgroundColor = '#f8d7da';
+            });
+        }
+    </script>
+</body>
+</html>
