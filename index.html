@@ -1,0 +1,3798 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+</html>
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<!-- Foundation 6 CSS嚗??典????dashboard-container ?改? -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css" integrity="sha256-4AFYaiQuHxtMTpXl3pRN5YjE3J1I3qVex8hXPKfwqmc=" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com" rel="preconnect" />
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;family=Noto+Sans+TC:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet" />
+<script src="https://d3js.org/d3.v7.min.js"></script><script src="https://cdn.jsdelivr.net/npm/save-svg-as-png@1.4.17/lib/saveSvgAsPng.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async="async" defer="defer"></script><script src="dashboard_data.js"></script>
+<!-- Foundation 6 JS嚗?????dashboard ?抒?蝯辣嚗?-->
+<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js" integrity="sha256-7XQvJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJY=" crossorigin="anonymous"></script>
+<style type="text/css">/* ======== 雿??見撘??亥矽?湛? ======== */
+/* 蝘駁?典? body 璅??嚗?蔣?踹飛?∠雯蝡?*/
+.dashboard-container, .dashboard-container *{font-family:"Inter","Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif}
+.dashboard-container h1{font-size:24px;color:#2c3e50;text-align:center;margin-bottom:20px}
+#splash-screen{position:fixed;inset:0;background:#f8f9fa;display:flex;justify-content:center;align-items:center;z-index:10000;opacity:1;transition:opacity 3s;flex-direction:column}
+#splash-screen .logo-and-text{display:inline-flex;align-items:center;margin-bottom:30px}
+.splash-logo{width:40px;margin-right:15px;opacity:0;transform:translateX(-20px);animation:fadeIn-slide 1.5s ease-out forwards}
+.splash-title{font-size:3em;color:#2c3e50;opacity:0;transform:translateY(20px);animation:fadeIn-float 1.5s ease-out forwards;margin:0;white-space:nowrap;margin-bottom:10px}
+.splash-subtitle{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:1.2em;color:#2A3689;opacity:0;transform:translateX(20px);line-height:1.4;animation:fadeIn-slide 1.5s ease-out forwards;font-weight:900;width:170px;text-align:justify;text-align-last:justify;margin:0}
+@keyframes fadeIn-float{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn-slide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.dashboard-container svg{border:1px solid #ddd;overflow:visible;width:100% !important;height:auto !important;max-width:100%;background:#fff;border-radius:8px;display:block}
+.line{fill:none;stroke:#4e79a7;stroke-width:3}
+.dot{fill:#4e79a7;stroke:#4e79a7;stroke-width:4;cursor:pointer;transition:all 0.3s;}
+.dot-highlight{fill:#FFD700 !important;stroke:#FFD700 !important;stroke-width:6 !important;filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));animation:glow 1.5s ease-in-out infinite;}
+.dot-has-events{fill:#4e79a7;stroke:#FFD700;stroke-width:2;cursor:pointer;transition:all 0.3s;}
+.dot-has-events:hover{stroke:#FFA500;stroke-width:3;}
+.dot-has-events.dot-highlight{fill:#FFD700 !important;stroke:#FFD700 !important;stroke-width:6 !important;filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));animation:glow 1.5s ease-in-out infinite;}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.8));}50%{filter:drop-shadow(0 0 20px rgba(255,215,0,1));}}
+.event-icon-text{font-size:20px;cursor:pointer;text-anchor:middle;display:inline-block}
+.event-icon-text.orange-bulb{filter:hue-rotate(350deg) saturate(5) brightness(1)}
+.event-icon-text.blue-bulb{filter:hue-rotate(180deg) saturate(2) brightness(1)}
+.event-icon-text.green-bulb{filter:hue-rotate(90deg) saturate(1) brightness(.95)}
+
+/* 鈭辣憿?憿?孵?璅?? */
+.color-block{display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;}
+.color-block.monetary{background-color:#A08090;}
+.color-block.fiscal{background-color:#D0B070;}
+.color-block.other{background-color:#407090;}
+.color-block.tax{background-color:#E09861;}
+.color-block.infra{background-color:#88B4CC;}
+.color-block.dev{background-color:#1C9A85;}
+.color-block.national{background-color:#f1c54e;}
+.color-block.macro{background-color:#88623E;}
+
+#popup{display:none;position:fixed;background:#fff;border:1px solid #ccc;padding:10px;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;pointer-events:none}
+#detailPopup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:left;font-size:14px;border-radius:8px;width:320px;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+#detailPopup button{float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s}
+#detailPopup button:hover{background:#c0392b}
+#detailContent h3{font-size:18px;margin-top:0}
+#detailContent p{font-size:14px;line-height:1.6}
+.dashboard-container .x-axis .tick text,.dashboard-container .y-axis .tick text{font-size:14px}
+.dashboard-container .watermark{pointer-events:none;user-select:none;opacity:.8;font-weight:300;letter-spacing:.5px}
+
+.dashboard-container{max-width:1200px;margin:20px auto;padding:20px;border-radius:8px;background:#fff}
+/* ? Foundation Grid ???冽 dashboard-container嚗?蔣?踹飛?∠雯蝡?*/
+.dashboard-container .grid-container{padding:20px !important}
+.dashboard-container .grid-x{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  margin-left:-0.9375rem !important;
+  margin-right:-0.9375rem !important;
+  box-sizing:border-box !important;
+}
+.dashboard-container .grid-margin-x > .cell{
+  padding-left:0.9375rem !important;
+  padding-right:0.9375rem !important;
+  box-sizing:border-box !important;
+}
+/* 獢??769px+嚗?蝣箔? medium-9 ??medium-3 銝行?憿舐內 */
+@media screen and (min-width: 769px) {
+  .dashboard-container .grid-x.grid-margin-x{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:start !important;
+    width:100% !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-3{
+    flex:0 0 25% !important;
+    max-width:25% !important;
+    width:25% !important;
+    min-width:25% !important;
+    display:block !important;
+    float:none !important;
+    box-sizing:border-box !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-9{
+    flex:0 0 75% !important;
+    max-width:75% !important;
+    width:75% !important;
+    min-width:75% !important;
+    display:block !important;
+    float:none !important;
+    box-sizing:border-box !important;
+  }
+}
+/* ??????480px嚗????cell ?質??撖穿?銝西矽?湧?摨?璁汗?刻隅?Ｗ?銝 */
+@media screen and (max-width: 480px) {
+  .dashboard-container .cell{flex:0 0 100% !important;max-width:100% !important;width:100% !important}
+  .dashboard-container .grid-x.grid-margin-x{
+    flex-direction:column !important;
+    display:flex !important;
+  }
+  /* ????霈??閬踝?medium-3嚗?憿舐內嚗隅?Ｗ?嚗edium-9嚗?憿舐內 */
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-3{
+    order:1 !important;
+  }
+  .dashboard-container .grid-x.grid-margin-x > .cell.medium-9{
+    order:2 !important;
+  }
+  /* ????KPI ?∠? 4x1 璈怠???嚗? ??帖???? 1 銵? */
+  .dashboard-container .kpi-row{
+    grid-template-columns:repeat(4, 1fr) !important;
+    gap:6px !important;
+  }
+  /* ????KPI ?∠?摮???頝矽??*/
+  .dashboard-container .kpi{
+    padding:8px 6px !important;
+    font-size:11px !important;
+  }
+  .dashboard-container .kpi .label{
+    font-size:10px !important;
+    margin-bottom:3px !important;
+  }
+  .dashboard-container .kpi .val{
+    font-size:14px !important;
+    line-height:1.2 !important;
+  }
+  .dashboard-container .kpi .small{
+    font-size:9px !important;
+    margin-top:2px !important;
+  }
+}
+/* 撟單?游?嚗?81px - 768px嚗?KPI ?∠? 2x2 ?拚 */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .dashboard-container .kpi-row{
+    grid-template-columns:repeat(2, 1fr) !important;
+    gap:8px !important;
+  }
+}
+/* 蝣箔? Grid ??cell ?典?銵典?甇?Ⅱ憿舐內 */
+.dashboard-container .cell #graph{width:100%;box-sizing:border-box}
+.dashboard-container .cell svg{width:100%;height:auto;max-width:100%}
+/* ======== ?脫迫 Foundation ??dashboard 璅??敶梢憭蝬脩? ======== */
+/* ?蔭 Foundation ?航敶梢摮豢蝬脩??撅璅?? */
+body:not(.dashboard-container) .grid-x,
+body:not(.dashboard-container) .cell,
+body:not(.dashboard-container) .grid-container {
+  all: revert;
+}
+
+/* 靽風????典?蝝??脫迫鋡?Foundation normalize 敶梢 */
+html:not(.dashboard-container) {
+  font-size: revert !important;
+  line-height: revert !important;
+  -webkit-text-size-adjust: revert !important;
+  text-size-adjust: revert !important;
+}
+
+body:not(.dashboard-container) {
+  font-size: revert !important;
+  line-height: revert !important;
+  margin: revert !important;
+  padding: revert !important;
+  font-family: revert !important;
+  -webkit-text-size-adjust: revert !important;
+  text-size-adjust: revert !important;
+}
+
+/* 靽風璅???芣??賊??? */
+header:not(.dashboard-container header),
+nav:not(.dashboard-container nav),
+.header:not(.dashboard-container .header),
+.navbar:not(.dashboard-container .navbar),
+.navigation:not(.dashboard-container .navigation),
+[class*="nav"]:not(.dashboard-container [class*="nav"]),
+[id*="header"]:not(.dashboard-container [id*="header"]),
+[id*="Header"]:not(.dashboard-container [id*="Header"]) {
+  font-size: revert !important;
+  line-height: revert !important;
+  padding: revert !important;
+  margin: revert !important;
+  height: revert !important;
+  min-height: revert !important;
+  max-height: revert !important;
+  width: revert !important;
+  min-width: revert !important;
+  max-width: revert !important;
+  transform: revert !important;
+  zoom: revert !important;
+  -webkit-text-size-adjust: revert !important;
+  text-size-adjust: revert !important;
+  box-sizing: revert !important;
+  display: revert !important;
+  position: revert !important;
+  background: revert !important;
+  border: revert !important;
+}
+
+/* 靽風璅???芣??抒?????? */
+header:not(.dashboard-container header) *,
+nav:not(.dashboard-container nav) *,
+.header:not(.dashboard-container .header) *,
+.navbar:not(.dashboard-container .navbar) *,
+.navigation:not(.dashboard-container .navigation) *,
+[class*="nav"]:not(.dashboard-container [class*="nav"]) *,
+[id*="header"]:not(.dashboard-container [id*="header"]) *,
+[id*="Header"]:not(.dashboard-container [id*="Header"]) * {
+  font-size: revert !important;
+  line-height: revert !important;
+  padding: revert !important;
+  margin: revert !important;
+  height: revert !important;
+  width: revert !important;
+  min-width: revert !important;
+  max-width: revert !important;
+  transform: revert !important;
+  zoom: revert !important;
+  box-sizing: revert !important;
+  display: revert !important;
+  position: revert !important;
+  background: revert !important;
+  border: revert !important;
+  color: revert !important;
+  font-family: revert !important;
+  font-weight: revert !important;
+  text-align: revert !important;
+  vertical-align: revert !important;
+}
+
+/* 靽風????logo */
+header:not(.dashboard-container header) img,
+nav:not(.dashboard-container nav) img,
+.header:not(.dashboard-container .header) img,
+.navbar:not(.dashboard-container .navbar) img,
+[class*="nav"]:not(.dashboard-container [class*="nav"]) img,
+[id*="header"]:not(.dashboard-container [id*="header"]) img,
+[id*="Header"]:not(.dashboard-container [id*="Header"]) img {
+  width: revert !important;
+  height: revert !important;
+  max-width: revert !important;
+  max-height: revert !important;
+  min-width: revert !important;
+  min-height: revert !important;
+  transform: revert !important;
+  zoom: revert !important;
+  object-fit: revert !important;
+}
+
+/* 靽風?? dashboard-container 銋???蝝?*/
+body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt):not(#tablet-prompt) {
+  font-size: revert !important;
+  line-height: revert !important;
+  -webkit-text-size-adjust: revert !important;
+  text-size-adjust: revert !important;
+}
+#filter{background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;box-shadow:0 2px 4px rgba(0,0,0,.05);margin-bottom:16px}
+.dashboard-container .filter-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
+.dashboard-container .filter-group{margin:5px 15px;display:flex;align-items:center}
+.dashboard-container .filter-group strong{margin-right:8px;font-size:14px;color:#555;white-space:nowrap;line-height:1}
+#filter select, #filter .quarter-select{border-radius:4px;border:1px solid #ccc;padding:8px 12px;background:#fff;font-size:14px;height:38px;min-width:120px;box-sizing:border-box}
+.dashboard-container .btn-group label{display:inline-block;padding:8px 12px;margin:0;font-size:14px;font-weight:500;text-align:center;cursor:pointer;user-select:none;border:1px solid #ccc;color:#333;background:#fff;transition:.2s;height:38px;line-height:22px;box-sizing:border-box}
+.dashboard-container .btn-group input{display:none}
+.dashboard-container .btn-group input:checked+label{background:#4e79a7;color:#fff;border-color:#4e79a7}
+.dashboard-container .filter-dropdown{position:relative;display:inline-block}
+.dashboard-container .dropdown-button{border:1px solid #ddd;background:#fff;color:#333;cursor:pointer;padding:10px 16px;border-radius:8px;min-width:240px;text-align:left;height:42px;line-height:22px;font-size:15px;font-weight:500;transition:.2s}
+.dashboard-container .dropdown-panel{position:absolute;z-index:1200;top:48px;left:0;width:360px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:16px;user-select:none}
+.dashboard-container .panel-section{padding:12px 8px}
+.dashboard-container .option-row{display:block;font-size:15px;color:#333;padding:10px 8px;line-height:1.4;cursor:pointer;border-radius:6px;transition:.2s}
+.dashboard-container .option-row:hover{background:#f8f9fa}
+.dashboard-container .event-type-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.dashboard-container .event-chip{display:inline-block;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #ccc;color:#333;background:#fff;border-radius:16px;transition:.2s}
+.dashboard-container .event-chip.active{background:#e6eef7;color:#2c3e50;border-color:#a7bfdc}
+.dashboard-container .event-chip.monetary{border-color:#A08090;color:#8A6B7A}
+.dashboard-container .event-chip.monetary.active{background:rgba(160,128,144,.18);border-color:#A08090;color:#6B4F5C}
+.dashboard-container .event-chip.fiscal{border-color:#D0B070;color:#B8941F}
+.dashboard-container .event-chip.fiscal.active{background:rgba(208,176,112,.18);border-color:#D0B070;color:#8B6914}
+.dashboard-container .event-chip.other{border-color:#407090;color:#2C4A5C}
+.dashboard-container .event-chip.other.active{background:rgba(64,112,144,.18);border-color:#407090;color:#1E3A4A}
+.dashboard-container .event-chip.tax{border-color:#E09861;color:#C47A3A}
+.dashboard-container .event-chip.tax.active{background:rgba(224,152,97,.18);border-color:#E09861;color:#A05D2A}
+.dashboard-container .event-chip.infra{border-color:#88B4CC;color:#5A8BA8}
+.dashboard-container .event-chip.infra.active{background:rgba(136,180,204,.18);border-color:#88B4CC;color:#4A7A96}
+.dashboard-container .event-chip.dev{border-color:#1C9A85;color:#157A6B}
+.dashboard-container .event-chip.dev.active{background:rgba(28,154,133,.18);border-color:#1C9A85;color:#0F5C50}
+.dashboard-container .event-chip.national{border-color:#f1c54e;color:#b8941f}
+.dashboard-container .event-chip.national.active{background:rgba(241,197,78,.18);border-color:#f1c54e;color:#8b6914}
+.dashboard-container .event-chip.macro{border-color:#88623E;color:#6b4d2f}
+.dashboard-container .event-chip.macro.active{background:rgba(136,98,62,.18);border-color:#88623E;color:#5a3f25}
+.dashboard-container .action-buttons-container{display:flex;justify-content:flex-end;align-items:center;gap:15px;margin-top:12px}
+.dashboard-container .action-btn{font-size:14px;color:#555;cursor:pointer;border:1px solid #ccc;padding:5px 10px;border-radius:4px;background:#fff;transition:.2s}
+.dashboard-container .action-btn:hover{background:#f0f0f0;border-color:#999}
+.dashboard-container .action-btn#export-chart-btn, .dashboard-container .action-btn#share-btn{font-size:18px;padding:8px 12px;min-width:40px;text-align:center;line-height:1}
+
+/* ======== ?啣?嚗ashboard ?拇????甈??======== */
+.dashboard-layout{display:block;width:100%;box-sizing:border-box}
+.dashboard-layout > div{width:100%;box-sizing:border-box}
+/* 蝣箔???蜓蝬脫撣?雿輻?詨???撖穿?撖衣瘞游像撠? */
+.main-grid-layout{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:16px !important;
+  width:100%;
+  box-sizing:border-box;
+}
+.card{background:#fff;border:1px solid #eaeaea;border-radius:10px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.card h3{margin:0 0 10px 0;font-size:16px;color:#2c3e50}
+.kpi-row{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px}
+.kpi{border:1px solid #e0e0e0;border-radius:4px;padding:10px 12px;background:#fff;box-shadow:none}
+.kpi .label{font-size:12px;color:#6b7280;line-height:1.4;margin-bottom:4px}
+.kpi .val{font-size:18px;font-weight:700;color:#111827;line-height:1.2}
+.kpi .small{font-size:11px;color:#9ca3af;line-height:1.3;margin-top:2px}
+.kpi .delta.up{color:#0f9d58}
+.kpi .delta.down{color:#d93025}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #e5e7eb;color:#374151;background:#f9fafb;margin-right:6px}
+.event-li{display:flex;gap:8px;margin:8px 0;align-items:flex-start}
+.dotcat{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.cat-tax{background:#ff8c00}.cat-infra{background:#4169e1}.cat-dev{background:#32cd32}.cat-national{background:#f1c54e}.cat-macro{background:#88623E}
+.event-text{font-size:13px;line-height:1.5;color:#374151}
+.small{font-size:12px;color:#6b7280}
+.side-note{font-size:12px;color:#6b7280;margin-top:6px}
+
+/* ======== ?踵?撘身閮?======== */
+
+/* 撟單?游? (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px){
+  .dashboard-container{max-width:100%;padding:15px;margin:10px auto}
+  .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
+  .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
+  /* Grid: 撟單隞乩???蝭拚?典??”?質??撖?*/
+  .dashboard-container .cell.small-12.medium-4, .dashboard-container .cell.small-12.medium-8{width:100% !important;flex:0 0 100% !important}
+  /* ?”??閬賢撟單隞乩???霈?銝?撣? */
+  .dashboard-container .grid-x.grid-margin-x .cell.medium-9, 
+  .dashboard-container .grid-x.grid-margin-x .cell.medium-3{
+    width:100% !important;
+    flex:0 0 100% !important;
+    max-width:100% !important;
+  }
+  /* 蝣箔? grid-x ?典像?蹂誑銝??臬??游?撅 */
+  .dashboard-container .grid-x.grid-margin-x{
+    flex-direction:column !important;
+    flex-wrap:wrap !important;
+  }
+  .dashboard-container h1{font-size:20px;margin-bottom:15px}
+  /* ?批?Ｘ?芸? */
+  #filter{padding:16px;margin-bottom:14px}
+  .dashboard-container .filter-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    margin:0;
+    width:100%;
+    gap:12px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:14px;
+    margin-right:8px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  #filter select, #filter .quarter-select{
+    flex:1;
+    min-width:150px;
+    max-width:100%;
+  }
+  .dashboard-container .btn-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    flex:1;
+    min-width:0;
+  }
+  .dashboard-container .btn-group label{
+    flex:1;
+    min-width:calc(50% - 3px);
+    padding:8px 10px;
+    font-size:13px;
+  }
+  .dashboard-container .event-type-buttons{
+    flex:1;
+    min-width:0;
+    gap:6px;
+  }
+  .dashboard-container .event-chip{
+    flex:1;
+    min-width:calc(50% - 3px);
+    padding:7px 10px;
+    font-size:12px;
+  }
+  .quarter-range-container{
+    display:flex;
+    gap:8px;
+    flex:1;
+    min-width:0;
+    align-items:center;
+  }
+  .quarter-select{
+    flex:1;
+    min-width:0;
+  }
+  .dashboard-container .toggle-container{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .dashboard-container .action-buttons-container{
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:0;
+  }
+  .kpi-row{grid-template-columns:repeat(2, 1fr) !important;gap:8px !important}
+  .kpi{border-radius:4px !important;padding:10px 12px !important;box-shadow:none !important}
+  .kpi .label{font-size:11px !important;line-height:1.4 !important}
+  .kpi .val{font-size:16px !important;line-height:1.2 !important}
+  .kpi .small{font-size:10px !important;line-height:1.3 !important}
+  .dashboard-container .action-buttons-container{justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .dashboard-container .action-btn{padding:8px 14px;font-size:13px}
+  .card{padding:12px}
+  .card h3{font-size:15px}
+  .event-timeline-year-group{width:130px !important}
+  .event-timeline-content{font-size:13px}
+  #sharePopup{width:350px}
+  svg{border-radius:8px;width:100% !important;max-width:100% !important;height:auto !important;display:block}
+  .dashboard-container .x-axis .tick text, .dashboard-container .y-axis .tick text{font-size:13px}
+  .dashboard-container .axis-label{font-size:14px !important}
+  .dashboard-container #chart-title{font-size:20px !important}
+  #side-title{font-size:20px !important}
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+}
+
+/* 撟單璈怠? (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px){
+  .dashboard-container{max-width:100%;padding:18px;margin:15px auto}
+  .dashboard-container h1{font-size:22px;margin-bottom:16px}
+  #filter{padding:18px;margin-bottom:16px}
+  .dashboard-container .filter-row{
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    margin:0;
+    gap:10px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:14px;
+    margin-right:8px;
+    white-space:nowrap;
+  }
+  #filter select, #filter .quarter-select{
+    min-width:140px;
+    max-width:200px;
+  }
+  .dashboard-container .btn-group{
+    display:flex;
+    gap:6px;
+  }
+  .dashboard-container .btn-group label{
+    padding:8px 12px;
+    font-size:13px;
+  }
+  .dashboard-container .event-type-buttons{
+    display:flex;
+    gap:8px;
+  }
+  .dashboard-container .event-chip{
+    padding:8px 12px;
+    font-size:12px;
+  }
+  .kpi-row{grid-template-columns:repeat(4, 1fr) !important;gap:10px !important}
+  .kpi{padding:12px 14px !important}
+  .kpi .label{font-size:12px !important}
+  .kpi .val{font-size:18px !important}
+  .kpi .small{font-size:11px !important}
+}
+
+/* 獢?Ｗ? (1025px - 1200px) */
+@media (min-width: 1025px) and (max-width: 1200px){
+  .dashboard-container{max-width:1200px;padding:20px;margin:20px auto}
+}
+
+/* 憭批??Ｗ? (1201px+) */
+@media (min-width: 1201px){
+  .dashboard-container{max-width:1440px;padding:24px;margin:24px auto}
+}
+
+/* ????(??480px) */
+@media (max-width: 480px){
+  /* 蝘駁?典? html/body 璅??嚗?蔣?踹??典??芣? */
+  .dashboard-container{padding:10px;margin:5px auto;border-radius:0;position:relative;min-height:auto;overflow-x:hidden}
+  .dashboard-container h1{font-size:18px;margin-bottom:12px;padding:0 5px}
+  
+  /* Splash Screen 隤踵 */
+  .splash-title{font-size:2em !important}
+  .splash-subtitle{font-size:1em !important;width:auto !important;text-align:center !important}
+  .logo-and-text{flex-direction:column;text-align:center}
+  .splash-logo{margin-right:0;margin-bottom:10px}
+  
+  /* ?批?Ｘ?芸? */
+  #filter{
+    padding:14px;
+    margin-bottom:12px;
+    border-radius:8px;
+  }
+  .dashboard-container .filter-row{
+    flex-direction:column;
+    gap:14px;
+    align-items:stretch;
+  }
+  .dashboard-container .filter-group{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    margin:0;
+    width:100%;
+    gap:10px;
+  }
+  .dashboard-container .filter-group strong{
+    font-size:13px;
+    margin-bottom:0;
+    margin-right:0;
+    color:#555;
+    font-weight:600;
+  }
+  .dashboard-container .toggle-container{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:4px 0;
+  }
+  .dashboard-container .toggle-text{
+    font-size:13px;
+    color:#555;
+  }
+  #filter select, #filter .quarter-select{
+    width:100%;
+    min-width:100%;
+    height:40px;
+    font-size:14px;
+    padding:8px 12px;
+    border-radius:6px;
+  }
+  .dashboard-container .btn-group{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    width:100%;
+  }
+  .dashboard-container .btn-group label{
+    flex:none;
+    min-width:0;
+    padding:10px 8px;
+    font-size:13px;
+    height:40px;
+    border-radius:6px;
+    text-align:center;
+  }
+  .dashboard-container .event-type-buttons{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    width:100%;
+  }
+  .dashboard-container .event-chip{
+    padding:10px 8px;
+    font-size:12px;
+    white-space:normal;
+    text-align:center;
+    border-radius:6px;
+    min-width:0;
+  }
+  .quarter-range-container{
+    display:flex;
+    gap:10px;
+    width:100%;
+    align-items:center;
+  }
+  .quarter-select{
+    flex:1;
+    min-width:0;
+  }
+  .range-separator{
+    font-size:13px;
+    white-space:nowrap;
+    color:#555;
+    font-weight:500;
+  }
+  .dashboard-container .action-buttons-container{
+    width:100%;
+    justify-content:center;
+    gap:10px;
+  }
+  
+  /* ?”???*/
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+  svg{border-radius:6px;width:100% !important;max-width:100% !important;min-width:0;height:auto !important;touch-action:pan-y;display:block}
+  /* Grid: ???Ⅱ靽?cell ?典祝 */
+  .dashboard-container .cell{width:100% !important;flex:0 0 100% !important}
+  .dashboard-container .x-axis .tick text{font-size:9px !important}
+  .dashboard-container .y-axis .tick text{font-size:8px !important}
+  .dashboard-container .axis-label{font-size:10px !important}
+  .dashboard-container #chart-title{font-size:15px !important}
+  #side-title{font-size:15px !important}
+  #popup{max-width:200px;font-size:12px;padding:8px}
+  #popupContent{font-size:12px;line-height:1.4}
+  
+  /* ?拇?撣??寧?格? */
+  .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
+  .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
+  
+  /* ??????蝷?*/
+  .action-buttons-container{flex-direction:column;align-items:stretch;gap:8px;margin-top:10px}
+  .action-btn{width:100%;padding:10px;font-size:14px;text-align:center}
+  .side-note{font-size:11px;text-align:center !important}
+  
+  /* ?∠?璅?? */
+  .card{padding:10px;border-radius:8px}
+  .card h3{font-size:14px;margin-bottom:8px}
+  
+  /* KPI ?∠? */
+  .kpi-row{grid-template-columns:1fr 1fr !important;gap:8px !important}
+  .kpi{border-radius:4px !important;padding:8px 10px !important;box-shadow:none !important}
+  .kpi .label{font-size:11px !important;line-height:1.4 !important}
+  .kpi .val{font-size:15px !important;line-height:1.2 !important}
+  .kpi .small{font-size:10px !important;line-height:1.3 !important}
+  
+  /* 鈭辣??頠?*/
+  #event-timeline-panel{margin-bottom:12px}
+  #event-timeline-title{font-size:16px;margin-bottom:10px}
+  .event-timeline-events{padding:8px;gap:8px}
+  .event-timeline-year-group{width:120px !important;padding:6px}
+  .event-timeline-year-header{font-size:14px;padding:4px;margin-bottom:8px}
+  .event-timeline-items{max-height:120px}
+  .event-timeline-item{padding:5px;min-height:45px}
+  .event-timeline-quarter{font-size:10px;margin-bottom:4px}
+  .event-timeline-content{font-size:12px;line-height:1.4}
+  .event-timeline-tag{font-size:9px;padding:2px 6px}
+  
+  /* 鈭辣隤芣??Ｘ */
+  #event-detail-panel{max-height:250px}
+  #event-detail-title{font-size:14px}
+  #event-detail-content{font-size:12px}
+  .event-detail-item{padding:6px;margin-bottom:8px}
+  .event-detail-tag{font-size:10px;padding:2px 6px;margin-right:6px}
+  
+  /* 敶閬? */
+  #detailPopup{width:90% !important;max-width:400px !important;max-height:80vh !important;padding:15px;left:50% !important;transform:translate(-50%, -50%) !important}
+  #sharePopup{width:90% !important;max-width:350px !important;padding:15px}
+  .share-option{width:100% !important;min-width:100% !important;margin-bottom:8px}
+  
+  /* 銝??詨 */
+  .dashboard-container .dropdown-button{width:100%;min-width:100%}
+  .dashboard-container .dropdown-panel{width:calc(100% - 20px);left:10px;right:10px;max-width:calc(100vw - 20px)}
+  
+  /* ?嗡?隤踵 */
+  .side-note{margin-top:8px}
+  
+  /* 閫豢?芸? */
+  .dot{cursor:pointer;touch-action:manipulation}
+  .dashboard-container button, .dashboard-container .event-chip, .event-timeline-item{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(78,121,167,0.2)}
+  #filter select, #filter .quarter-select, .dashboard-container .dropdown-button{cursor:pointer;touch-action:manipulation}
+  
+  /* 蝣箔??冽?璈??臭誑瘞游像皛曉??” */
+  #graph{width:100% !important;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-width:thin;box-sizing:border-box}
+  
+  /* 蝣箔? dashboard-container 銝??餅迫皛曉? */
+  .dashboard-container{overflow:visible !important;height:auto !important;max-height:none !important}
+  .dashboard-layout{overflow:visible !important}
+  
+  /* ?喃?閫?閮???? */
+  #rc-info-btn-wrapper{width:44px !important;height:44px !important;bottom:15px !important;right:15px !important}
+  #rc-info-btn{width:100% !important;height:100% !important;font-size:20px !important}
+  
+  /* 鞈??桃蔗?踵?撘?*/
+  #rc-info-overlay{padding:50px 15px 20px 15px !important}
+  #rc-info-overlay > div{max-width:100% !important;margin-top:0 !important}
+  #rc-info-overlay h2{font-size:22px !important;margin-bottom:20px !important;padding-top:0 !important}
+  #rc-info-overlay #rc-info-content{font-size:14px !important;padding-top:0 !important}
+  #rc-close-info-overlay{width:32px !important;height:32px !important;top:15px !important;right:15px !important;font-size:18px !important;position:fixed !important}
+}
+
+/* ===== 璈怠??內?恍璅?? ===== */
+#rotate-screen-prompt{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  z-index:10000;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  text-align:center;
+  color:#fff;
+  backdrop-filter:blur(10px);
+}
+#rotate-screen-prompt.show{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  animation:fadeInPrompt 0.3s ease-in;
+}
+@keyframes fadeInPrompt{
+  from{opacity:0}
+  to{opacity:1}
+}
+#rotate-screen-prompt .rotate-icon{
+  font-size:80px;
+  margin-bottom:20px;
+  animation:rotate-hint 2s ease-in-out infinite;
+}
+@keyframes rotate-hint{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(90deg)}
+}
+#rotate-screen-prompt h2{
+  font-size:22px;
+  margin-bottom:15px;
+  color:#fff;
+  font-weight:600;
+  margin-top:0;
+}
+#rotate-screen-prompt p{
+  font-size:16px;
+  line-height:1.6;
+  color:#e0e0e0;
+  max-width:300px;
+  margin:0 auto 25px;
+}
+#rotate-screen-prompt .desktop-suggestion{
+  font-size:15px;
+  line-height:1.6;
+  color:#ffd700;
+  max-width:300px;
+  margin:0 auto 20px;
+  font-weight:500;
+  padding:12px;
+  background:rgba(255,215,0,0.1);
+  border-radius:8px;
+  border:1px solid rgba(255,215,0,0.3);
+}
+#rotate-screen-prompt .close-prompt{
+  position:absolute;
+  top:15px;
+  right:15px;
+  background:rgba(255,255,255,0.2);
+  border:none;
+  color:#fff;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  font-size:24px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background 0.3s;
+  line-height:1;
+  padding:0;
+  z-index:10001;
+}
+#rotate-screen-prompt .close-prompt:hover,
+#rotate-screen-prompt .close-prompt:active{
+  background:rgba(255,255,255,0.3);
+}
+#rotate-screen-prompt .continue-btn{
+  background:#4e79a7;
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.3s;
+  margin-top:10px;
+}
+#rotate-screen-prompt .continue-btn:hover,
+#rotate-screen-prompt .continue-btn:active{
+  background:#40668c;
+}
+
+/* ===== 撟單?內?恍璅?? ===== */
+#tablet-prompt{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  z-index:10001;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  text-align:center;
+  color:#fff;
+  backdrop-filter:blur(10px);
+}
+#tablet-prompt.show{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  animation:fadeInPrompt 0.3s ease-in;
+}
+#tablet-prompt .tablet-icon{
+  font-size:80px;
+  margin-bottom:20px;
+}
+#tablet-prompt h2{
+  font-size:22px;
+  margin-bottom:20px;
+  color:#fff;
+  font-weight:600;
+  margin-top:0;
+}
+#tablet-prompt p{
+  font-size:15px;
+  line-height:1.6;
+  color:#ffd700;
+  max-width:350px;
+  margin:0 auto 30px;
+  font-weight:500;
+  padding:15px 20px;
+  background:rgba(255,215,0,0.15);
+  border-radius:10px;
+  border:2px solid rgba(255,215,0,0.4);
+}
+#tablet-prompt .close-prompt{
+  position:absolute;
+  top:15px;
+  right:15px;
+  background:rgba(255,255,255,0.2);
+  border:none;
+  color:#fff;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  font-size:24px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background 0.3s;
+  line-height:1;
+  padding:0;
+  z-index:10001;
+}
+#tablet-prompt .close-prompt:hover,
+#tablet-prompt .close-prompt:active{
+  background:rgba(255,255,255,0.3);
+}
+#tablet-prompt .continue-btn{
+  background:#4e79a7;
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.3s;
+  margin-top:10px;
+}
+#tablet-prompt .continue-btn:hover,
+#tablet-prompt .continue-btn:active{
+  background:#40668c;
+}
+
+/* 蝣箔??冽?璈???480px嚗?獢嚗 1025px嚗?銝＊蝷箏像?踵?蝷?*/
+@media (max-width: 480px), (min-width: 1025px) {
+  #tablet-prompt,
+  #tablet-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* 蝣箔??典像?踵帖????769px嚗?獢銝?憿舐內璈怠??內 */
+@media (min-width: 769px) {
+  #rotate-screen-prompt,
+  #rotate-screen-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* ??璈怠???憿舐內?內 */
+@media (max-width: 480px) and (orientation: landscape) {
+  #rotate-screen-prompt,
+  #rotate-screen-prompt.show {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* ===== 鈭辣隤芣?璅?? ===== */
+.event-detail{ padding:10px; background:#f8f9fa; border-radius:6px; margin-top:8px; }
+.event-detail h4{ margin:0 0 8px 0; font-size:14px; color:#2c3e50; }
+.event-detail p{ margin:0; font-size:13px; line-height:1.5; color:#555; }
+
+/* Toggle Switch 璅?? */
+.dashboard-container .toggle-container{ display:flex; align-items:center; gap:8px; }
+.dashboard-container .toggle-switch{ position:relative; display:inline-block; width:50px; height:24px; }
+.dashboard-container .toggle-switch input{ opacity:0; width:0; height:0; }
+.dashboard-container .slider{ position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px; }
+.dashboard-container .slider:before{ position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+.dashboard-container input:checked + .slider{ background-color:#4e79a7; }
+.dashboard-container input:checked + .slider:before{ transform:translateX(26px); }
+.dashboard-container .toggle-text{ font-size:14px; font-weight:500; color:#555; }
+
+/* 鈭辣??頠豢見撘?*/
+.timeline-svg{ width:100%; height:60px; }
+.timeline-point{ cursor:pointer; transition:all 0.2s; }
+.timeline-point:hover{ stroke-width:3; }
+.timeline-point.active{ stroke-width:4; stroke:#4e79a7; }
+.timeline-line{ stroke:#ddd; stroke-width:2; }
+
+/* 鈭辣??頠賊?踵見撘?- 瘞游像撣?嚗僑隞賜??璅芸??? */
+#event-timeline-panel{ overflow:hidden; }
+#event-timeline-title{ font-size:20px; font-weight:700; color:#2c3e50; text-align:center; margin-bottom:12px; }
+.event-timeline-events{ display:flex !important; overflow-x:auto !important; gap:12px; font-size:13px; padding:10px; scrollbar-width:thin; flex-wrap:nowrap !important; }
+.event-timeline-year-group{ display:flex !important; flex-direction:column !important; width:150px !important; flex-shrink:0 !important; border:1px solid #d0d0d0; border-radius:8px; padding:8px; background:#fafafa; }
+.event-timeline-year-header{ font-size:16px; font-weight:600; color:#2c3e50; margin-bottom:12px; text-align:center; padding-bottom:8px; border-bottom:3px solid #4e79a7; background:linear-gradient(to right, #e3f2fd, #ffffff); border-radius:4px; padding-top:6px; }
+.event-timeline-items{ display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:auto; }
+.event-timeline-item{ display:flex; flex-direction:column; gap:4px; padding:6px; min-height:50px; border:1px solid #ddd; border-left-width:4px; border-radius:6px; cursor:pointer; transition:all 0.2s; background:#fff; flex-shrink:0; }
+.event-timeline-item:hover{ background:#f0f7ff; box-shadow:0 2px 6px rgba(78,121,167,0.15); transform:translateY(-1px); }
+.event-timeline-clicked{ background:#e8f4fd !important; border-color:#2196F3 !important; border-width:2px !important; box-shadow:0 2px 8px rgba(33,150,243,0.3) !important; }
+.event-type-monetary{ border-left-color:#A08090; }
+.event-type-fiscal{ border-left-color:#D0B070; }
+.event-type-other{ border-left-color:#407090; }
+.event-type-tax{ border-left-color:#E09861; }
+.event-type-infra{ border-left-color:#88B4CC; }
+.event-type-dev{ border-left-color:#1C9A85; }
+.event-type-national{ border-left-color:#f1c54e; }
+.event-type-macro{ border-left-color:#88623E; }
+.event-timeline-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.event-timeline-dot.monetary{ background:#A08090; }
+.event-timeline-dot.fiscal{ background:#D0B070; }
+.event-timeline-dot.other{ background:#407090; }
+.event-timeline-dot.tax{ background:#E09861; }
+.event-timeline-dot.infra{ background:#88B4CC; }
+.event-timeline-dot.dev{ background:#1C9A85; }
+.event-timeline-dot.national{ background:#f1c54e; }
+.event-timeline-dot.macro{ background:#88623E; }
+.event-timeline-quarter{ font-size:11px; color:#666; font-weight:600; margin-bottom:6px; text-transform:uppercase; }
+.event-timeline-content{ line-height:1.5; font-size:14px; color:#333; font-weight:500; }
+.event-timeline-tag{ display:inline-block; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:600; margin-bottom:4px; }
+.event-timeline-tag.monetary{ background:rgba(160,128,144,0.15); color:#8A6B7A; border:1px solid #A08090; }
+.event-timeline-tag.fiscal{ background:rgba(208,176,112,0.15); color:#B8941F; border:1px solid #D0B070; }
+.event-timeline-tag.other{ background:rgba(64,112,144,0.15); color:#2C4A5C; border:1px solid #407090; }
+.event-timeline-tag.tax{ background:rgba(224,152,97,0.15); color:#C47A3A; border:1px solid #E09861; }
+.event-timeline-tag.infra{ background:rgba(136,180,204,0.15); color:#5A8BA8; border:1px solid #88B4CC; }
+.event-timeline-tag.dev{ background:rgba(28,154,133,0.15); color:#157A6B; border:1px solid #1C9A85; }
+.event-timeline-tag.national{ background:rgba(241,197,78,0.15); color:#b8941f; border:1px solid #f1c54e; }
+.event-timeline-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
+.event-timeline-current{ background:#e3f2fd !important; border-color:#4e79a7 !important; border-width:2px !important; box-shadow:0 2px 8px rgba(78,121,167,0.2) !important; }
+
+/* 鈭辣隤芣??Ｘ璅?? */
+#event-detail-panel{ min-height:150px; max-height:300px; overflow-y:auto; }
+#event-detail-content{ font-size:13px; line-height:1.6; }
+.event-detail-quarter{ font-weight:600; color:#4e79a7; margin-bottom:8px; font-size:14px; }
+.event-detail-item{ margin-bottom:12px; padding:8px; background:#f8f9fa; border-radius:4px; border-left:3px solid #4e79a7; }
+.event-detail-item:last-child{ margin-bottom:0; }
+.event-detail-tag{ display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600; margin-right:8px; }
+.event-detail-tag.monetary{ background:rgba(255,215,0,0.15); color:#b8860b; border:1px solid #ffd700; }
+.event-detail-tag.fiscal{ background:rgba(255,107,53,0.15); color:#d2691e; border:1px solid #ff6b35; }
+.event-detail-tag.other{ background:rgba(74,144,226,0.15); color:#191970; border:1px solid #4a90e2; }
+.event-detail-tag.tax{ background:rgba(255,140,0,0.15); color:#d2691e; border:1px solid #ff8c00; }
+.event-detail-tag.infra{ background:rgba(65,105,225,0.15); color:#191970; border:1px solid #4169e1; }
+.event-detail-tag.dev{ background:rgba(50,205,50,0.15); color:#228b22; border:1px solid #32cd32; }
+.event-detail-tag.national{ background:rgba(241,197,78,0.15); color:#b8941f; border:1px solid #f1c54e; }
+.event-detail-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
+.event-detail-label{ font-weight:600; color:#2c3e50; margin-bottom:4px; }
+
+/* ======== ?脫??銴ˊ嚗?????閮剖?嚗?======== */
+.dashboard-container{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dashboard-container *{-webkit-user-select:none !important;-moz-user-select:none !important;-ms-user-select:none !important;user-select:none !important}
+button,input,select,textarea{-webkit-user-select:text !important;-moz-user-select:text !important;-ms-user-select:text !important;user-select:text !important}
+</style>
+<!-- Splash -->
+<div id="splash-screen">
+<div>
+<h1 class="splash-title">銝??Ｗ之鈭?</h1>
+
+<div class="logo-and-text"><img alt="???踵祥憭批飛銝??Ｙ?蝛嗡葉敹?Logo" class="splash-logo" src="https://nccu.fun4.com.tw/content/img/logo.svg" />
+<p class="splash-subtitle">???踵祥憭批飛<br />
+銝??Ｙ?蝛嗡葉敹?/p>
+</div>
+</div>
+</div>
+<!-- 璈怠??內?恍嚗??冽?璈??憿舐內嚗?-->
+
+<div id="rotate-screen-prompt"><button aria-label="??" class="close-prompt" id="close-rotate-prompt">&times;</button>
+
+<div class="rotate-icon">?</div>
+
+<h2>隢???頧璈怠?</h2>
+
+<p>?箔??脣??游末?汗擃?嚗遣霅唳撠?璈??箸帖?芋撘?迨?銵冽??/p>
+
+<p class="desktop-suggestion">撱箄降雿輻?餉隞亦敺摰?汗擃?</p>
+<button class="continue-btn" id="continue-portrait">蝜潛?雿輻?游?璅∪?</button></div>
+<!-- 撟單?內?恍嚗??典像?蹂蝙?冽?憿舐內嚗?-->
+
+<div id="tablet-prompt"><button aria-label="??" class="close-prompt" id="close-tablet-prompt">&times;</button>
+
+<div class="tablet-icon">?</div>
+
+<h2>撱箄降雿輻?餉</h2>
+
+<p>撱箄降雿輻?餉隞亦敺摰?汗擃?</p>
+<button class="continue-btn" id="continue-tablet">蝜潛?雿輻撟單</button></div>
+<!-- Dashboard -->
+
+<div class="dashboard-container" style="display:none;">
+<h1>銝??Ｗ之鈭?</h1>
+<!-- 蝭拚?典?嚗撖穿? -->
+<div id="filter">
+<div class="filter-row">
+<div class="filter-group" id="placeGroup">
+<div class="toggle-container no-border"><span class="toggle-text">?典?</span> <label class="toggle-switch"> <input id="filterToggle" type="checkbox" /> <span class="slider"></span> </label> <span class="toggle-text">蝮??</span></div>
+<select id="placeSelect" style="margin-left:15px;"><option value="Taipei">?啣?撣?/option><option value="NewTaipei">?啣?撣?/option><option value="Taoyuan">獢?撣?/option><option value="Taichung">?唬葉撣?/option><option value="Tainan">?啣?撣?/option><option value="Kaohsiung">擃?撣?/option><option value="Hsinchu">?啁姘蝮??</option> </select></div>
+
+<div class="filter-group"><strong>??蝭?璅∪?:</strong>
+
+<div class="btn-group" id="timeModeButtons"><input checked="checked" id="quarterMode" name="timeMode" type="radio" value="quarter" /><label for="quarterMode">摮??豢?</label> <input id="yearMode" name="timeMode" type="radio" value="year" /><label for="yearMode">撟港遢蝭?</label></div>
+</div>
+
+<div class="filter-group" id="quarterControls"><strong>摮?蝭?:</strong>
+
+<div class="quarter-range-container"><select class="quarter-select" id="startSelect"></select> <span class="range-separator">??/span> <select class="quarter-select" id="endSelect"></select></div>
+</div>
+
+<div class="filter-group" id="yearControls" style="display:none;"><strong>撟港遢蝭?:</strong>
+
+<div class="btn-group" id="yearRangeButtons"><input checked="checked" id="allYears" name="yearRange" type="radio" value="all" /><label for="allYears">?券撟港遢</label> <input id="year3Y" name="yearRange" type="radio" value="3Y" /><label for="year3Y">餈?撟?/label> <input id="year5Y" name="yearRange" type="radio" value="5Y" /><label for="year5Y">餈?撟?/label> <input id="year10Y" name="yearRange" type="radio" value="10Y" /><label for="year10Y">餈?0撟?/label></div>
+</div>
+</div>
+
+<div class="filter-row">
+<div class="filter-group"><strong>鈭辣憿?:</strong>
+
+<div class="event-type-buttons" id="eventChips"><button class="event-chip national active" data-value="national" type="button">? ?輻?瘜?</button><button class="event-chip macro active" data-value="macro" type="button">? 摰?蝬??冗??隞?/button></div>
+</div>
+<div class="filter-group">
+<div class="action-buttons-container" style="margin: 0; gap: 10px;"><button class="action-btn" id="export-chart-btn" title="?臬??">?</button><button class="action-btn" id="share-btn" title="?澈">??</button></div>
+</div>
+</div>
+</div>
+</div>
+<!-- ?內?????典祝嚗?-->
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0; margin-bottom: 16px;">
+<div class="side-note" id="lock-status" style="color: #e74c3c; font-weight: bold; margin: 0; text-align: left;">????芷?摰?/div>
+<div class="side-note" id="kpi-extra" style="margin: 0; text-align: left;">?內嚗宏??曌??摮????暺?????嚗??圾??/div>
+</div>
+<!-- 鈭辣??頠詨?鈭辣隤芣?銝行?嚗頞典???對? -->
+<div class="main-grid-layout" id="top-grid" style="margin-bottom: 16px; width: 100%;">
+  <div class="card" id="event-timeline-panel">
+    <h3 id="event-timeline-title">鈭辣??頠?/h3>
+    <div id="event-timeline-events">&nbsp;</div>
+  </div>
+  <div class="card" id="event-detail-panel">
+    <h3 id="event-detail-title">鈭辣隤芣?</h3>
+    <div id="event-detail-content">&nbsp;</div>
+  </div>
+</div>
+<!-- 頞典??璁汗銝行? -->
+<div class="grid-x grid-margin-x" style="align-items: start; width: 100%;">
+<!-- ?祆?璁汗嚗椰?湛?雿?撠祝摨佗? -->
+<div class="cell small-12 medium-3">
+<div id="overview-section" style="display: flex; flex-direction: column; gap: 0; padding-top: 0;">
+<div class="card" style="margin-top: 0; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,.03);">
+<h3 id="side-title" style="margin-top: 0; margin-bottom: 12px; padding-top: 0; line-height: 1.3; font-size: 16px; font-weight: 600; color: #2c3e50;">?祆?璁汗</h3>
+<div class="kpi-row">
+<div class="kpi">
+<div class="label">?祆?銝凋??賂????迎?</div>
+<div class="val" id="kpi-now">&mdash;</div>
+<div class="small" id="kpi-quarter">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">?撟游???YoY嚗?/div>
+<div class="val" id="kpi-yoy">&mdash;</div>
+<div class="small" id="kpi-yoy-note">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">??銝摮??QoQ嚗?/div>
+<div class="val" id="kpi-qoq">&mdash;</div>
+<div class="small" id="kpi-qoq-note">&mdash;</div>
+</div>
+<div class="kpi">
+<div class="label">???擃?/ ?雿?/div>
+<div class="val" id="kpi-hi-lo">&mdash;</div>
+<div class="small" id="kpi-hi-lo-note">&mdash;</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 頞典???喳嚗?頛之撖砍漲嚗?-->
+<div class="cell small-12 medium-9">
+<div id="bottom-grid" style="margin-bottom: 0; padding-top: 0;">
+<div id="graph" style="display: flex; flex-direction: column; width: 100%;">&nbsp;</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="popup">
+<div id="popupContent">&nbsp;</div>
+</div>
+
+<div id="detailPopup"><button id="closeDetailPopup">X</button>
+
+<div id="detailContent">&nbsp;</div>
+</div>
+<!-- ?澈?Ｘ -->
+
+<div id="sharePopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);border-radius:8px;width:400px;text-align:center;"><button id="closeSharePopup" style="float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s">X</button>
+
+<h3 style="margin-top:0;font-size:18px;color:#2c3e50;">?澈??/h3>
+
+<div id="shareButtonsContainer" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px;align-items:center;">
+  <div id="lineButtonContainer" style="flex: 1; min-width: 120px; display: flex; justify-content: center; align-items: center; height: 40px;"></div>
+  <div id="facebookButtonContainer" style="flex: 1; min-width: 120px; display: flex; justify-content: center; align-items: center; height: 40px;">
+    <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Fnccu.fun4.com.tw%2Farticle%2Fdetail%2F2506025893274&layout=button&size=large&width=120&height=28&appId" width="120" height="28" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+  <button class="share-option" data-platform="copy" style="padding:12px 20px;border:2px solid #4e79a7;background:#fff;color:#4e79a7;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;transition:.2s;flex:1;min-width:120px;">?? 銴ˊ???</button>
+</div>
+</div>
+<!-- ?桃蔗撅?-->
+
+<div id="shareOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1999;">&nbsp;</div>
+
+<!-- ?喃?閫?閮???-->
+<div id="rc-info-btn-wrapper" class="rc-info-btn-wrapper">
+  <button id="rc-info-btn" class="rc-info-btn" aria-label="憿舐內鞈?">??/button>
+</div>
+
+<!-- 鞈??桃蔗 Overlay -->
+<div id="rc-info-overlay" class="rc-info-overlay">
+  <div class="rc-info-overlay-container">
+    <button id="rc-close-info-overlay" class="rc-close-info-overlay" aria-label="??">?</button>
+    <div id="rc-info-content" class="rc-info-content">
+      <h2 style="color:#fff;margin-top:0;margin-bottom:24px;font-size:28px;border-bottom:2px solid rgba(255,255,255,0.3);padding-bottom:12px;text-align:center;padding-top:0;">隤芣?</h2>
+      
+      <!-- 鞈?皜??摩 -->
+      <div style="margin-bottom:32px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">鞈?皜??摩??蝷箄牧??/h3>
+        <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
+          ?祈????芸祕?寧???箸??桀皞Ⅱ?改????蜓閬?摰???憒撖?摰之璅?鈭斗?嚗蒂?閬芸??畾?靽?鈭斗??迨憭?鈭血??斤畾隞塚?憒?頠???璅???嚗?撌脣??桀?蜇?寡?撅翩蝑扔蝡臬潮脰???嚗Ⅱ靽隅?Ｗ???游??扼?        </p>
+        <hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.2);">
+        <div style="font-size:15px;line-height:1.8;">
+          <p style="margin-bottom:12px;"><strong>?典?鈭辣憿?嚗?/strong></p>
+          <ul style="margin-left:20px;margin-bottom:20px;padding-left:20px;list-style:none;">
+            <li style="margin-bottom:8px;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>?輻?瘜?</strong></li>
+            <li style="margin-bottom:0;"><span class="color-block macro" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88623E;"></span><strong>摰?蝬??冗??隞?/strong></li>
+          </ul>
+          <p style="margin-bottom:12px;"><strong>?唳鈭辣憿?嚗?/strong></p>
+          <ul style="margin-left:20px;margin-bottom:0;padding-left:20px;list-style:none;">
+            <li style="margin-bottom:8px;"><span class="color-block tax" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#E09861;"></span><strong>靘??抒??箄矽??/strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block infra" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88B4CC;"></span><strong>?之撱箄身</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block dev" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#1C9A85;"></span><strong>?閬?????/strong></li>
+            <li style="margin-bottom:0;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>?輻?瘜?</strong></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- ?痊?脫? -->
+      <div style="margin-bottom:24px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">?痊?脫?</h3>
+        <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
+          ?砌葉敹遣蝡??憭找?蝝嚗?冽?靘????游??潔???賊?鈭辣蝝??敶嚗蒂?誑?踹銝凋??貉???橘?隞乩噶瘞??摰嗅飛????望?踹敶梢???曉?嚗?隞嗥??潛?撠?摰?澆蔣?踹?賣????趙撱嗥???嚗”銝剖??曆?隞嗉??寞頞典銝阡???撠?靽??誑鈭辣蝝?撘??整?        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* RC Overlay ?賢?蝛粹??見撘?*/
+.rc-info-btn-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  z-index: 1500;
+  padding: 0;
+  margin: 0;
+}
+
+.rc-info-btn {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #4e79a7;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+}
+
+.rc-info-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 20px 40px 20px;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.rc-info-overlay.fade-out {
+  opacity: 0;
+}
+
+.rc-info-overlay-container {
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  margin-top: 0;
+}
+
+.rc-close-info-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 9999;
+}
+
+.rc-close-info-overlay:hover {
+  background: #c0392b;
+}
+
+.rc-info-content {
+  line-height: 1.8;
+  color: #fff;
+  text-align: left;
+  max-width: 700px;
+  margin: 0 auto;
+  padding-top: 0;
+}
+
+.rc-info-content h2 {
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 28px;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  padding-bottom: 12px;
+  text-align: center;
+  padding-top: 0;
+}
+
+.rc-info-content h3 {
+  color: #fff;
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 8px;
+}
+
+.rc-info-content p {
+  font-size: 15px;
+  line-height: 1.8;
+  margin: 0;
+  text-align: justify;
+}
+
+.rc-info-content ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.rc-info-content li {
+  margin-bottom: 8px;
+}
+
+.rc-info-content hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.rc-info-content > div {
+  margin-bottom: 32px;
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.rc-info-content > div:last-child {
+  margin-bottom: 24px;
+}
+</style>
+</div>
+<script>
+// ?澈?
+function initShareFeature() {
+  const sharePopup = document.getElementById('sharePopup');
+  const shareOverlay = document.getElementById('shareOverlay');
+  const shareBtn = document.getElementById('share-btn');
+  const closeShareBtn = document.getElementById('closeSharePopup');
+  
+  if(!sharePopup || !shareBtn) return;
+  
+  function showSharePopup() {
+    sharePopup.style.display = 'block';
+    shareOverlay.style.display = 'block';
+    
+    // ???萄遣 LINE ?澈??
+    const lineContainer = document.getElementById('lineButtonContainer');
+    if(lineContainer) {
+      // 皜????
+      lineContainer.innerHTML = '';
+      // ?萄遣?啁? LINE ??
+      const lineButton = document.createElement('div');
+      lineButton.className = 'line-it-button';
+      lineButton.setAttribute('data-lang', 'en');
+      lineButton.setAttribute('data-type', 'share-b');
+      lineButton.setAttribute('data-env', 'PROD');
+      lineButton.setAttribute('data-url', 'https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/#using-custom-icons');
+      lineButton.setAttribute('data-color', 'default');
+      lineButton.setAttribute('data-size', 'large');
+      lineButton.setAttribute('data-count', 'false');
+      lineButton.setAttribute('data-ver', '3');
+      lineButton.style.display = 'none';
+      lineContainer.appendChild(lineButton);
+      
+      // 蝑? LINE ?單頛摰?敺?憪???
+      let retryCount = 0;
+      function initLineButton() {
+        retryCount++;
+        // 瑼Ｘ LINE API ?臬撌脰???        if(window.LineIt) {
+          try {
+            // ?岫憭車???瘜?            if(typeof window.LineIt.loadButton === 'function') {
+              window.LineIt.loadButton();
+            } else if(typeof window.LineIt.parse === 'function') {
+              window.LineIt.parse();
+            } else if(typeof window.LineIt.render === 'function') {
+              window.LineIt.render();
+            }
+            // ????憿舐內??
+            lineButton.style.display = 'inline-block';
+            // 憒? LineIt 撠情摮嚗虜?????            console.log('LINE ??撌脣?憪?');
+          } catch(e) {
+            console.log('LINE ?????隤?', e);
+          }
+        } else if(retryCount < 50) {
+          // ?憭?閰?50 甈∴?5蝘?
+          setTimeout(initLineButton, 100);
+        } else {
+          console.warn('LINE ?單頛頞?嚗???賜瘜＊蝷箝?瑼Ｘ蝬脰楝?????LINE ?單?臬甇?Ⅱ頛??);
+          // ?喃蝙?單?芾??伐?銋＊蝷箸??捆??          lineButton.style.display = 'inline-block';
+        }
+      }
+      // 撱園????蝣箔? DOM 撌脫?唬??單??????      setTimeout(initLineButton, 200);
+    }
+  }
+  
+  function hideSharePopup() {
+    sharePopup.style.display = 'none';
+    shareOverlay.style.display = 'none';
+  }
+  
+  shareBtn.addEventListener('click', showSharePopup);
+  if(closeShareBtn) closeShareBtn.addEventListener('click', hideSharePopup);
+  if(shareOverlay) shareOverlay.addEventListener('click', hideSharePopup);
+  
+  document.querySelectorAll('.share-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const platform = this.dataset.platform;
+      const pageUrl = window.location.href;
+      const pageTitle = document.title;
+      
+      switch(platform) {
+        // LINE ??Facebook ?澈撌脫?典??寞???iframe嚗???
+        case 'copy':
+          navigator.clipboard.writeText(pageUrl).then(() => {
+            alert('???撌脰?鋆賢?芾票蝪選?');
+          }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = pageUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('???撌脰?鋆賢?芾票蝪選?');
+          });
+          break;
+      }
+      
+      hideSharePopup();
+    });
+    
+    btn.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+    });
+    btn.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = 'none';
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // ????Foundation 6嚗?雿??dashboard-container嚗?  if (typeof Foundation !== 'undefined') {
+    // ?芸 dashboard-container ?批?憪? Foundation
+    const dashboardContainer = document.querySelector('.dashboard-container');
+    if (dashboardContainer) {
+      Foundation.reInit(dashboardContainer);
+    }
+  }
+  
+  // ======== 璈怠??內瑼Ｘ葫嚗??冽?璈??憿舐內嚗?========
+  const rotatePrompt = document.getElementById('rotate-screen-prompt');
+  const closeBtn = document.getElementById('close-rotate-prompt');
+  const continueBtn = document.getElementById('continue-portrait');
+  
+  // ??????
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (rotatePrompt) {
+        rotatePrompt.classList.remove('show');
+        rotatePrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('rotate-prompt-dismissed', 'true');
+        console.log('璈怠??內撌脤???);
+      }
+    });
+  }
+  
+  // 蝜潛?雿輻?游?璅∪???
+  if (continueBtn) {
+    continueBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (rotatePrompt) {
+        rotatePrompt.classList.remove('show');
+        rotatePrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('rotate-prompt-dismissed', 'true');
+        console.log('?冽?豢?蝜潛?雿輻?游?璅∪?');
+      }
+    });
+  }
+  
+  function checkOrientation() {
+    if (!rotatePrompt) {
+      console.error('?曆???rotate-screen-prompt ??');
+      return;
+    }
+    
+    // 瑼Ｘ?臬?箸?璈?撖砍漲撠768px嚗?    const width = window.innerWidth || document.documentElement.clientWidth;
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const isMobile = width <= 768;
+    
+    // 瑼Ｘ?臬?箇??擃漲憭扳撖砍漲嚗?    const isPortrait = height > width;
+    
+    // 銋炎??orientation API嚗???嚗?    let orientationPortrait = false;
+    if (window.orientation !== undefined) {
+      orientationPortrait = (window.orientation === 0 || window.orientation === 180);
+    }
+    
+    // ?蝯?瑟?衣?游?
+    const finalIsPortrait = isPortrait || orientationPortrait;
+    
+    // 瑼Ｘ?冽?臬撌脤????蝷綽?雿輻 sessionStorage嚗?甈⊥?閰梢憿舐內銝甈∴?
+    // ?寧 sessionStorage ????localStorage嚗見瘥活???汗?券??唳???＊蝷?    const dismissed = sessionStorage.getItem('rotate-prompt-dismissed') === 'true';
+    
+    // 隤輯岫靽⊥
+    console.log('? 璈怠??內瑼Ｘ葫:', {
+      width: width,
+      height: height,
+      isMobile: isMobile,
+      isPortrait: finalIsPortrait,
+      dismissed: dismissed,
+      orientation: window.orientation
+    });
+    
+    // ?寞???憿舐內??帖??蝷?    if (isMobile && finalIsPortrait && !dismissed) {
+      // ???游?銝???內??憿舐內璈怠??內
+      console.log('??憿舐內璈怠??內');
+      rotatePrompt.classList.add('show');
+      // 撘瑕閮剔蔭璅??蝣箔?憿舐內嚗蝙??setProperty ?寞?嚗?      rotatePrompt.style.setProperty('display', 'flex', 'important');
+      rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+      rotatePrompt.style.setProperty('opacity', '1', 'important');
+      rotatePrompt.style.setProperty('z-index', '10000', 'important');
+      rotatePrompt.style.setProperty('position', 'fixed', 'important');
+      rotatePrompt.style.setProperty('inset', '0', 'important');
+      console.log('璈怠??內璅??撌脰身蝵?);
+    } else {
+      // ?嗡????梯??內
+      console.log('???梯?璈怠??內 - ??:', {
+        isMobile: isMobile,
+        isPortrait: finalIsPortrait,
+        dismissed: dismissed
+      });
+      rotatePrompt.classList.remove('show');
+      rotatePrompt.style.setProperty('display', 'none', 'important');
+    }
+  }
+  
+  // 蝡瑼Ｘ嚗?蝑? splash嚗?  checkOrientation();
+  
+  // 蝑? DOM 摰頛敺?瑼Ｘ銝甈?  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(checkOrientation, 500);
+    });
+  } else {
+    setTimeout(checkOrientation, 500);
+  }
+  
+  // 蝑? splash screen 瘨仃敺?瑼Ｘ銝甈?  function checkAfterSplash() {
+    const splashScreen = document.getElementById('splash-screen');
+    if (splashScreen) {
+      console.log('蝑? splash screen 瘨仃...');
+      // ?? splash ??憭?      const checkSplash = setInterval(function() {
+        const splashDisplay = getComputedStyle(splashScreen).display;
+        const splashOpacity = getComputedStyle(splashScreen).opacity;
+        const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+        const splashFaded = parseFloat(splashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+        
+        if (splashHidden || splashFaded) {
+          clearInterval(checkSplash);
+          console.log('Splash screen 撌脫?憭梧?瑼Ｘ璈怠??內');
+          setTimeout(function() {
+            checkOrientation();
+            // 撘瑕蝣箔?憿舐內嚗???閬?
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const height = window.innerHeight || document.documentElement.clientHeight;
+            const isMobile = width <= 768;
+            const isPortrait = height > width;
+            if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+              rotatePrompt.classList.add('show');
+              rotatePrompt.style.setProperty('display', 'flex', 'important');
+              rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+              rotatePrompt.style.setProperty('opacity', '1', 'important');
+              rotatePrompt.style.setProperty('z-index', '10000', 'important');
+              rotatePrompt.style.setProperty('position', 'fixed', 'important');
+              rotatePrompt.style.setProperty('inset', '0', 'important');
+            }
+          }, 300);
+        }
+      }, 100);
+      
+      // ?憭?敺?10 蝘?      setTimeout(function() {
+        clearInterval(checkSplash);
+        console.log('10蝘???撘瑕瑼Ｘ璈怠??內');
+        checkOrientation();
+      }, 10000);
+    } else {
+      console.log('瘝? splash screen嚗?交炎?交帖??蝷?);
+      // 瘝? splash嚗?交炎??      setTimeout(function() {
+        checkOrientation();
+        // 撘瑕蝣箔?憿舐內嚗???閬?
+        const width = window.innerWidth || document.documentElement.clientWidth;
+        const height = window.innerHeight || document.documentElement.clientHeight;
+        const isMobile = width <= 768;
+        const isPortrait = height > width;
+        if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+          rotatePrompt.classList.add('show');
+          rotatePrompt.style.setProperty('display', 'flex', 'important');
+          rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+          rotatePrompt.style.setProperty('opacity', '1', 'important');
+          rotatePrompt.style.setProperty('z-index', '10000', 'important');
+          rotatePrompt.style.setProperty('position', 'fixed', 'important');
+          rotatePrompt.style.setProperty('inset', '0', 'important');
+        }
+      }, 1500);
+    }
+  }
+  
+  // 撱園?瑁?嚗Ⅱ靽???蝝撌脰???  setTimeout(checkAfterSplash, 1000);
+  
+  // 憿?瑼Ｘ嚗?摰頛敺?甈⊥炎??  window.addEventListener('load', function() {
+    console.log('?頛摰? - ?活瑼Ｘ璈怠??內');
+    setTimeout(function() {
+      checkOrientation();
+      // 撘瑕蝣箔?憿舐內嚗???閬?
+      const width = window.innerWidth || document.documentElement.clientWidth;
+      const height = window.innerHeight || document.documentElement.clientHeight;
+      const isMobile = width <= 768;
+      const isPortrait = height > width;
+      if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+        rotatePrompt.classList.add('show');
+        rotatePrompt.style.setProperty('display', 'flex', 'important');
+        rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+        rotatePrompt.style.setProperty('opacity', '1', 'important');
+        rotatePrompt.style.setProperty('z-index', '10000', 'important');
+        rotatePrompt.style.setProperty('position', 'fixed', 'important');
+        rotatePrompt.style.setProperty('inset', '0', 'important');
+      }
+    }, 1500);
+  });
+  
+  // ??閬?憭批??????  let resizeTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(checkOrientation, 200);
+  });
+  
+  window.addEventListener('orientationchange', function() {
+    // ?孵??寡??辣?脖?銝?瑼Ｘ嚗Ⅱ靽偕撖詨歇?湔
+    setTimeout(function() {
+      checkOrientation();
+      // 撘瑕蝣箔?憿舐內嚗???閬?
+      const width = window.innerWidth || document.documentElement.clientWidth;
+      const height = window.innerHeight || document.documentElement.clientHeight;
+      const isMobile = width <= 768;
+      const isPortrait = height > width;
+      if (isMobile && isPortrait && rotatePrompt && !sessionStorage.getItem('rotate-prompt-dismissed')) {
+        rotatePrompt.classList.add('show');
+        rotatePrompt.style.setProperty('display', 'flex', 'important');
+        rotatePrompt.style.setProperty('visibility', 'visible', 'important');
+        rotatePrompt.style.setProperty('opacity', '1', 'important');
+        rotatePrompt.style.setProperty('z-index', '10000', 'important');
+        rotatePrompt.style.setProperty('position', 'fixed', 'important');
+        rotatePrompt.style.setProperty('inset', '0', 'important');
+      }
+    }, 500);
+  });
+  
+  // ======== 撟單?內瑼Ｘ葫嚗??典像?蹂蝙?冽?憿舐內嚗?========
+  const tabletPrompt = document.getElementById('tablet-prompt');
+  const closeTabletBtn = document.getElementById('close-tablet-prompt');
+  const continueTabletBtn = document.getElementById('continue-tablet');
+  
+  // ??????
+  if (closeTabletBtn) {
+    closeTabletBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tabletPrompt) {
+        tabletPrompt.classList.remove('show');
+        tabletPrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('tablet-prompt-dismissed', 'true');
+        console.log('撟單?內撌脤???);
+      }
+    });
+  }
+  
+  // 蝜潛?雿輻撟單??
+  if (continueTabletBtn) {
+    continueTabletBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tabletPrompt) {
+        tabletPrompt.classList.remove('show');
+        tabletPrompt.style.setProperty('display', 'none', 'important');
+        sessionStorage.setItem('tablet-prompt-dismissed', 'true');
+        console.log('?冽?豢?蝜潛?雿輻撟單');
+      }
+    });
+  }
+  
+  function checkTablet() {
+    if (!tabletPrompt) {
+      console.error('?曆???tablet-prompt ??');
+      return;
+    }
+    
+    // 瑼Ｘ?臬?箏像?選?撖砍漲??769px ??992px 銋?嚗?    const width = window.innerWidth || document.documentElement.clientWidth;
+    const isTablet = width > 768 && width <= 992;
+    
+    // 瑼Ｘ?冽?臬撌脤????蝷?    const dismissed = sessionStorage.getItem('tablet-prompt-dismissed') === 'true';
+    
+    // 隤輯岫靽⊥
+    console.log('? 撟單?內瑼Ｘ葫:', {
+      width: width,
+      isTablet: isTablet,
+      dismissed: dismissed
+    });
+    
+    // ?寞???憿舐內??像?踵?蝷?    if (isTablet && !dismissed) {
+      console.log('??憿舐內撟單?內');
+      tabletPrompt.classList.add('show');
+      // 撘瑕閮剔蔭璅??蝣箔?憿舐內嚗蝙?典?舀見撘?????CSS嚗?      tabletPrompt.style.setProperty('display', 'flex', 'important');
+      tabletPrompt.style.setProperty('visibility', 'visible', 'important');
+      tabletPrompt.style.setProperty('opacity', '1', 'important');
+      tabletPrompt.style.setProperty('z-index', '10001', 'important');
+      tabletPrompt.style.setProperty('position', 'fixed', 'important');
+      tabletPrompt.style.setProperty('inset', '0', 'important');
+      console.log('撟單?內璅??撌脰身蝵?);
+    } else {
+      console.log('???梯?撟單?內 - ??:', {
+        isTablet: isTablet,
+        dismissed: dismissed,
+        width: width
+      });
+      tabletPrompt.classList.remove('show');
+      tabletPrompt.style.setProperty('display', 'none', 'important');
+    }
+  }
+  
+  // 蝑? splash screen 瘨仃敺?瑼Ｘ
+  function checkTabletAfterSplash() {
+    const splashScreen = document.getElementById('splash-screen');
+    
+    if (splashScreen) {
+      // ?? splash ??憭?      const checkSplash = setInterval(function() {
+        const splashDisplay = getComputedStyle(splashScreen).display;
+        const splashOpacity = getComputedStyle(splashScreen).opacity;
+        const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+        const splashFaded = splashOpacity === '0' || splashScreen.style.opacity === '0';
+        
+        if (splashHidden || splashFaded) {
+          clearInterval(checkSplash);
+          // splash 瘨仃敺??單炎?乩蒂憿舐內撟單?內
+          setTimeout(function() {
+            checkTablet();
+            // 撘瑕蝣箔?憿舐內嚗???閬?
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const isTablet = width > 768 && width <= 992;
+            if (isTablet && tabletPrompt && !sessionStorage.getItem('tablet-prompt-dismissed')) {
+              tabletPrompt.classList.add('show');
+              tabletPrompt.style.setProperty('display', 'flex', 'important');
+              tabletPrompt.style.setProperty('visibility', 'visible', 'important');
+              tabletPrompt.style.setProperty('opacity', '1', 'important');
+              tabletPrompt.style.setProperty('z-index', '10001', 'important');
+              tabletPrompt.style.setProperty('position', 'fixed', 'important');
+              tabletPrompt.style.setProperty('inset', '0', 'important');
+            }
+          }, 300);
+        }
+      }, 100);
+      
+      // ?憭?敺?10 蝘?撘瑕瑼Ｘ
+      setTimeout(function() {
+        clearInterval(checkSplash);
+        checkTablet();
+      }, 10000);
+    } else {
+      // 瘝? splash嚗?交炎??      setTimeout(checkTablet, 1500);
+    }
+  }
+  
+  // ??瑼Ｘ嚗辣?脣銵?蝣箔? splash 撌脰???
+  setTimeout(checkTabletAfterSplash, 500);
+  
+  // 憿?瑼Ｘ嚗?摰頛敺?甈⊥炎??  window.addEventListener('load', function() {
+    setTimeout(checkTablet, 2000);
+  });
+  
+  // ??閬?憭批?霈?
+  let resizeTabletTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTabletTimeout);
+    resizeTabletTimeout = setTimeout(checkTablet, 200);
+  });
+  
+  loadDashboardData()
+    .then(apiData=>{
+      console.log('本地資料載入完成！');
+      console.log('鞈?蝯?:', {
+        hasNewData: !!apiData.newData,
+        newDataLength: apiData.newData ? (Array.isArray(apiData.newData) ? apiData.newData.length : 'not array') : 'missing',
+        keys: Object.keys(apiData)
+      });
+      initializeChart(apiData);
+    })
+    .catch(error=>{
+      console.error('讀取本地資料時發生錯誤');
+      console.error('?航炊憿?:', error.constructor.name);
+      console.error('?航炊閮:', error.message);
+      console.error('?航炊??:', error.stack);
+      console.error('摰?航炊撠情:', error);
+      
+      // 瑼Ｘ?臬?舐雯頝舫????
+      let errorMsg = '本地資料載入失敗';
+      if(error.message === 'Failed to fetch'){
+        errorMsg = '無法讀取本地 json 檔案。\n';
+        errorMsg += '1. 請確認專案目錄中存在 json 資料檔\n';
+        errorMsg += '2. 若透過伺服器預覽，請確保靜態檔案可被讀取\n';
+        errorMsg += '3. 檢查瀏覽器 Console / Network 了解詳細原因';
+      } else if(error.message){
+        errorMsg += ': ' + error.message;
+      } else if(error.name){
+        errorMsg += ': ' + error.name;
+      }
+      
+      const dashboard=document.querySelector('.dashboard-container');dashboard.style.display='block';
+      const banner=document.createElement('div');
+      banner.innerHTML=errorMsg.replace(/\n/g, '<br>') + '<br>如需更多資訊請檢查瀏覽器開發者工具。';
+      banner.setAttribute('style','max-width:1200px;margin:10px auto;padding:10px 14px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:6px;white-space:pre-line;');
+      document.body.insertBefore(banner,dashboard);
+      const splashScreen=document.getElementById('splash-screen');if(splashScreen){splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+    });
+
+  window.__splashFailSafe=setTimeout(()=>{
+    const splashScreen=document.getElementById('splash-screen');
+    const dashboard=document.querySelector('.dashboard-container');
+    if(splashScreen&&splashScreen.style.display!=='none'){dashboard.style.display='block';splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
+  },8000);
+  
+  // ????鈭怠???  initShareFeature();
+  
+  // ????閮?????  initInfoButton();
+});
+
+// 鞈????嚗C Overlay ?賢?蝛粹???
+function initInfoButton() {
+  const infoBtnWrapper = document.getElementById('rc-info-btn-wrapper');
+  const infoBtn = document.getElementById('rc-info-btn');
+  const infoOverlay = document.getElementById('rc-info-overlay');
+  const closeInfoBtn = document.getElementById('rc-close-info-overlay');
+  
+  if (!infoBtn || !infoOverlay) return;
+  
+  // ?游之 hover ??????摨?啣蔣
+  if (infoBtnWrapper) {
+    infoBtnWrapper.style.pointerEvents = 'auto';
+  }
+  
+  // 瑼Ｘ葫?臬?箸??Ｚ?蝵殷?閬?撖砍漲憭扳 992px嚗?  function isDesktop() {
+    return window.innerWidth > 992;
+  }
+  
+  // 瑼Ｘ葫?臬?箄孛?扯?蝵?  function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }
+  
+  let hoverTimeout;
+  let leaveTimeout;
+  let isOverlayVisible = false;
+  
+  // 憿舐內?桃蔗
+  function showInfoOverlay() {
+    // 蝣箔?蝘駁瘛∪憿銝阡?蝵?opacity
+    infoOverlay.classList.remove('fade-out');
+    infoOverlay.style.opacity = '1';
+    infoOverlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    isOverlayVisible = true;
+  }
+  
+  // ?梯??桃蔗
+  function hideInfoOverlay() {
+    // 瘛餃?瘛∪??
+    infoOverlay.classList.add('fade-out');
+    setTimeout(() => {
+      infoOverlay.style.display = 'none';
+      infoOverlay.classList.remove('fade-out');
+      document.body.style.overflow = '';
+      isOverlayVisible = false;
+    }, 500); // 蝑?瘛∪?摰?
+  }
+  
+  // 皜??辣?脰??
+  function clearAllTimeouts() {
+    clearTimeout(hoverTimeout);
+    clearTimeout(leaveTimeout);
+  }
+  
+  // 獢??hover 鈭?嚗敺桀辣?莎?銝??
+  if (isDesktop() && !isTouchDevice()) {
+    const hoverTarget = infoBtnWrapper || infoBtn;
+    
+    // 皛??脣??
+    hoverTarget.addEventListener('mouseenter', function() {
+      if (infoBtn) {
+        infoBtn.style.transform = 'scale(1.1)';
+        infoBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+      }
+      
+      clearAllTimeouts();
+      
+      // 撱園憿舐內?桃蔗嚗凝撱園嚗???
+      hoverTimeout = setTimeout(() => {
+        if (!isOverlayVisible) {
+          showInfoOverlay();
+        }
+      }, 200); // 敺?300ms ?寧 200ms嚗瘚
+    });
+    
+    // 皛??ａ???
+    hoverTarget.addEventListener('mouseleave', function(e) {
+      if (infoBtn) {
+        infoBtn.style.transform = 'scale(1)';
+        infoBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      }
+      
+      clearTimeout(hoverTimeout);
+      
+      // 瑼Ｘ皛?蝘餃??啁??格???
+      const relatedTarget = e.relatedTarget;
+      
+      // 憒?皛?蝘餃??圈蝵拇??嗅???銝?銝??日蝵?      if (relatedTarget && (relatedTarget === infoOverlay || infoOverlay.contains(relatedTarget))) {
+        return;
+      }
+      
+      // 撱園??嚗策?冽??蝘餃?皛??圈蝵拐?嚗凝撱園嚗?      clearTimeout(leaveTimeout);
+      leaveTimeout = setTimeout(() => {
+        if (infoOverlay.style.display === 'none' || !isOverlayVisible) return;
+        
+        // 雿輻 document.elementFromPoint 瑼Ｘ?嗅?皛?雿蔭銝???
+        const currentElement = document.elementFromPoint(e.clientX || 0, e.clientY || 0);
+        if (currentElement && (currentElement === infoOverlay || infoOverlay.contains(currentElement))) {
+          return; // 皛??券蝵拐?嚗?皜
+        }
+        
+        hideInfoOverlay();
+      }, 100); // 敺?150ms ?寧 100ms嚗瘚
+    });
+    
+    // ?桃蔗 hover ???＊蝷?    infoOverlay.addEventListener('mouseenter', function() {
+      clearAllTimeouts();
+      isOverlayVisible = true;
+    });
+    
+    // 皛??ａ??桃蔗?????    infoOverlay.addEventListener('mouseleave', function() {
+      hideInfoOverlay();
+    });
+    
+    // 暺??桃蔗???嚗??Ｙ?嚗?    infoOverlay.addEventListener('click', function(e) {
+      if (e.target === infoOverlay) {
+        hideInfoOverlay();
+      }
+    });
+  }
+  
+  // 暺???憿舐內/?梯??桃蔗嚗???蝵殷?
+  infoBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    clearAllTimeouts();
+    if (!isOverlayVisible) {
+      showInfoOverlay();
+    } else {
+      hideInfoOverlay();
+    }
+  });
+  
+  // ????嚗???蝵殷?
+  if (closeInfoBtn) {
+    closeInfoBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      hideInfoOverlay();
+    });
+  }
+  
+  // 銵?鋆蔭嚗??蝵抵??舫???  if (!isDesktop() || isTouchDevice()) {
+    infoOverlay.addEventListener('click', function(e) {
+      if (e.target === infoOverlay) {
+        hideInfoOverlay();
+      }
+    });
+  }
+  
+  // ESC ?菟??????蝵殷?
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && (infoOverlay.style.display === 'flex' || infoOverlay.style.display === 'block')) {
+      hideInfoOverlay();
+    }
+  });
+  
+  // ?頛??＊蝷粹蝵抬??嗅??芸?瘛∪
+  function showInfoOverlayOnLoad() {
+    // 蝑? splash screen 瘨仃敺?憿舐內
+    const splashScreen = document.getElementById('splash-screen');
+    const checkSplash = setInterval(function() {
+      const splashDisplay = getComputedStyle(splashScreen).display;
+      const splashOpacity = getComputedStyle(splashScreen).opacity;
+      const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
+      const splashFaded = parseFloat(splashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+      
+      // 憒? splash screen ?憿舐內嚗Ⅱ靽牧???Ｖ?憿舐內
+      if (!splashHidden && !splashFaded) {
+        if (isOverlayVisible) {
+          hideInfoOverlay();
+        }
+        return; // 蝜潛?蝑?
+      }
+      
+      if (splashHidden || splashFaded) {
+        clearInterval(checkSplash);
+        // Splash screen 撌脫?憭梧?蝑?銝撠挾??敺＊蝷箄?閮蝵?        setTimeout(() => {
+          // ?活蝣箄? splash screen 撌脣??冽?憭?          const finalSplashDisplay = getComputedStyle(splashScreen).display;
+          const finalSplashOpacity = getComputedStyle(splashScreen).opacity;
+          const finalSplashHidden = splashScreen.style.display === 'none' || finalSplashDisplay === 'none';
+          const finalSplashFaded = parseFloat(finalSplashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
+          
+          if (finalSplashHidden || finalSplashFaded) {
+            // 蝣箔?蝘駁瘛∪憿
+            infoOverlay.classList.remove('fade-out');
+            showInfoOverlay();
+            isOverlayVisible = true;
+            
+            // 60蝘??芸?瘛∪
+            setTimeout(() => {
+              if (isOverlayVisible) {
+                hideInfoOverlay();
+              }
+            }, 60000); // 憿舐內60蝘??芸?瘛∪
+          }
+        }, 800); // 憓?蝑?????.8蝘?蝣箔? splash screen 摰瘨仃
+      }
+    }, 100);
+    
+    // ?憭?敺?2蝘?憒?splash screen??瘨仃嚗?憿舐內鞈??桃蔗
+    setTimeout(() => {
+      clearInterval(checkSplash);
+      // ?活蝣箄? splash screen ???      const finalCheck = document.getElementById('splash-screen');
+      const finalDisplay = getComputedStyle(finalCheck).display;
+      const finalOpacity = getComputedStyle(finalCheck).opacity;
+      const finalHidden = finalCheck.style.display === 'none' || finalDisplay === 'none';
+      const finalFaded = parseFloat(finalOpacity) <= 0.01 || finalCheck.style.opacity === '0';
+      
+      if ((finalHidden || finalFaded) && !isOverlayVisible) {
+        infoOverlay.classList.remove('fade-out');
+        showInfoOverlay();
+        isOverlayVisible = true;
+        
+        // 60蝘??芸?瘛∪
+        setTimeout(() => {
+          if (isOverlayVisible) {
+            hideInfoOverlay();
+          }
+        }, 60000);
+      }
+    }, 12000);
+  }
+  
+  // ???芸?憿舐內?
+  showInfoOverlayOnLoad();
+}
+
+function initializeChart(apiData){
+  // ======== ?雿?鞈?蝯? ========
+  let rawNewData = apiData.newData || [];
+  if(Array.isArray(rawNewData) && rawNewData.length>0 && Array.isArray(rawNewData[0])){ rawNewData = rawNewData[0]; }
+  const nationalEvents = apiData.oldLabelData || [];
+  const taipeiEvents = apiData.taipeiData || [];
+  const newtaipeiEvents = apiData.newtaipeiData || [];
+  const taoyuanEvents = apiData.taoyuanData || [];
+  const hsinchuEvents = apiData.hsinchuData || [];
+  const taichungEvents = apiData.taichungData || [];
+  const tainanEvents = apiData.tainanData || [];
+  const kaohsiungEvents = apiData.kaohsiungData || [];
+
+  const allEvents = [...nationalEvents,...taipeiEvents,...newtaipeiEvents,...taoyuanEvents,...hsinchuEvents,...taichungEvents,...tainanEvents,...kaohsiungEvents];
+
+  // 隤輯岫靽⊥
+  console.log('API鞈?頛??:');
+  console.log('- ?踹鞈?蝑:', rawNewData.length);
+  console.log('- 鈭辣鞈?蝑:', allEvents.length);
+
+  function processData(){
+    const dataMap=new Map();
+    
+    // ?????踹鞈??迤摨?    rawNewData.forEach(d=>{
+      const newD={...d};
+      if(newD.HsinchuCity||newD.HsinchuCounty){ newD.Hsinchu=newD.HsinchuCity||newD.HsinchuCounty; delete newD.HsinchuCity; delete newD.HsinchuCounty; }
+      dataMap.set(newD.Quarter,{...newD,events:[]});
+    });
+    
+    // ?????隞塚?雿?2013撟游?隞亙???隞?    let processedEventsCount = 0;
+    let filteredEventsCount = 0;
+    allEvents.forEach(ev=>{ 
+      processedEventsCount++;
+      
+      // 瑼Ｘ鈭辣?臬????Quarter
+      if (!ev.Quarter || typeof ev.Quarter !== 'string') {
+        console.warn('?潛?⊥???隞貴uarter:', ev);
+        return; // 頝喲???隞?      }
+      
+      // 瑼Ｘ鈭辣?僑隞踝??芾???013撟游?隞亙???隞?      const eventYear = parseInt(ev.Quarter.substring(0, 4));
+      if(eventYear >= 2013) {
+        filteredEventsCount++;
+        if(dataMap.has(ev.Quarter)){
+          // 憒?閰脣迤摨血歇??寡????湔瘛餃?鈭辣
+          dataMap.get(ev.Quarter).events.push(ev);
+        } else {
+          // 憒?閰脣迤摨行???寡?????隞塚??萄遣銝???隞嗥?鞈?暺?          dataMap.set(ev.Quarter, {
+            Quarter: ev.Quarter,
+            events: [ev],
+            // ?箸???寡???摮?漲閮剔蔭?身??            Nation: { all: null },
+            Taipei: { all: null },
+            NewTaipei: { all: null },
+            Taoyuan: { all: null },
+            Hsinchu: { all: null },
+            Taichung: { all: null },
+            Tainan: { all: null },
+            Kaohsiung: { all: null }
+          });
+        }
+      }
+    });
+    
+    console.log('鈭辣??蝯梯?:');
+    console.log('- 蝮賭?隞嗆:', processedEventsCount);
+    console.log('- 2013撟游?鈭辣??', filteredEventsCount);
+    console.log('- ??敺?????', dataMap.size);
+    
+    const arr=Array.from(dataMap.values());
+    arr.sort((a,b)=>{
+      const [ya,qa]=a.Quarter.split('_'); const [yb,qb]=b.Quarter.split('_');
+      if(ya!==yb) return (+ya)-(+yb);
+      return qa.localeCompare(qb);
+    });
+    return arr;
+  }
+
+  const fullData = processData();
+
+  // ======== 敹急摮? DOM ========
+  const placeSelect = d3.select('#placeSelect');
+  const filterToggle = d3.select('#filterToggle');
+  const yearRangeButtons = d3.selectAll('input[name="yearRange"]');
+  // 撅翩蝭拚撌脩宏?歹??箏?雿輻?券撅翩
+  const timeModeButtons = d3.selectAll('input[name="timeMode"]');
+  let eventTypeButtons = d3.selectAll('.event-chip');
+
+  // ======== ???========
+  // ?踵?撘偕撖貉?蝞?憓之?”撠箏站嚗??餃漲摮?頠豢?憿皜?嚗?  function getResponsiveDimensions(){
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
+    
+    // ?脣? #graph 摰孵?祕?祝摨?    const graphElement = document.getElementById('graph');
+    const graphWidth = graphElement ? graphElement.getBoundingClientRect().width : (window.innerWidth || document.documentElement.clientWidth);
+    
+    if(isMobile){
+      // ????雿輻撖阡??Ｗ?撖砍漲嚗?蝣箔??雲憭征??      const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+      const availableWidth = screenWidth - 20; // ?撌血??
+      return {
+        margin: {top:50,right:25,bottom:100,left:70}, // 蝔凝皜? margin
+        baseWidth: availableWidth,
+        baseHeight: 360 // 皜?擃漲嚗??”?游?
+      };
+    } else if(isTablet){
+      // 撟單??雿輻?”摰孵?祕?祝摨?      const availableWidth = graphWidth > 0 ? graphWidth : (window.innerWidth - 40);
+      return {
+        margin: {top:60,right:70,bottom:85,left:90}, // 蝔凝皜? margin
+        baseWidth: Math.max(600, Math.min(1100, availableWidth)), // ?寞?撖阡?摰孵撖砍漲隤踵
+        baseHeight: 580 // 皜?擃漲嚗??”?游?
+      };
+    } else {
+      // 獢??雿輻?”摰孵?祕?祝摨佗???喳?Ｘ350px + gap 16px嚗?      const availableWidth = graphWidth > 0 ? graphWidth : 1000;
+      return {
+        margin: {top:65,right:110,bottom:90,left:115}, // 蝔凝皜? margin
+        baseWidth: availableWidth,
+        baseHeight: 520 // 皜?擃漲嚗??”?游?
+      };
+    }
+  }
+  
+  let responsiveDims = getResponsiveDimensions();
+  let margin = responsiveDims.margin;
+  let width = responsiveDims.baseWidth - margin.left - margin.right;
+  let height = responsiveDims.baseHeight - margin.top - margin.bottom;
+  
+  // 閬?憭批??寡????啗?蝞?撠 SVG ?萄遣敺身蝵殷?
+  let resizeHandler = null;
+
+  const allQuarters = rawNewData.map(d=>d.Quarter);
+  const startSelect = d3.select("#startSelect");
+  const endSelect = d3.select("#endSelect");
+  allQuarters.forEach((q,i)=>{startSelect.append('option').attr('value',i).text(q); endSelect.append('option').attr('value',i).text(q);});
+
+  const mainSvg = d3.select("#graph").append("svg")
+    .attr("viewBox",`0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
+    .attr("preserveAspectRatio","xMidYMid meet")
+    .style("width", "100%")
+    .style("height", "auto");
+  mainSvg.append("defs").append("clipPath").attr("id","clip").append("rect").attr("width",width).attr("height",height);
+  // ?寞?鋆蔭憿?閮剖?頠豢?蝐支?蝵桀?摮?憭批?
+  const isMobileInit = window.innerWidth <= 768;
+  const isTabletInit = window.innerWidth > 768 && window.innerWidth <= 992;
+  const yLabelX = isMobileInit ? 5 : 35; // 隤踵雿蔭隞亙捆蝝?擃?  const xLabelY = isMobileInit ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30; // 隤踵雿蔭隞亙捆蝝?擃?  const titleFontSize = isMobileInit ? 16 : (isTabletInit ? 20 : 22);
+  const axisLabelFontSize = isMobileInit ? 11 : (isTabletInit ? 14 : 16);
+  
+  // 璅?雿蔭?寞? margin.top ??隤踵嚗Ⅱ靽?蝵桀??拐?銝?鋡恍??  // 璅??府?典?銵券??其??對???拍??頝?  const titleY = isMobileInit ? 28 : (isTabletInit ? 35 : 38);
+  mainSvg.append("text")
+    .attr("id","chart-title")
+    .style("font-size",`${titleFontSize}px`)
+    .style("font-weight","bold")
+    .style("text-anchor","middle")
+    .style("fill","#2c3e50")
+    .attr("x",(width+margin.left+margin.right)/2)
+    .attr("y",titleY);
+  mainSvg.append("text").attr("class","axis-label").attr("x",yLabelX).attr("y",margin.top+height/2).attr("text-anchor","middle").attr("transform",`rotate(-90, ${yLabelX}, ${margin.top+height/2})`).style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("瘥?桀嚗??");
+  mainSvg.append("text").attr("class","axis-label").attr("x",margin.left+width/2).attr("y",xLabelY).attr("text-anchor","middle").style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("??嚗迤?伐?");
+
+
+  const watermarkGroup=mainSvg.append("g").attr("class","watermark").attr("transform",`translate(${margin.left+20}, ${margin.top+30})`).style("opacity","0");
+  watermarkGroup.append("text").attr("x","0").attr("y","-10").attr("text-anchor","start").style("font-family","Noto Sans TC, Microsoft JhengHei, sans-serif").style("font-size","18px").style("font-weight","bold").style("fill","#003399").text("?踹之銝??Ｙ?蝛嗡葉敹?);
+  watermarkGroup.append("text").attr("x","0").attr("y","15").attr("text-anchor","start").style("font-family","Inter, Arial, sans-serif").style("font-size","12px").style("fill","#003399").text("Center For Real Estate Research, NCCU");
+
+  const focus = mainSvg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
+
+  // 閮??踵?撘?擃之撠??賣嚗??SVG 撖阡?蝮格瘥?嚗?  function getResponsiveFontSize(baseSize, isMobile = false) {
+    if (!mainSvg || !mainSvg.node()) return baseSize;
+    
+    const svgNode = mainSvg.node();
+    const viewBox = svgNode.getAttribute('viewBox');
+    if (!viewBox) return baseSize;
+    
+    const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+    const actualWidth = svgNode.getBoundingClientRect().width;
+    const scale = actualWidth / vbWidth;
+    
+    // ?寞?蝮格瘥?隤踵摮?憭批?嚗?靽???蝭?嚗?憭抒??誑?舀??游之??擃?
+    const scaledSize = baseSize * scale;
+    const minSize = isMobile ? 10 : 14;
+    const maxSize = isMobile ? 18 : 24;
+    
+    return Math.max(minSize, Math.min(maxSize, scaledSize));
+  }
+
+  // ???舐摮?  function getAvailableDataRange(){
+    const arr=[];
+    allQuarters.forEach((q,i)=>{
+      const d=rawNewData[i];
+      if(d&&d.Nation&&d.Nation.all){
+        const ok=Object.values(d.Nation).some(v=>typeof v==='number'&&v>0);
+        if(ok) arr.push({quarter:q,index:i});
+      }
+    });
+    return arr;
+  }
+  const availableData = getAvailableDataRange();
+
+  // 蝭拚???  let startIndex = 0;
+  let endIndex = availableData.length>0 ? availableData[availableData.length-1].index : allQuarters.length-1;
+  let selectedPlace = placeSelect.property('value');
+  let selectedDataType = deriveDataType();
+  let selectedEventTypes = getSelectedEventTypes();
+  let selectedQuarterKey = fullData[endIndex]?.Quarter || fullData[fullData.length-1]?.Quarter; // ?喳甈?閮剝?摰?敺?摮?  let isLocked = false; // ?臬撌脤?摰摰迤摨?  let lastRenderedQuarter = null; // 閮?銝活皜脫??迤摨佗??踹???皜脫?
+  let lastUpdatedKpiQuarter = null; // 閮?銝活?湔KPI?迤摨佗??踹????湔撠??
+
+  // scales / axes
+  // ????閮剔蔭 paddingInner嚗???updateChart 銝剜??蝵桅?????堆?
+  const x=d3.scaleBand().range([0,width]).paddingInner(0.5).paddingOuter(0);
+  const y=d3.scaleLinear().range([height,0]);
+
+  const xAxisGroup=focus.append("g").attr("class","x-axis").attr("transform",`translate(0,${height})`);
+  const yAxisGroup=focus.append("g").attr("class","y-axis");
+
+  focus.append("path").attr("class","line focus-line").attr("clip-path","url(#clip)");
+
+  // 銝餃???撠蝺??蝺?
+  const mainCrosshair = focus.append("line")
+    .attr("class","crosshair-main")
+    .attr("x1",0)
+    .attr("x2",0)
+    .attr("y1",0)
+    .attr("y2",height)
+    .attr("stroke","#4e79a7")
+    .attr("stroke-width",3)
+    .style("opacity",0)
+    .style("pointer-events", "none")
+    .style("cursor", "pointer");
+
+
+  // 頛嚗???????
+  function deriveDataType(){
+    // ?箏?雿輻?券撅翩
+    return 'all';
+  }
+  function getValue(d){ 
+    const v=d?.[selectedPlace]?.[selectedDataType]; 
+    return (typeof v==='number' && v > 0)?v:null; 
+  }
+  function getSelectedEventTypes(){ const nodes=document.querySelectorAll('.event-chip.active'); return Array.from(nodes).map(el=>el.getAttribute('data-value')); }
+  function getEventCategory(e){ 
+    // ???典?鈭辣?ategory??
+    if(e.Category) {
+      let categories = [];
+      
+      // ??????澆?
+      if(Array.isArray(e.Category)) {
+        categories = e.Category;
+      } 
+      // ??摮葡?澆?
+      else if(typeof e.Category === 'string') {
+        categories = [e.Category];
+      }
+      
+      // 瑼Ｘ???憿?      for(let category of categories) {
+        // ?駁??蝛箸
+        category = category.trim();
+        
+        // ?蝑?閬絞銝甇賊??箏??隞?        if(category === '?輻?瘜?') return 'national';
+        // ??閫蝬??冗??隞嗚飛憿 'macro'
+        if(category === '摰?蝬??冗??隞?) return 'macro';
+        
+        // ???唳鈭辣??憿?        if(category === '靘??抒??箄矽??) return 'tax';      // ?唳瘜?蝔
+        if(category === '?之撱箄身') return 'infra';            // ?唳?之撱箄身
+        if(category === '?閬?????) return 'dev';        // ?唳??
+      }
+    }
+    
+    // ?身?箏??隞塚??輻?瘜?嚗?    return 'national'; 
+  }
+  function formatWan(v){ return (v/10000).toFixed(1); }
+  function quarterToText(q){ return q.replace('_Q',' Q'); }
+  
+  // 瑼Ｘ?迤摨行?行?鈭辣
+  function hasEventsForQuarter(quarterKey) {
+    const row = fullData.find(d => d.Quarter === quarterKey);
+    if (!row || !row.events) return false;
+    
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el => el.dataset.value);
+    
+    return row.events.some(ev => {
+      const hasNational = ev.hasOwnProperty('Label');
+      const hasPlace = ev.hasOwnProperty(`${place}Label`);
+      
+      let label = '';
+      if (showCity && place !== 'Nation') {
+        if (hasPlace) {
+          label = ev[`${place}Label`] || '';
+        }
+      } else {
+        if (hasNational) {
+          label = ev.Label || '';
+        }
+      }
+      
+      const cat = getEventCategory(ev);
+      return label && selected.includes(cat);
+    });
+  }
+
+  // 靘?芋撘?敺?摮??憿舐內??隞塚?撌脣??典??蝮????chip 蝭拚嚗?  function pickEventsFor(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.dataset.value);
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    return row.events.map(ev=>{
+        // 瑼Ｘ?典?鈭辣璅惜嚗??Label ??NationalLabel嚗?        const hasNational = ev.hasOwnProperty('Label');
+        const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // ?寞?璅∪?瘙箏?憿舐內?芰車鈭辣
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 蝮??璅∪?嚗憿舐內蝮??鈭辣
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // ?典?璅∪?嚗憿舐內?典?鈭辣
+          // ?芸?雿輻 Label嚗?????雿輻 NationalLabel
+          if(hasNational) {
+            label = ev.Label || '';
+          } else if(hasNationalLabel) {
+            label = ev.NationalLabel || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        return {...ev, __label: label, __cat: cat };
+      })
+      .filter(e => e.__label && selected.includes(e.__cat));
+  }
+
+  // ?箸??遘???迤閬＊蝷箇?鈭辣嚗蝙?其??寞?嗅??隞嗥祟?賂?
+  function pickEventsForTimeline(quarterKey){
+    const showCity = d3.select('#filterToggle').property('checked');
+    const place    = d3.select('#placeSelect').property('value');
+    // 雿輻??getSelectedEventTypes ?詨??瘜?銝剔?鈭辣憿?
+    const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.getAttribute('data-value'));
+
+    const row = fullData.find(d=>d.Quarter===quarterKey);
+    if(!row || !row.events) return [];
+
+    // 隤輯岫靽⊥ - ?芸??隞嗆?頛詨嚗??芾撓?粹??萎縑??    if(row.events.length > 0) {
+      const hasMacroEvents = row.events.some(ev => {
+        const cat = getEventCategory(ev);
+        return cat === 'macro';
+      });
+      if(hasMacroEvents) {
+        console.log(`?? pickEventsForTimeline [${quarterKey}]:`, {
+          璅∪?: showCity ? `蝮??璅∪? (${place})` : '?典?璅∪?',
+          ?訾葉??隞園????? selected,
+          閰脣迤摨衣蜇鈭辣?? row.events.length,
+          ?摰?蝬?鈭辣: true
+        });
+      }
+    }
+
+    return row.events.map(ev=>{
+        // 瑼Ｘ?典?鈭辣璅惜嚗??Label ??NationalLabel嚗?        const hasNational = ev.hasOwnProperty('Label');
+        const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+        const hasPlace = ev.hasOwnProperty(`${place}Label`);
+        
+        // ?寞?璅∪?瘙箏?憿舐內?芰車鈭辣
+        let label = '';
+        if(showCity && place !== 'Nation') {
+          // 蝮??璅∪?嚗憿舐內蝮??鈭辣
+          if(hasPlace) {
+            label = ev[`${place}Label`] || '';
+          }
+        } else {
+          // ?典?璅∪?嚗憿舐內?典?鈭辣
+          // ?芸?雿輻 Label嚗?????雿輻 NationalLabel
+          if(hasNational) {
+            label = ev.Label || '';
+          } else if(hasNationalLabel) {
+            label = ev.NationalLabel || '';
+          }
+        }
+        
+        const cat = getEventCategory(ev);
+        const result = {...ev, __label: label, __cat: cat, full: ev };
+        
+        // ?孵?釣摰?蝬??冗??隞?- 閰喟敦隤輯岫
+        if(cat === 'macro' || (ev.Category && (JSON.stringify(ev.Category).includes('摰?') || ev.Category === '摰?蝬??冗??隞?))) {
+          const eventInfo = {
+            摮?漲: quarterKey,
+            鈭辣璅惜: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '?⊥?蝐?,
+            Category???? ev.Category,
+            霅?箇???: cat,
+            ????蝐? label,
+            ?abel: hasNational,
+            ?ationalLabel: hasNationalLabel,
+            ?腦撣?蝐? hasPlace,
+            ?訾葉???? selected,
+            ?臬???蕪: label && selected.includes(cat),
+            ?蕪璇辣1_??蝐? !!label,
+            ?蕪璇辣2_憿??寥?: selected.includes(cat),
+            ??????? Array.from(document.querySelectorAll('.event-chip')).map(el => ({
+              ??: el.textContent.trim(),
+              dataValue: el.getAttribute('data-value'),
+              isActive: el.classList.contains('active')
+            }))
+          };
+          console.log('?? 摰?蝬??冗??隞嗆炎皜?', eventInfo);
+          
+          // 憒?鋡恍?瞈橘?憿舐內閰喟敦??
+          if(!label || !selected.includes(cat)) {
+            console.log(`  ?? 摰?蝬?鈭辣鋡恍?瞈?[${quarterKey}]:`, {
+              璅惜: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '?⊥?蝐?,
+              ??: cat,
+              ?訾葉憿?: selected,
+              ??: !label ? '???⊥?蝐歹?銝泵?芋撘?' : !selected.includes(cat) ? `??憿?銝???閬銝?${cat} ??嚗?銝? ${selected.join(', ')}嚗 : '?芰'
+            });
+          } else {
+            console.log(`  ??摰?蝬?鈭辣?? [${quarterKey}]:`, {
+              璅惜: label,
+              ??: cat
+            });
+          }
+        }
+        
+        return result;
+      })
+      .filter(e => {
+        const match = e.__label && selected.includes(e.__cat);
+        // ?芸?摰?蝬?鈭辣頛詨??靽⊥
+        if(match && e.__cat === 'macro') {
+          console.log(`  ??摰?蝬?鈭辣???蕪 [${quarterKey}]:`, {
+            璅惜: e.__label,
+            ??: e.__cat
+          });
+        }
+        return match;
+      });
+  }
+
+
+  // ??撠?
+  function updateCrosshair(mouseX, clientX = null, updateTooltip = true) {
+    if(mouseX !== null) {
+      // 閮??其蜓?葉?撠?蝵?      const relativeX = mouseX - margin.left;
+      // ?湔銝餃?銝??蝺?      mainCrosshair
+        .attr("x1", relativeX)
+        .attr("x2", relativeX)
+        .style("opacity", 1)
+        .style("pointer-events", "all");
+      
+      // ?芸?閬?配ooltip??閮剔蔭嚗?摮遘蝘餃???堆???hover???湔嚗?      if(updateTooltip && selectedQuarterKey) {
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let currentFilteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        const d = currentFilteredData.find(d => d.Quarter === selectedQuarterKey);
+        if(d) {
+          const v = getValue(d);
+          const valueText = (typeof v === 'number') ? `${formatWan(v)}???注 : "?∟???;
+          
+          // 閮? tooltip 雿蔭嚗＊蝷箏?”?嚗??格?頞典蝺?          const svgRect = mainSvg.node().getBoundingClientRect();
+          
+          // X雿蔭嚗??典?摮遘雿蔭嚗?蝔凝?宏隞仿???          let tooltipX;
+          if(clientX !== null) {
+            tooltipX = clientX - 40; // ?典?摮遘撌血
+          } else {
+            tooltipX = svgRect.left + relativeX + margin.left - 40;
+          }
+          
+          // Y雿蔭嚗摰?”?嚗?頝?豢?暺??踹??格???嚗?          const tooltipY = svgRect.top + margin.top - 45; // 憿舐內?典?銵券??其???          
+          d3.select("#popupContent").html(`<strong>${quarterToText(selectedQuarterKey)}</strong><br>銝凋???${valueText}`);
+          d3.select("#popup")
+            .style("display", "block")
+            .style("left", `${tooltipX}px`)
+            .style("top", `${tooltipY}px`);
+        }
+      }
+    } else {
+      mainCrosshair
+        .style("opacity", 0)
+        .style("pointer-events", "none");
+      d3.select("#popup").style("display", "none");
+    }
+  }
+
+
+  // ?寞?皛?雿蔭?湔鈭辣鞈?
+  function updateEventInfoFromMouse(mouseX, event = null) {
+    if(mouseX === null) {
+      return;
+    }
+    
+    // 閮??其蜓?葉?撠?蝵?    const relativeX = mouseX - margin.left;
+    
+    // ?寞?X雿蔭?曉撠??迤摨?    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    
+    // ?曉??亥????嚗憭扯孛?潛???????摨佗?
+    let closestQuarter = null;
+    let minDistance = Infinity;
+    
+    filteredData.forEach(d => {
+      const quarterX = x(d.Quarter) + x.bandwidth()/2;
+      const distance = Math.abs(quarterX - relativeX);
+      if(distance < minDistance) {
+        minDistance = distance;
+        closestQuarter = d.Quarter;
+      }
+    });
+    
+    // ????摨佗??芾?皛??典?銵函??撠梢＊蝷箏?摮遘嚗??頝嚗?    if(relativeX >= 0 && relativeX <= width) {
+      // ?芾??典?銵函??嚗停憿舐內??頠訾蒂?湔?唳??亥??迤摨?      if(closestQuarter) {
+        selectedQuarterKey = closestQuarter;
+        const clientX = event ? event.clientX : null;
+        // 憪?憿舐內??頠賂?????摨?        updateCrosshair(mouseX, clientX);
+      } else {
+        // 憒??曆??啣迤摨佗?隞憿舐內??頠詨?嗅?雿蔭
+        const clientX = event ? event.clientX : null;
+        updateCrosshair(mouseX, clientX);
+      }
+    } else {
+      // 皛??ａ??”蝭?嚗??摮遘
+      updateCrosshair(null);
+    }
+    
+    if(closestQuarter) {
+      // ?芸?芷?摰??湔鈭辣??頠賂?銝阡??銴葡??      if(!isLocked && closestQuarter !== lastRenderedQuarter) {
+        lastRenderedQuarter = closestQuarter;
+        renderEventTimeline(closestQuarter, filteredData);
+        renderEventDetail(closestQuarter, filteredData);
+      }
+      
+      // ?∟??臬??嚗閬?圈銝剔?摮?漲嚗?澆?摮?憿舐內嚗?      selectedQuarterKey = closestQuarter;
+      
+      // 憒??芷?摰??湔??擃漁嚗??函??摮遘雿蔭嚗?      if(!isLocked) {
+        // 蝘駁???暺?擃漁
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        // 擃漁?嗅???頠豢??函???
+        const currentDot = d3.selectAll('.dot').filter(function(d) {
+          return d.Quarter === closestQuarter;
+        });
+        currentDot.classed('dot-highlight', true);
+        
+        // 擃漁????隞嗅?獢???        currentDot.each(function(d) {
+          const dot = d3.select(this);
+          if (hasEventsForQuarter(d.Quarter)) {
+            dot.classed('dot-has-events', true);
+          }
+        });
+        
+        // ?湔KPI??隞嗆??遘
+        // ?芸摮?漲?寡???袁PI嚗?蝜?啣??湧???        if(closestQuarter !== lastUpdatedKpiQuarter) {
+          lastUpdatedKpiQuarter = closestQuarter;
+          updateSidePanelFromQuarter(closestQuarter, filteredData);
+        }
+      }
+      // 憒?撌脤?摰?銝?啣?暺?鈭殷?靽?????擃漁???
+    } else {
+      lastRenderedQuarter = null;
+      lastUpdatedKpiQuarter = null;
+    }
+  }
+
+  // 閫豢鈭辣??霈
+  let touchStartY = null;
+  let touchStartX = null;
+  let isVerticalScroll = false;
+  
+  // 閫豢??
+  function handleTouchStart(event) {
+    if(event.touches.length === 1) {
+      touchStartY = event.touches[0].clientY;
+      touchStartX = event.touches[0].clientX;
+      isVerticalScroll = false;
+      
+      // 閫豢?????湔??頠訾?蝵?      const svgRect = mainSvg.node().getBoundingClientRect();
+      const touchClientX = event.touches[0].clientX;
+      const touchClientY = event.touches[0].clientY;
+      
+      // 瑼Ｘ閫豢暺?血 SVG 蝭???      if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+         touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+        const relativeX = touchClientX - svgRect.left;
+        updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+        // ?急?銝甇ａ?閮剛??綽?蝑? touchmove ?斗?臬?箸遝??      }
+    }
+  }
+  
+  // 閫豢蝘餃?
+  function handleTouchMove(event) {
+    if(event.touches.length === 1 && touchStartY !== null && touchStartX !== null) {
+      const touchY = event.touches[0].clientY;
+      const touchX = event.touches[0].clientX;
+      const deltaY = Math.abs(touchY - touchStartY);
+      const deltaX = Math.abs(touchX - touchStartX);
+      
+      // 憒??蝘餃?頝?＊憭扳瘞游像蝘餃?頝嚗??誑銝?嚗?閬?皛曉?
+      if(deltaY > deltaX * 2 && deltaY > 15) {
+        isVerticalScroll = true;
+        // ?迂?皛曉?嚗??餅迫?身銵
+        return;
+      }
+      
+      // 瘞游像蝘餃??宏???Ｗ?撠?????頠?      if(!isVerticalScroll) {
+        // 瑼Ｘ閫豢暺?血 SVG 蝭???        const svgRect = mainSvg.node().getBoundingClientRect();
+        const touchClientX = event.touches[0].clientX;
+        const touchClientY = event.touches[0].clientY;
+        
+        // 憒?閫豢暺 SVG 蝭???        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+           touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+          // 憒??舀?憿舐?瘞游像蝘餃?嚗甇ａ?閮剛??箔蒂????頠?          if(deltaX > 10 || (deltaX > 5 && deltaX > deltaY)) {
+            event.preventDefault();
+            const relativeX = touchClientX - svgRect.left;
+            updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+          } else if(deltaY < 5 && deltaX < 5) {
+            // 蝘餃?敺?嚗?賣??閫豢嚗?????頠?            const relativeX = touchClientX - svgRect.left;
+            updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
+          }
+        }
+      }
+    }
+  }
+  
+  // 閫豢蝯?
+  function handleTouchEnd(event) {
+    // 瑼Ｘ?臬?粹???蝘餃?頝敺?嚗?    if(touchStartY !== null && touchStartX !== null && event.changedTouches.length === 1) {
+      const touchEndY = event.changedTouches[0].clientY;
+      const touchEndX = event.changedTouches[0].clientX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+      const deltaX = Math.abs(touchEndX - touchStartX);
+      
+      // 憒?蝘餃?頝敺?嚗??粹???嚗?銝?皛曉?嚗?閫豢暺 SVG 蝭??改??餅迫?身銵?脫迫?皛曉?
+      if(!isVerticalScroll && deltaY < 10 && deltaX < 10) {
+        const svgRect = mainSvg.node().getBoundingClientRect();
+        const touchClientX = event.changedTouches[0].clientX;
+        const touchClientY = event.changedTouches[0].clientY;
+        
+        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+           touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
+          // ?餅迫?身銵嚗甇ａ??Ｘ遝??          event.preventDefault();
+        }
+      }
+    }
+    
+    touchStartY = null;
+    touchStartX = null;
+    isVerticalScroll = false;
+  }
+
+  // 瘛餃?皛??孛?找?隞嗅銝餃?
+  mainSvg
+    .on("mouseover", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateEventInfoFromMouse(mouseX, event);
+    })
+    .on("mousemove", function(event) {
+      const mouseX = d3.pointer(event, this)[0];
+      updateEventInfoFromMouse(mouseX, event);
+    })
+    .on("touchstart", handleTouchStart)
+    .on("touchmove", handleTouchMove)
+    .on("touchend", handleTouchEnd)
+    .on("touchcancel", handleTouchEnd)
+    .on("mouseout", function() {
+      updateCrosshair(null);
+      lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??      lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???      // 皛??ａ???憒??芷?摰??Ｗ儔?圈?閮剔??蒂蝘駁??擃漁
+      if(!isLocked) {
+        // 蝘駁??擃漁??
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        const lastQuarter = filteredData[filteredData.length-1]?.Quarter;
+        if(lastQuarter) {
+          updateSidePanelFromQuarter(lastQuarter, filteredData);
+        }
+      }
+    })
+    .on("click", function(event){
+      // ?冽?璈?暺??甇ａ?閮剛??綽??脫迫?皛曉?
+      if(window.innerWidth <= 768) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      // 暺?蝛箇???舫?摰?嗅?皛???典迤摨?      const target = event.target;
+      const clickedDot = target && target.classList && target.classList.contains('dot');
+      const mouseX = d3.pointer(event, this)[0];
+      
+      console.log('銝餃?暺?鈭辣閫貊', { 
+        target: target.tagName, 
+        className: target.className,
+        clickedDot, 
+        mouseX,
+        isLocked 
+      });
+      
+      if(clickedDot){
+        // dots ?芾澈撌脫? click handler ??摰?        return;
+      }
+      
+      // 瑼Ｘ?臬?粹???      const now = Date.now();
+      const lastClick = mainSvg.datum()?.lastClickTime || 0;
+      const isDoubleClick = (now - lastClick) < 300; // 300ms?扯??粹???      
+      if(isDoubleClick) {
+        // ??嚗圾??        isLocked = false;
+        if(mainSvg.datum()) {
+          mainSvg.datum().lastClickTime = 0;
+        } else {
+          mainSvg.datum({ lastClickTime: 0 });
+        }
+        // ?Ｗ儔?圈?閮剔????敺?摮??
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+        updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+        // 蝘駁??擃漁??
+        d3.selectAll('.dot').classed('dot-highlight', false);
+        // 閫??敺??摮?
+        updateCrosshair(null);
+        lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??        lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???        // ?湔??＊蝷?        d3.select('#lock-status').text('????芷?摰?).style('color', '#e74c3c');
+      } else {
+        // ?格?嚗?摰?餈?摮?漲
+        const relativeX = mouseX - margin.left;
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        let closestQuarter=null, minDistance=Infinity;
+        filteredData.forEach(d=>{
+          const qx = x(d.Quarter)+x.bandwidth()/2;
+          const dist = Math.abs(qx-relativeX);
+          if(dist<minDistance){ minDistance=dist; closestQuarter=d.Quarter; }
+        });
+        if(closestQuarter){
+          selectedQuarterKey = closestQuarter;
+          isLocked = true;
+          if(mainSvg.datum()) {
+            mainSvg.datum().lastClickTime = now;
+          } else {
+            mainSvg.datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          lastRenderedQuarter = selectedQuarterKey; // 閮??嗅?摮?漲
+          renderEventTimeline(selectedQuarterKey, filteredData);
+          renderEventDetail(selectedQuarterKey, filteredData);
+          // 蝘駁?嗡?暺?擃漁??
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 擃漁撠????
+          const targetDot = d3.selectAll('.dot').filter(function(d) {
+            return d.Quarter === selectedQuarterKey;
+          });
+          targetDot.classed('dot-highlight', true);
+          
+          // 擃漁????隞嗅?獢???          targetDot.each(function(d) {
+            const dot = d3.select(this);
+            if (hasEventsForQuarter(d.Quarter)) {
+              dot.classed('dot-has-events', true);
+            }
+          });
+          // ??敺＊蝷箏?摮??刻府暺?蝵?          updateCrosshair(mouseX, event.clientX);
+          // ?湔??＊蝷?          d3.select('#lock-status').text('???撌脤?摰?).style('color', '#27ae60');
+        }
+      }
+    });
+
+  function applyYearRangeFilter(data){
+    const selected = d3.select('input[name="yearRange"]:checked').property('value');
+    const r = selected || 'all';
+    if(r==='all') return data;
+    const currentYear=(new Date()).getFullYear();
+    const back = r==='3Y'?3:(r==='5Y'?5:10);
+    const cutoff=currentYear-back;
+    return data.filter(d=>parseInt(d.Quarter.substring(0,4))>=cutoff);
+  }
+
+  function updateTimeModeControls(){
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    d3.select("#quarterControls").style("display", mode==='quarter'?null:'none');
+    d3.select("#yearControls").style("display", mode==='year'?null:'none');
+  }
+
+  // ======== ?”蝜芾ˊ ========
+  function updateChart(){
+    // 蝣箔? selectedPlace 甇?Ⅱ?湔
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    selectedPlace = isCityMode ? d3.select('#placeSelect').property('value') : 'Nation';
+    selectedEventTypes=getSelectedEventTypes();
+    // 瘜冽?嚗??蔭 isLocked嚗???摰???
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+
+    // ?寞?鋆蔭憿???隤踵 paddingInner ??暺之撠?    const isMobileNow = window.innerWidth <= 768;
+    x.paddingInner(isMobileNow ? 0.7 : 0.5); // ??????頝?
+    x.domain(filteredData.map(d=>d.Quarter));
+    const yValues=filteredData.map(getValue).filter(v=>v!==null);
+    if(yValues.length>0){ y.domain([d3.min(yValues)*0.9, d3.max(yValues)*1.05]).nice(); } else { y.domain([0,100000]).nice(); }
+
+    // X 頠詨摨佗??寞?鋆蔭憿?隤踵憿舐內撖漲嚗?撠?摨佗??踹??銝韏瘀?
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
+    let tickValues;
+    if(mode==='year'){
+      tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+      // ?寞?鋆蔭憿?皜??餃漲撖漲
+      if(isMobile && tickValues.length > 4){
+        // ????瘥?-3撟湧＊蝷箔?甈?        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 3){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 3));
+      } else if(isTablet && tickValues.length > 6){
+        // 撟單??瘥?撟湧＊蝷箔?甈?        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 2){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+      } else if(!isMobile && !isTablet && tickValues.length > 8){
+        // 獢??瘥?撟湧＊蝷箔?甈∴?憒?頞?8??
+        const sparse = [];
+        for(let i = 0; i < tickValues.length; i += 2){
+          sparse.push(tickValues[i]);
+        }
+        tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+      }
+    }else{
+      if(isMobile){
+        // ???迤?交芋撘??芷＊蝷箸?撟崴1嚗＊蝷箏僑隞踝?嚗?撠摨血?摨?        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 憒??憭芸?嚗??拙僑憿舐內銝甈?        if(tickValues.length > 6){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }else if(isTablet){
+        // 撟單???芷＊蝷箸?撟崴1嚗??云憭?瘥撟湧＊蝷箔?甈?        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        if(tickValues.length > 8){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }else{
+        // 獢???芷＊蝷箸?撟崴1嚗?撠?摨佗??踹??銝韏瘀?
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 憒?頞?10??瘥撟湧＊蝷箔?甈?        if(tickValues.length > 10){
+          const everyOther = [];
+          for(let i = 0; i < tickValues.length; i += 2){
+            everyOther.push(tickValues[i]);
+          }
+          tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
+        }
+      }
+    }
+    
+    const xAxis=d3.axisBottom(x).tickValues(tickValues.length>0?tickValues:null).tickFormat(d=>{
+      const year=d.substring(0,4), q=d.substring(5);
+      if(mode==='year'){ return year; }
+      if(isMobile){
+        // ???憿舐內撟港遢嚗??摮???        return year;
+      }
+      return q==='Q1'?year:q; // Q1 憿舐內撟港遢?3 憿舐內摮?漲
+    }).tickSize(8).tickPadding(isMobile ? 22 : 14); // 憓? tickPadding 隞亙捆蝝憭抒?摮?
+    
+    // Y頠賂?皜??餃漲?賊?嚗???其?韏瘀?憓? tickPadding 隞亙捆蝝憭抒?摮?
+    // ?寞?鋆蔭憿??批 Y 頠詨摨行??isTablet 撌脣銝?脫?嚗?    let yTickCount;
+    if(isMobile){
+      yTickCount = 5; // ????5?摨?    } else if(isTablet){
+      yTickCount = 6; // 撟單??6?摨?    } else {
+      yTickCount = 7; // 獢??7?摨?    }
+    const yAxis=d3.axisLeft(y)
+      .ticks(yTickCount) // ??餃漲?賊?
+      .tickFormat(d=>formatWan(d)+"??)
+      .tickSize(8)
+      .tickPadding(isMobile ? 20 : 14);
+    
+    // ?寞?鋆蔭憿?閮剔蔭X頠豢?摮見撘??踵?撘?擃之撠?
+    const xAxisText = xAxisGroup.transition().duration(450).call(xAxis).selectAll("text");
+    const baseXFontSize = isMobile ? 9 : (isTablet ? 13 : 15); // 摮?憭批?
+    const responsiveXFontSize = getResponsiveFontSize(baseXFontSize, isMobile);
+    
+    if(isMobile){
+      // ????????銝血???頝?摮??游之
+      xAxisText
+        .style("text-anchor","end")
+        .attr("dx","-8px")
+        .attr("dy","14px") // 憓???
+        .style("font-size",`${responsiveXFontSize}px`)
+        .style("font-weight","600") // 憓?摮?蝎敦
+        .style("transform","rotate(-45deg)")
+        .style("transform-origin","center top");
+    }else{
+      // 獢??甇?虜憿舐內嚗?擃憭?      xAxisText
+        .style("text-anchor","middle")
+        .attr("dx","0")
+        .attr("dy","0.6em") // 憓???
+        .style("font-size",`${responsiveXFontSize}px`)
+        .style("font-weight","600") // 憓?摮?蝎敦
+        .style("transform","")
+        .style("transform-origin","");
+    }
+    
+    // Y 頠詨摨佗??踵?撘?擃之撠?
+    const yAxisText = yAxisGroup.transition().duration(450).call(yAxis).selectAll("text");
+    const baseYFontSize = isMobile ? 8 : (isTablet ? 13 : 15); // 摮?憭批?
+    const responsiveYFontSize = getResponsiveFontSize(baseYFontSize, isMobile);
+    yAxisText.style("font-size",`${responsiveYFontSize}px`).style("font-weight","600");
+
+    // ??
+    const lineGen=d3.line().x(d=>x(d.Quarter)+x.bandwidth()/2).y(d=>y(getValue(d))).defined(d=>getValue(d)!==null);
+    focus.select(".focus-line").datum(filteredData).transition().duration(450).attr("d",lineGen);
+
+    // ??嚗憓?click嚗?摰迤摨????湔?喳?湔?嚗?    // ?芷＊蝷箸??踹鞈??迤摨?    const dotsData=filteredData.filter(d=>getValue(d)!==null);
+    const dots=focus.selectAll(".dot").data(dotsData, d=>d.Quarter);
+    dots.exit().remove();
+    // ?寞?鋆蔭憿?隤踵??憭批?
+    const isMobileDot = window.innerWidth <= 768;
+    const dotRadius = isMobileDot ? 3.5 : 5; // ????暺?撠?    
+    dots.enter().append("circle").attr("class", function(d) {
+      // 瑼Ｘ閰脣迤摨行?行?鈭辣嚗捱摰蝙?典?見撘?      return hasEventsForQuarter(d.Quarter) ? "dot dot-has-events" : "dot";
+    }).attr("r", dotRadius)
+      .on("mouseover",(event,d)=>{
+        const v=getValue(d); const valueText=(typeof v==='number')?`${formatWan(v)}???注:"?∟???;
+        d3.select("#popupContent").html(`<strong>${quarterToText(d.Quarter)}</strong><br>銝凋???${valueText}`);
+        // 憿舐內popup?典?暺銝?嚗?鞎澆?暺?
+        d3.select("#popup")
+          .style("display", "block")
+          .style("left", (event.clientX + 15) + "px")
+          .style("top", (event.clientY - 50) + "px");
+        const mouseX = d3.pointer(event, mainSvg.node())[0];
+        // 憿舐內??頠賂?雿??湔tooltip雿蔭嚗??箏?暺歇蝬身蝵桐?雿蔭嚗?        updateCrosshair(mouseX, event.clientX, false);
+      })
+      .on("mouseout",(event)=>{
+        d3.select("#popup").style("display","none");
+        // ?梯???頠?        updateCrosshair(null);
+      })
+      .on("click",(event,d)=>{
+        // ?冽?璈?暺??甇ａ?閮剛??綽??脫迫?皛曉?
+        if(window.innerWidth <= 768) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        
+        console.log('??暺?鈭辣閫貊', { quarter: d.Quarter, isLocked });
+        
+        // 瑼Ｘ?臬?粹???        const now = Date.now();
+        const lastClick = d3.select(this).datum()?.lastClickTime || 0;
+        const isDoubleClick = (now - lastClick) < 300; // 300ms?扯??粹???        
+        console.log('??瑼Ｘ', { now, lastClick, isDoubleClick });
+        
+        // ???嗅??祟?貉???        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+        
+        if(isDoubleClick) {
+          // ??嚗圾??          isLocked = false;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = 0;
+          } else {
+            d3.select(this).datum({ lastClickTime: 0 });
+          }
+          // ?Ｗ儔?圈?閮剔????敺?摮??
+          selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          // 蝘駁??擃漁??
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 閫??敺??摮?
+          updateCrosshair(null);
+          lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??          lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???          // ?湔??＊蝷?          d3.select('#lock-status').text('????芷?摰?).style('color', '#e74c3c');
+        } else {
+          // ?格?嚗?摰?迤摨?          selectedQuarterKey = d.Quarter;
+          isLocked = true;
+          if(d3.select(this).datum()) {
+            d3.select(this).datum().lastClickTime = now;
+          } else {
+            d3.select(this).datum({ lastClickTime: now });
+          }
+          updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+          lastRenderedQuarter = selectedQuarterKey; // 閮??嗅?摮?漲
+          renderEventTimeline(selectedQuarterKey, filteredData);
+          renderEventDetail(selectedQuarterKey, filteredData);
+          // 蝘駁?嗡?暺?擃漁??
+          d3.selectAll('.dot').classed('dot-highlight', false);
+          // 擃漁?嗅???
+          d3.select(this).classed('dot-highlight', true);
+          
+          // 擃漁????隞嗅?獢???          const currentDot = d3.select(this);
+          if (hasEventsForQuarter(d.Quarter)) {
+            currentDot.classed('dot-has-events', true);
+          }
+          // ??敺＊蝷箏?摮??刻府暺?蝵?          const mouseX = d3.pointer(event, mainSvg.node())[0];
+          updateCrosshair(mouseX, event.clientX);
+          // ?湔??＊蝷?          d3.select('#lock-status').text('???撌脤?摰?).style('color', '#27ae60');
+        }
+      })
+      .merge(dots)
+      .attr("class", function(d) {
+        // 瑼Ｘ閰脣迤摨行?行?鈭辣嚗捱摰蝙?典?見撘?        const isHighlighted = d3.select(this).classed('dot-highlight');
+        const hasEvents = hasEventsForQuarter(d.Quarter);
+        
+        if (isHighlighted && hasEvents) {
+          return "dot dot-has-events dot-highlight";
+        } else if (isHighlighted) {
+          return "dot dot-highlight";
+        } else if (hasEvents) {
+          return "dot dot-has-events";
+        } else {
+          return "dot";
+        }
+      })
+      .attr("r", dotRadius) // 蝣箔????暺雿輻甇?Ⅱ??敺?      .transition().duration(450)
+      .attr("cx",d=>x(d.Quarter)+x.bandwidth()/2)
+      .attr("cy",d=>y(getValue(d)));
+
+    // 銝??其蜓??鈭辣?內
+    focus.selectAll(".event-icon-text").remove();
+
+    // ?喳甈??亙??芣??????身隞亦???敺?摮?銝?    if(!filteredData.find(d=>d.Quarter===selectedQuarterKey)){
+      selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
+    }
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+    
+    // ???葡??隞嗆??遘??隞嗉牧??    // ?冽芋撘???蝭拚璇辣?寡???蝮賣?皜脫?鈭辣??頠?    renderEventTimeline(selectedQuarterKey, filteredData);
+    renderEventDetail(selectedQuarterKey, filteredData);
+  }
+
+  function resetAndRedraw(){
+    selectedEventTypes=getSelectedEventTypes();
+    selectedDataType=deriveDataType();
+
+
+    const avail=getAvailableDataRange();
+    if(avail.length>0){ startIndex=0; endIndex=avail[avail.length-1].index; } else { startIndex=0; endIndex=allQuarters.length-1; }
+    startSelect.property("value",startIndex);
+    endSelect.property("value",endIndex);
+
+    updateChartTitle();
+    updateChart();
+  }
+
+  function updateChartTitle(){
+    const isCity = d3.select('#filterToggle').property('checked');
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='?典?';
+    }
+    // ?箏?雿輻?券撅翩嚗?瑼Ｘ撅翩憿?
+    d3.select("#chart-title").text('??瘥?桀銝凋???);
+    d3.select("#side-title").text(`${placeText} ?祆?璁汗`);
+  }
+
+
+
+  function getEventsForQuarter(qKey, usePlace){
+    // 蝣箔? selectedPlace ?舀??啁???    const currentPlace = d3.select('#placeSelect').property('value');
+    const isCityMode = d3.select('#filterToggle').property('checked');
+    const actualPlace = isCityMode ? currentPlace : 'Nation';
+    
+    const q = fullData.find(d=>d.Quarter===qKey);
+    if(!q||!q.events) return [];
+    const arr = q.events.map(ev=>{
+      const cat=getEventCategory(ev);
+      const label = usePlace ? (ev[`${actualPlace}Label`]||ev.Label||'') : (ev.Label||'');
+      return {...ev,__cat:cat,__label:label,full:ev};
+    }).filter(e=>e.__label);
+    // 靘??隞園????瞈?    return arr.filter(e=> selectedEventTypes.includes(e.__cat) || (usePlace && !e.Category));
+  }
+
+  // ======== ?喳甈??勗迤摨行??========
+  function updateSidePanelFromQuarter(qKey, filteredData){
+    // 靽??嗅?蝭拚璇辣嚗?閮???銝剛???    const savedPlace = d3.select('#placeSelect').property('value');
+    const savedFilterToggle = d3.select('#filterToggle').property('checked');
+    const savedPlaceForCalc = savedFilterToggle ? savedPlace : 'Nation';
+    const savedDataType = selectedDataType;
+    
+    // ?急??湔 selectedPlace ??selectedDataType ?冽閮?
+    const originalPlace = selectedPlace;
+    const originalDataType = selectedDataType;
+    
+    selectedPlace = savedPlaceForCalc;
+    
+    // ?湔璅?嚗?摰?憿舐內撟游漲?迤摨?    const isCity = savedFilterToggle;
+    let placeText;
+    if(isCity){
+      const placeNode=d3.select('#placeSelect').node();
+      placeText=placeNode.options[placeNode.selectedIndex].text;
+    }else{
+      placeText='?典?';
+    }
+    
+    if(isLocked) {
+      d3.select("#side-title").text(`${placeText} ${quarterToText(qKey)} 璁汗`);
+    } else {
+      d3.select("#side-title").text(`${placeText} ?祆?璁汗`);
+    }
+    
+    // KPI嚗?oY?oQ????雿?    const now = fullData.find(d=>d.Quarter===qKey);
+    if(!now){ return; }
+    const nowV = getValue(now);
+    d3.select('#kpi-now').text( (nowV!=null)? formatWan(nowV) : '?? );
+    d3.select('#kpi-quarter').text( quarterToText(qKey) );
+    
+    // 憒?閰脣迤摨行???寡???憿舐內?寞??內
+    if(nowV == null) {
+      d3.select('#kpi-yoy').text('??).attr('class','val');
+      d3.select('#kpi-yoy-note').text('閰脣迤摨衣?踹鞈?');
+      d3.select('#kpi-qoq').text('??).attr('class','val');
+      d3.select('#kpi-qoq-note').text('閰脣迤摨衣?踹鞈?');
+      d3.select('#kpi-hi-lo').text('??);
+      d3.select('#kpi-hi-lo-note').text('閰脣迤摨衣?踹鞈?');
+      return;
+    }
+
+    // YoY嚗?摮?-4嚗?    const idx = fullData.findIndex(d=>d.Quarter===qKey);
+    const yoyIdx = idx-4;
+    let yoyText='??, yoyNote='??;
+    if(yoyIdx>=0){
+      const prevYear = fullData[yoyIdx];
+      const pv = getValue(prevYear);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        yoyText = `${diff>=0?'+':''}${formatWan(diff)}???注;
+        yoyNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevYear.Quarter)}`;
+        d3.select('#kpi-yoy').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-yoy').text(yoyText);
+    d3.select('#kpi-yoy-note').text(yoyNote);
+
+    // QoQ嚗?銝摮?-1嚗?    let qoqText='??, qoqNote='??;
+    if(idx-1>=0){
+      const prevQ = fullData[idx-1];
+      const pv = getValue(prevQ);
+      if(nowV!=null && pv!=null){
+        const diff = nowV - pv;
+        const pct = (pv===0)?0:(diff/pv*100);
+        qoqText = `${diff>=0?'+':''}${formatWan(diff)}???注;
+        qoqNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevQ.Quarter)}`;
+        d3.select('#kpi-qoq').attr('class','val '+(diff>=0?'delta up':'delta down'));
+      }
+    }
+    d3.select('#kpi-qoq').text(qoqText);
+    d3.select('#kpi-qoq-note').text(qoqNote);
+
+    // ???擃??雿?隞亦??銝???
+    const mode=d3.select('input[name="timeMode"]:checked').property("value");
+    const dataScope = (mode==='quarter') ? fullData.slice(startIndex,endIndex+1) : applyYearRangeFilter(fullData);
+    const vals = dataScope.map(getValue).filter(v=>v!=null);
+    if(vals.length){
+      const hi = d3.max(vals), lo = d3.min(vals);
+      const hiQ = dataScope.find(d=>getValue(d)===hi)?.Quarter;
+      const loQ = dataScope.find(d=>getValue(d)===lo)?.Quarter;
+      d3.select('#kpi-hi-lo').text(`${formatWan(hi)} / ${formatWan(lo)}`);
+      d3.select('#kpi-hi-lo-note').text(`${hiQ?quarterToText(hiQ):'??} / ${loQ?quarterToText(loQ):'??}`);
+    }else{
+      d3.select('#kpi-hi-lo').text('??); d3.select('#kpi-hi-lo-note').text('??);
+    }
+
+    // ?Ｗ儔????    selectedPlace = originalPlace;
+    selectedDataType = originalDataType;
+
+  }
+  function catLabel(cat){
+    if(cat==='tax') return '靘??抒??箄矽??;
+    if(cat==='infra') return '?之撱箄身';
+    if(cat==='dev') return '?閬?????;
+    if(cat==='national') return '?輻?瘜?';
+    if(cat==='macro') return '摰?蝬??冗??隞?;
+    // 靽?????隞亙?敺摰?    if(cat==='monetary') return '鞎典馳?輻?';
+    if(cat==='fiscal') return '鞎⊥?輻?';
+    if(cat==='other') return '?嗡?';
+    return '?輻?瘜?';
+  }
+  
+  // 皜脫?鈭辣??頠賂?憿舐內2013撟游?隞亙?????隞塚?
+  function renderEventTimeline(currentQuarter, filteredData) {
+    // ?脣??嗅??銝凋?隞園???    const currentSelectedEventTypes = getSelectedEventTypes();
+    
+    // ?脣??嗅?摮?漲??fullData 銝剔?蝝Ｗ?
+    const currentIdx = fullData.findIndex(d => d.Quarter === currentQuarter);
+    if(currentIdx === -1) {
+      return;
+    }
+    
+    // 憿舐內???鈭辣?迤摨佗?銝??審ilteredData
+    const eventsInRange = [];
+    const yearsFound = new Set(); // 餈質馱?曉?僑隞?    
+    fullData.forEach(d => {
+      // 瑼Ｘ Quarter ?澆?銝行??僑隞踝??舀 2023_Q1 ?澆?嚗?      let dYear;
+      if (d.Quarter && typeof d.Quarter === 'string') {
+        const yearMatch = d.Quarter.match(/^(\d{4})/);
+        dYear = yearMatch ? parseInt(yearMatch[1]) : null;
+      } else {
+        console.warn('?? ?⊥???Quarter ?澆?:', d.Quarter);
+        return;
+      }
+      
+      if (dYear) {
+        yearsFound.add(dYear);
+      }
+      
+      const evs = pickEventsForTimeline(d.Quarter);
+      evs.forEach(ev => {
+        // 敺迤摨血?蝚虫葡??摮?漲?詨?嚗??2023_Q1 ?澆?嚗?        let quarterNum = null;
+        const qMatch = d.Quarter.match(/Q(\d)/);
+        if (qMatch) {
+          quarterNum = parseInt(qMatch[1]);
+        }
+        
+        eventsInRange.push({
+          ...ev,
+          quarter: d.Quarter,
+          year: dYear,
+          quarterNum: quarterNum
+        });
+      });
+    });
+    
+    // 蝯梯?摰?蝬?鈭辣
+    const macroEvents = eventsInRange.filter(ev => ev.__cat === 'macro');
+    
+    // 隤輯岫靽⊥ - 瘛餃?撟港遢鞈?
+    console.log('?? 鈭辣??頠貊???', {
+      ?嗅?摮?漲: currentQuarter,
+      ?訾葉鈭辣憿?: currentSelectedEventTypes,
+      ?曉??隞嗆: eventsInRange.length,
+      摰?蝬?鈭辣?? macroEvents.length,
+      摰?蝬?鈭辣?”: macroEvents.map(ev => ({
+        摮?漲: ev.quarter,
+        璅惜: ev.__label,
+        ??: ev.__cat
+      })),
+      蝮質??迤摨行: fullData.length,
+      ?曉?僑隞? Array.from(yearsFound).sort((a, b) => a - b),
+      撟港遢?賊?: yearsFound.size,
+      璅∪?: d3.select('#filterToggle').property('checked') ? `蝮??璅∪? (${d3.select('#placeSelect').property('value')})` : '?典?璅∪?'
+    });
+    
+    // 憒??府??閫蝬?鈭辣雿??＊蝷綽?頛詨霅血?
+    if(macroEvents.length === 0 && currentSelectedEventTypes.includes('macro')) {
+      console.warn('?? 撌脤銝剖?閫蝬?鈭辣??嚗??芣?唬遙雿?閫蝬?鈭辣', {
+        ?訾葉憿?: currentSelectedEventTypes,
+        撱箄降: '隢Ⅱ隤?JSON 鞈?銝剜?行? Category ?箝?閫蝬??冗??隞嗚?鈭辣'
+      });
+    }
+    
+    // 憒?瘝??曉鈭辣嚗?靘閰喟敦?矽閰虫縑??    if(eventsInRange.length === 0) {
+      console.warn('?? 鈭辣??頠賂?瘝??曉隞颱?鈭辣', {
+        ?訾葉鈭辣憿?: currentSelectedEventTypes,
+        璅∪?: d3.select('#filterToggle').property('checked') ? `蝮??璅∪? (${d3.select('#placeSelect').property('value')})` : '?典?璅∪?',
+        撱箄降: '隢Ⅱ隤歇?訾葉撠???隞園?????
+      });
+    }
+    
+    // ?湔璅?
+    d3.select('#event-timeline-title')
+      .text(`鈭辣??頠節);
+    
+    // ?僑隞賢?蝏?    const eventsByYear = {};
+    eventsInRange.forEach(ev => {
+      if(!eventsByYear[ev.year]) {
+        eventsByYear[ev.year] = [];
+      }
+      eventsByYear[ev.year].push(ev);
+    });
+    
+    // 皜脫?鈭辣
+    const eventsEl = d3.select('#event-timeline-events');
+    eventsEl.html('');
+    // 蝣箔?雿輻璈怠???
+    eventsEl.style('display', 'flex').style('overflow-x', 'auto').style('flex-wrap', 'nowrap');
+    
+    // 璉?交?阡鈭遙雿?隞嗥掩??    if(currentSelectedEventTypes.length === 0) {
+      eventsEl.append('div')
+        .attr('class', 'small')
+        .style('text-align', 'center')
+        .style('padding', '20px')
+        .style('color', '#999')
+        .text('?芷??隞園???);
+      return;
+    }
+    
+    if(eventsInRange.length === 0) {
+      eventsEl.append('div')
+        .attr('class', 'small')
+        .text('甇斗??鈭辣');
+      return;
+    }
+    
+    // ?僑隞賣?摨僎皜脫? - 瘞游像撣?
+    const years = Object.keys(eventsByYear).map(y => parseInt(y)).sort((a, b) => a - b);
+    
+    years.forEach(year => {
+      const yearEvents = eventsByYear[year];
+      
+      // ?遣撟港遢蝏?      const yearGroup = eventsEl.append('div')
+        .attr('class', 'event-timeline-year-group');
+      
+      // 撟港遢??
+      yearGroup.append('div')
+        .attr('class', 'event-timeline-year-header')
+        .text(year);
+      
+      // 霂亙僑隞賭???隞嗅捆??      const itemsContainer = yearGroup.append('div')
+        .attr('class', 'event-timeline-items');
+      
+      // 皜脫?霂亙僑隞賜?瘥葵鈭辣
+      yearEvents.forEach((ev) => {
+        const isCurrent = ev.quarter === currentQuarter;
+        const item = itemsContainer.append('div')
+          .attr('class', `event-timeline-item event-type-${ev.__cat} ${isCurrent ? 'event-timeline-current' : ''}`)
+          .style('cursor', 'pointer')
+          .on('click', function() {
+            // ?湔?訾葉?迤摨虫蒂?皜脫?鈭辣隤芣?嚗???璅宏????頛臭??湛?
+            selectedQuarterKey = ev.quarter;
+            lastRenderedQuarter = ev.quarter;
+            
+            const mode = d3.select('input[name="timeMode"]:checked').property("value");
+            let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+            
+            // ?湔?典?璁汗?豢?嚗?嚗?
+            updateSidePanelFromQuarter(ev.quarter, filteredData);
+            
+            // ?湔鈭辣隤芣?嚗＊蝷箄府摮?漲????隞塚?
+            renderEventDetail(ev.quarter, filteredData);
+            
+            // 蝘駁???鈭格??????頠賊?鈭桀?暺?擃漁嚗?            d3.selectAll('.event-timeline-item').classed('event-timeline-current', false).classed('event-timeline-clicked', false);
+            // 蝘駁??????????            d3.selectAll('.dot').classed('dot-highlight', false);
+            
+            // 擃漁暺???隞?            d3.select(this).classed('event-timeline-clicked', true);
+            
+            // 擃漁頞典??撠????嚗??府摮?漲??寡???
+            const targetDot = d3.selectAll('.dot').filter(function(d) {
+              return d.Quarter === ev.quarter;
+            });
+            if(targetDot.size() > 0) {
+              targetDot.classed('dot-highlight', true);
+              
+              // 擃漁????隞嗅?獢???              targetDot.each(function(d) {
+                const dot = d3.select(this);
+                if (hasEventsForQuarter(d.Quarter)) {
+                  dot.classed('dot-has-events', true);
+                }
+              });
+            }
+            
+            // 憒?閰脣迤摨行???寡????梯???頠?            const hasPriceData = getValue(fullData.find(d => d.Quarter === ev.quarter)) !== null;
+            if(!hasPriceData) {
+              updateCrosshair(null);
+            }
+          });
+        
+        // 摮?漲
+        const quarterPart = ev.quarter.substring(5);
+        item.append('div')
+          .attr('class', 'event-timeline-quarter')
+          .text(quarterPart);
+        
+        // 鈭辣璅?嚗??＊蝷粹???蝐歹?
+        item.append('div')
+          .attr('class', 'event-timeline-content')
+          .text(ev.__label || '鈭辣');
+      });
+    });
+    
+    // 摰??啁?迤摨衣?閬?嚗赤??撌血笆朣?
+    const currentItem = eventsEl.select('.event-timeline-current').node();
+    if(currentItem) {
+      currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+  
+  // 皜脫?鈭辣隤芣?嚗?迤摨西底蝝唬縑?荔?
+  function renderEventDetail(currentQuarter, filteredData) {
+    const currentSelectedEventTypes = getSelectedEventTypes();
+    const detailEl = d3.select('#event-detail-content');
+    detailEl.html('');
+    
+    // ?湔璅?
+    d3.select('#event-detail-title')
+      .text(`鈭辣隤芣? (${currentQuarter.replace('_', ' ')})`);
+    
+    // 瑼Ｘ?臬?豢?鈭?隞園???    if(currentSelectedEventTypes.length === 0) {
+      detailEl.append('div')
+        .attr('class', 'small')
+        .style('text-align', 'center')
+        .style('padding', '20px')
+        .style('color', '#999')
+        .text('?芷??隞園???);
+      return;
+    }
+    
+    // ?脣??嗅?摮?漲??隞?    const events = pickEventsForTimeline(currentQuarter);
+    
+    if(events.length === 0) {
+      detailEl.append('div')
+        .attr('class', 'small')
+        .text('甇文迤摨衣鈭辣');
+      return;
+    }
+    
+    // 皜脫?瘥?隞塚?銝?憿舐內摮?漲璅?嚗?    events.forEach(ev => {
+      const item = detailEl.append('div')
+        .attr('class', 'event-detail-item');
+      
+      // ?芷＊蝷箸?蝐歹?銝＊蝷箔?隞嗆?憿?
+      const header = item.append('div')
+        .style('margin-bottom', '8px');
+      header.append('span')
+        .attr('class', `event-detail-tag ${ev.__cat}`)
+        .text(catLabel(ev.__cat));
+      
+      // 憿舐內閰喟敦隤芣?
+      if(ev.full && ev.full.Detail) {
+        item.append('div')
+          .style('font-size', '12px')
+          .style('color', '#555')
+          .style('line-height', '1.6')
+          .html(ev.full.Detail);
+      }
+    });
+  }
+  
+  // ======== 鈭辣?? ========
+  placeSelect.on('change',()=>{ 
+    if(filterToggle.property('checked')) {
+      selectedPlace=placeSelect.property('value'); 
+      updateChartTitle(); 
+      resetAndRedraw(); 
+    }
+  });
+  // 撅翩蝭拚撌脩宏?歹??箏?雿輻?券撅翩
+  // selectedDataType 撌脰身??'all'嚗??湔
+
+  filterToggle.on('change',()=>{ updateToggleState(); resetAndRedraw(); });
+  function updateToggleState(){
+    const isCity=!!filterToggle.property('checked');
+    const chips=d3.select('#eventChips');
+    const placeSel=d3.select('#placeSelect');
+    
+    // 憿舐內/?梯?蝮???豢???    placeSel.style('display', isCity?null:'none');
+    
+    if(isCity){
+      // 蝮??璅∪?嚗蝙?券??蝮??
+      selectedPlace = placeSelect.property('value');
+    }else{
+      // ?典?璅∪?
+      selectedPlace='Nation';
+    }
+    
+    updateChartTitle();
+    chips.html('');
+    if(!isCity){
+      // ?典?璅∪?嚗＊蝷箸蝑?閬?摰?蝬??冗??隞嗆???      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('? ?輻?瘜?');
+      chips.append('button').attr('type','button').attr('class','event-chip macro active').attr('data-value','macro').text('? 摰?蝬??冗??隞?);
+    }else{
+      // 蝮??璅∪?嚗＊蝷箏???嫣?隞園?????      chips.append('button').attr('type','button').attr('class','event-chip tax active').attr('data-value','tax').text('? 靘??抒??箄矽??);
+      chips.append('button').attr('type','button').attr('class','event-chip infra active').attr('data-value','infra').text('? ?之撱箄身');
+      chips.append('button').attr('type','button').attr('class','event-chip dev active').attr('data-value','dev').text('? ?閬?????);
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('? ?輻?瘜?');
+    }
+    eventTypeButtons=d3.selectAll('.event-chip');
+    eventTypeButtons.on('click',function(){ const btn=d3.select(this); btn.classed('active', !btn.classed('active')); selectedEventTypes=getSelectedEventTypes(); updateChart(); });
+    
+    // ??敺??單?啣?湔?
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
+    updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
+    
+    // ?皜脫?鈭辣??頠詨?鈭辣隤芣?
+    renderEventTimeline(selectedQuarterKey, filteredData);
+    renderEventDetail(selectedQuarterKey, filteredData);
+  }
+
+  yearRangeButtons.on('change',()=>{ resetAndRedraw(); });
+  timeModeButtons.on('change',()=>{ updateTimeModeControls(); resetAndRedraw(); });
+
+  startSelect.on('change',function(){ startIndex=+this.value; if(startIndex>endIndex){ endIndex=startIndex; endSelect.property('value',endIndex);} updateChart(); });
+  endSelect.on('change',function(){ endIndex=+this.value; if(endIndex<startIndex){ startIndex=endIndex; startSelect.property('value',startIndex);} updateChart(); });
+
+  d3.select("#closeDetailPopup").on("click",()=> d3.select("#detailPopup").style("display","none"));
+
+  d3.select("#export-chart-btn").on("click",function(){
+    const watermark=mainSvg.select(".watermark"); watermark.style("opacity","0.6");
+    
+    // ?萄遣銝??捆?其????????ｇ?鈭辣??頠詻?隞嗉牧?隅?Ｗ????閬踝?
+    const topGrid = document.getElementById('top-grid');
+    const bottomGrid = document.getElementById('bottom-grid');
+    const overviewSection = document.getElementById('overview-section');
+    
+    if(!topGrid || !bottomGrid) {
+      alert('?⊥??曉????ｇ?隢?閰?);
+      watermark.style("opacity","0");
+      return;
+    }
+    
+    // ?萄遣?冽?摰孵
+    const exportContainer = document.createElement('div');
+    exportContainer.style.position = 'absolute';
+    exportContainer.style.left = '-9999px';
+    exportContainer.style.top = '0';
+    exportContainer.style.width = topGrid.offsetWidth + 'px';
+    exportContainer.style.backgroundColor = '#ffffff';
+    exportContainer.style.padding = '20px';
+    document.body.appendChild(exportContainer);
+    
+    // 銴ˊ????Ｗ?冽?摰孵
+    const topGridClone = topGrid.cloneNode(true);
+    const bottomGridClone = bottomGrid.cloneNode(true);
+    exportContainer.appendChild(topGridClone);
+    exportContainer.appendChild(bottomGridClone);
+    
+    // 憒????閬賬??剁?銋??亙???    if(overviewSection) {
+      const overviewClone = overviewSection.cloneNode(true);
+      exportContainer.appendChild(overviewClone);
+    }
+    
+    // 雿輻 html2canvas ?芸????????Ｙ????    if(typeof html2canvas !== 'undefined') {
+      html2canvas(exportContainer, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        width: exportContainer.scrollWidth,
+        height: exportContainer.scrollHeight
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'price-trend-dashboard.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        // 皜??冽?摰孵
+        document.body.removeChild(exportContainer);
+        watermark.style("opacity","0");
+      }).catch(e => {
+        console.error('?臬憭望?:',e); 
+        alert('?臬憭望?嚗??岫'); 
+        // 皜??冽?摰孵
+        if(exportContainer.parentNode) {
+          document.body.removeChild(exportContainer);
+        }
+        watermark.style("opacity","0");
+      });
+    } else {
+      // 憒? html2canvas 銝?剁?????啣?臬 SVG
+      saveSvgAsPng(mainSvg.node(),"price-trend-chart.png",{backgroundColor:'#FFFFFF',scale:2})
+        .then(()=>{ watermark.style("opacity","0"); })
+        .catch(e=>{ console.error('?臬憭望?:',e); alert('?臬憭望?嚗??岫'); watermark.style("opacity","0"); });
+      // 皜??冽?摰孵
+      if(exportContainer.parentNode) {
+        document.body.removeChild(exportContainer);
+      }
+    }
+  });
+
+  // ?活皜脫?
+  updateToggleState();
+  updateTimeModeControls();
+  resetAndRedraw();
+
+  // ?踵?撘矽?湛?閬?憭批??寡????啗?蝞?  let resizeTimeout;
+  resizeHandler = function(){
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function(){
+      responsiveDims = getResponsiveDimensions();
+      const newMargin = responsiveDims.margin;
+      const newWidth = responsiveDims.baseWidth - newMargin.left - newMargin.right;
+      const newHeight = responsiveDims.baseHeight - newMargin.top - newMargin.bottom;
+      
+      // ?湔?典?霈
+      margin = newMargin;
+      width = newWidth;
+      height = newHeight;
+      
+      // ?湔 SVG 撠箏站
+      if(mainSvg && mainSvg.node()){
+        mainSvg
+          .attr("viewBox", `0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
+          .style("width", "100%")
+          .style("height", "auto");
+        
+        // ?湔摨扳?頠貊?????
+        const isMobileResize = window.innerWidth <= 768;
+        x.paddingInner(isMobileResize ? 0.7 : 0.5);
+        x.range([0, width]);
+        y.range([height, 0]);
+        
+        // ?湔 clipPath
+        mainSvg.select("#clip rect").attr("width", width).attr("height", height);
+        
+        // ?湔璅?雿蔭??擃之撠?        const isMobileResizeTitle = window.innerWidth <= 768;
+        const isTabletResizeTitle = window.innerWidth > 768 && window.innerWidth <= 992;
+        const titleFontSizeResize = isMobileResizeTitle ? 16 : (isTabletResizeTitle ? 20 : 22);
+        const titleYResize = isMobileResizeTitle ? 28 : (isTabletResizeTitle ? 35 : 38);
+        mainSvg.select("#chart-title")
+          .attr("x", (width+margin.left+margin.right)/2)
+          .attr("y", titleYResize)
+          .style("font-size", `${titleFontSizeResize}px`);
+        
+        // ?湔摨扳?頠豢?蝐支?蝵桀?摮?憭批?嚗??蝵桅??矽?湛?
+        const isMobileResizeLabel = window.innerWidth <= 768;
+        const isTabletResizeLabel = window.innerWidth > 768 && window.innerWidth <= 992;
+        const yLabelXResize = isMobileResizeLabel ? 5 : 35; // 隤踵雿蔭隞亙捆蝝?擃?        const xLabelYResize = isMobileResizeLabel ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30;
+        const axisLabelFontSizeResize = isMobileResizeLabel ? 11 : (isTabletResizeLabel ? 14 : 16);
+        
+        mainSvg.select(".axis-label").each(function(){
+          const el = d3.select(this);
+          if(el.attr("transform") && el.attr("transform").includes("rotate")){
+            // Y頠豢?蝐?            el.attr("x", yLabelXResize)
+              .attr("y", margin.top + height/2)
+              .attr("transform", `rotate(-90, ${yLabelXResize}, ${margin.top + height/2})`)
+              .style("font-size", `${axisLabelFontSizeResize}px`);
+          } else {
+            // X頠豢?蝐?            el.attr("x", margin.left + width/2)
+              .attr("y", xLabelYResize)
+              .style("font-size", `${axisLabelFontSizeResize}px`);
+          }
+        });
+        
+        // ?湔 focus group 雿蔭
+        focus.attr("transform", `translate(${margin.left},${margin.top})`);
+        
+        // ?湔??頠?        mainCrosshair.attr("y2", height);
+        
+        // ?湔 watermark 雿蔭
+        const watermarkGroup = mainSvg.select(".watermark");
+        if(watermarkGroup.node()){
+          watermarkGroup.attr("transform", `translate(${margin.left+20}, ${margin.top+30})`);
+        }
+        
+        // ?湔?餃漲摮?憭批?嚗 updateChart 銝剜??閮?嚗ㄐ蝣箔??踵?撘?擃之撠迤蝣綽?
+        // ?蝜芾ˊ嚗pdateChart ?????摨血?擃之撠??湔嚗?        updateChart();
+      }
+    }, 250); // 250ms debounce
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  // splash ?嗅?
+  if(window.__splashFailSafe){ clearTimeout(window.__splashFailSafe); window.__splashFailSafe=null; }
+  const splashScreen=document.getElementById('splash-screen'); const dashboard=document.querySelector('.dashboard-container');
+  if(splashScreen && !splashScreen.dataset.initialized){
+    splashScreen.dataset.initialized='true';
+    dashboard.style.display='block';
+    setTimeout(()=>{ splashScreen.style.opacity='0'; setTimeout(()=>{ if(splashScreen && splashScreen.style.opacity==='0'){ splashScreen.style.display='none'; }},3000); },100);
+  }
+
+  // ?脫??嚗????dashboard ??嚗?  let screenshotTimeout; const watermark=mainSvg.select(".watermark");
+  document.addEventListener('contextmenu',function(e){ 
+    // ?芸 dashboard ???餅迫?喲
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      watermark.style("opacity","0.8"); 
+      clearTimeout(screenshotTimeout); 
+      screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },2000); 
+      return false; 
+    }
+  });
+  document.addEventListener('keydown',function(e){
+    // ?芸 dashboard ???餅迫敹急??    if(e.target.closest('.dashboard-container') || document.activeElement.closest('.dashboard-container')){
+      if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'))||(e.ctrlKey&&(e.key==='u'||e.key==='s'))||e.key==='PrintScreen'){
+        e.preventDefault(); 
+        if(e.key==='s'){ alert('甇斤雯???迂?脣?嚗?); } 
+        watermark.style("opacity","0.8"); 
+        clearTimeout(screenshotTimeout); 
+        screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },3000); 
+        return false;
+      }
+    }
+  });
+  document.addEventListener('dragstart',function(e){ 
+    // ?芸 dashboard ???餅迫?
+    if(e.target.closest('.dashboard-container') && (e.target.tagName==='IMG'||e.target.tagName==='svg')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('copy',function(e){ 
+    // ?芸 dashboard ???餅迫銴ˊ
+    if(e.target.closest('.dashboard-container') || window.getSelection().toString().length > 0 && window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('.dashboard-container')){
+      e.preventDefault(); 
+      alert('甇斤雯???迂銴ˊ?批捆嚗?); 
+      return false; 
+    }
+  });
+  document.addEventListener('cut',function(e){ 
+    // ?芸 dashboard ???餅迫?芯?
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('paste',function(e){ 
+    // ?芸 dashboard ???餅迫鞎潔?
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  document.addEventListener('selectstart',function(e){ 
+    // ?芸 dashboard ???餅迫?豢?
+    if(e.target.closest('.dashboard-container')){
+      e.preventDefault(); 
+      return false; 
+    }
+  });
+  setInterval(function(){
+    if(window.outerHeight-window.innerHeight>200 || window.outerWidth-window.innerWidth>200){
+      watermark.style("opacity","0.8"); setTimeout(()=>{ watermark.style("opacity","0"); },2000);
+    }
+  },1000);
+}
+</script>
