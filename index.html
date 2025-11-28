@@ -1,27 +1,19 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-</body>
-</html>
-
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title></title>
-<!-- Foundation 6 CSS嚗??典????dashboard-container ?改? -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>不動產大事紀 Dashboard</title>
+<!-- Foundation 6 CSS（作用域限制在 dashboard-container 內） -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css" integrity="sha256-4AFYaiQuHxtMTpXl3pRN5YjE3J1I3qVex8hXPKfwqmc=" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com" rel="preconnect" />
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;family=Noto+Sans+TC:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet" />
 <script src="https://d3js.org/d3.v7.min.js"></script><script src="https://cdn.jsdelivr.net/npm/save-svg-as-png@1.4.17/lib/saveSvgAsPng.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async="async" defer="defer"></script><script src="dashboard_data.js"></script>
-<!-- Foundation 6 JS嚗?????dashboard ?抒?蝯辣嚗?-->
+<!-- Foundation 6 JS（僅初始化 dashboard 內的組件） -->
 <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js" integrity="sha256-7XQvJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJYxXJY=" crossorigin="anonymous"></script>
-<style type="text/css">/* ======== 雿??見撘??亥矽?湛? ======== */
-/* 蝘駁?典? body 璅??嚗?蔣?踹飛?∠雯蝡?*/
+<style type="text/css">/* ======== 你的原樣式（略調整） ======== */
+/* 移除全局 body 樣式，避免影響學校網站 */
 .dashboard-container, .dashboard-container *{font-family:"Inter","Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif}
 .dashboard-container h1{font-size:24px;color:#2c3e50;text-align:center;margin-bottom:20px}
 #splash-screen{position:fixed;inset:0;background:#f8f9fa;display:flex;justify-content:center;align-items:center;z-index:10000;opacity:1;transition:opacity 3s;flex-direction:column}
@@ -44,7 +36,7 @@
 .event-icon-text.blue-bulb{filter:hue-rotate(180deg) saturate(2) brightness(1)}
 .event-icon-text.green-bulb{filter:hue-rotate(90deg) saturate(1) brightness(.95)}
 
-/* 鈭辣憿?憿?孵?璅?? */
+/* 事件類型顏色方塊樣式 */
 .color-block{display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;}
 .color-block.monetary{background-color:#A08090;}
 .color-block.fiscal{background-color:#D0B070;}
@@ -65,7 +57,7 @@
 .dashboard-container .watermark{pointer-events:none;user-select:none;opacity:.8;font-weight:300;letter-spacing:.5px}
 
 .dashboard-container{max-width:1200px;margin:20px auto;padding:20px;border-radius:8px;background:#fff}
-/* ? Foundation Grid ???冽 dashboard-container嚗?蔣?踹飛?∠雯蝡?*/
+/* 限制 Foundation Grid 僅作用於 dashboard-container，避免影響學校網站 */
 .dashboard-container .grid-container{padding:20px !important}
 .dashboard-container .grid-x{
   display:flex !important;
@@ -79,7 +71,7 @@
   padding-right:0.9375rem !important;
   box-sizing:border-box !important;
 }
-/* 獢??769px+嚗?蝣箔? medium-9 ??medium-3 銝行?憿舐內 */
+/* 桌面版（769px+）：確保 medium-9 和 medium-3 並排顯示 */
 @media screen and (min-width: 769px) {
   .dashboard-container .grid-x.grid-margin-x{
     display:flex !important;
@@ -107,26 +99,26 @@
     box-sizing:border-box !important;
   }
 }
-/* ??????480px嚗????cell ?質??撖穿?銝西矽?湧?摨?璁汗?刻隅?Ｗ?銝 */
+/* 手機版（≤ 480px）：所有 cell 都變成全寬，並調整順序讓概覽在趨勢圖上方 */
 @media screen and (max-width: 480px) {
   .dashboard-container .cell{flex:0 0 100% !important;max-width:100% !important;width:100% !important}
   .dashboard-container .grid-x.grid-margin-x{
     flex-direction:column !important;
     display:flex !important;
   }
-  /* ????霈??閬踝?medium-3嚗?憿舐內嚗隅?Ｗ?嚗edium-9嚗?憿舐內 */
+  /* 手機版：讓本期概覽（medium-3）先顯示，趨勢圖（medium-9）後顯示 */
   .dashboard-container .grid-x.grid-margin-x > .cell.medium-3{
     order:1 !important;
   }
   .dashboard-container .grid-x.grid-margin-x > .cell.medium-9{
     order:2 !important;
   }
-  /* ????KPI ?∠? 4x1 璈怠???嚗? ??帖???? 1 銵? */
+  /* 手機版：KPI 卡片 4x1 橫向排列（4 個卡片橫向排列成 1 行） */
   .dashboard-container .kpi-row{
     grid-template-columns:repeat(4, 1fr) !important;
     gap:6px !important;
   }
-  /* ????KPI ?∠?摮???頝矽??*/
+  /* 手機版：KPI 卡片字體和間距調整 */
   .dashboard-container .kpi{
     padding:8px 6px !important;
     font-size:11px !important;
@@ -144,128 +136,23 @@
     margin-top:2px !important;
   }
 }
-/* 撟單?游?嚗?81px - 768px嚗?KPI ?∠? 2x2 ?拚 */
+/* 平板直向（481px - 768px）：KPI 卡片 2x2 矩陣 */
 @media screen and (min-width: 481px) and (max-width: 768px) {
   .dashboard-container .kpi-row{
     grid-template-columns:repeat(2, 1fr) !important;
     gap:8px !important;
   }
 }
-/* 蝣箔? Grid ??cell ?典?銵典?甇?Ⅱ憿舐內 */
+/* 確保 Grid 的 cell 在圖表區正確顯示 */
 .dashboard-container .cell #graph{width:100%;box-sizing:border-box}
 .dashboard-container .cell svg{width:100%;height:auto;max-width:100%}
-/* ======== ?脫迫 Foundation ??dashboard 璅??敶梢憭蝬脩? ======== */
-/* ?蔭 Foundation ?航敶梢摮豢蝬脩??撅璅?? */
-body:not(.dashboard-container) .grid-x,
-body:not(.dashboard-container) .cell,
-body:not(.dashboard-container) .grid-container {
-  all: revert;
-}
-
-/* 靽風????典?蝝??脫迫鋡?Foundation normalize 敶梢 */
-html:not(.dashboard-container) {
-  font-size: revert !important;
-  line-height: revert !important;
-  -webkit-text-size-adjust: revert !important;
-  text-size-adjust: revert !important;
-}
-
-body:not(.dashboard-container) {
-  font-size: revert !important;
-  line-height: revert !important;
-  margin: revert !important;
-  padding: revert !important;
-  font-family: revert !important;
-  -webkit-text-size-adjust: revert !important;
-  text-size-adjust: revert !important;
-}
-
-/* 靽風璅???芣??賊??? */
-header:not(.dashboard-container header),
-nav:not(.dashboard-container nav),
-.header:not(.dashboard-container .header),
-.navbar:not(.dashboard-container .navbar),
-.navigation:not(.dashboard-container .navigation),
-[class*="nav"]:not(.dashboard-container [class*="nav"]),
-[id*="header"]:not(.dashboard-container [id*="header"]),
-[id*="Header"]:not(.dashboard-container [id*="Header"]) {
-  font-size: revert !important;
-  line-height: revert !important;
-  padding: revert !important;
-  margin: revert !important;
-  height: revert !important;
-  min-height: revert !important;
-  max-height: revert !important;
-  width: revert !important;
-  min-width: revert !important;
-  max-width: revert !important;
-  transform: revert !important;
-  zoom: revert !important;
-  -webkit-text-size-adjust: revert !important;
-  text-size-adjust: revert !important;
-  box-sizing: revert !important;
-  display: revert !important;
-  position: revert !important;
-  background: revert !important;
-  border: revert !important;
-}
-
-/* 靽風璅???芣??抒?????? */
-header:not(.dashboard-container header) *,
-nav:not(.dashboard-container nav) *,
-.header:not(.dashboard-container .header) *,
-.navbar:not(.dashboard-container .navbar) *,
-.navigation:not(.dashboard-container .navigation) *,
-[class*="nav"]:not(.dashboard-container [class*="nav"]) *,
-[id*="header"]:not(.dashboard-container [id*="header"]) *,
-[id*="Header"]:not(.dashboard-container [id*="Header"]) * {
-  font-size: revert !important;
-  line-height: revert !important;
-  padding: revert !important;
-  margin: revert !important;
-  height: revert !important;
-  width: revert !important;
-  min-width: revert !important;
-  max-width: revert !important;
-  transform: revert !important;
-  zoom: revert !important;
-  box-sizing: revert !important;
-  display: revert !important;
-  position: revert !important;
-  background: revert !important;
-  border: revert !important;
-  color: revert !important;
-  font-family: revert !important;
-  font-weight: revert !important;
-  text-align: revert !important;
-  vertical-align: revert !important;
-}
-
-/* 靽風????logo */
-header:not(.dashboard-container header) img,
-nav:not(.dashboard-container nav) img,
-.header:not(.dashboard-container .header) img,
-.navbar:not(.dashboard-container .navbar) img,
-[class*="nav"]:not(.dashboard-container [class*="nav"]) img,
-[id*="header"]:not(.dashboard-container [id*="header"]) img,
-[id*="Header"]:not(.dashboard-container [id*="Header"]) img {
-  width: revert !important;
-  height: revert !important;
-  max-width: revert !important;
-  max-height: revert !important;
-  min-width: revert !important;
-  min-height: revert !important;
-  transform: revert !important;
-  zoom: revert !important;
-  object-fit: revert !important;
-}
-
-/* 靽風?? dashboard-container 銋???蝝?*/
-body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt):not(#tablet-prompt) {
-  font-size: revert !important;
-  line-height: revert !important;
-  -webkit-text-size-adjust: revert !important;
-  text-size-adjust: revert !important;
+/* ======== 獨立 HTML 文件 - 不需要保護外部元素 ======== */
+/* 基礎樣式 */
+html, body {
+  font-family: "Inter", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
 }
 #filter{background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;box-shadow:0 2px 4px rgba(0,0,0,.05);margin-bottom:16px}
 .dashboard-container .filter-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
@@ -303,12 +190,12 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
 .dashboard-container .action-buttons-container{display:flex;justify-content:flex-end;align-items:center;gap:15px;margin-top:12px}
 .dashboard-container .action-btn{font-size:14px;color:#555;cursor:pointer;border:1px solid #ccc;padding:5px 10px;border-radius:4px;background:#fff;transition:.2s}
 .dashboard-container .action-btn:hover{background:#f0f0f0;border-color:#999}
-.dashboard-container .action-btn#export-chart-btn, .dashboard-container .action-btn#share-btn{font-size:18px;padding:8px 12px;min-width:40px;text-align:center;line-height:1}
+.dashboard-container .action-btn#export-chart-btn, .dashboard-container .action-btn#share-btn, .dashboard-container .action-btn#rc-info-btn{font-size:18px;padding:8px 12px;min-width:40px;text-align:center;line-height:1}
 
-/* ======== ?啣?嚗ashboard ?拇????甈??======== */
+/* ======== 新增：Dashboard 兩欄版型與側欄卡片 ======== */
 .dashboard-layout{display:block;width:100%;box-sizing:border-box}
 .dashboard-layout > div{width:100%;box-sizing:border-box}
-/* 蝣箔???蜓蝬脫撣?雿輻?詨???撖穿?撖衣瘞游像撠? */
+/* 確保所有主網格布局使用相同的列寬，實現水平對齊 */
 .main-grid-layout{
   display:grid !important;
   grid-template-columns:1fr 1fr !important;
@@ -333,29 +220,29 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
 .small{font-size:12px;color:#6b7280}
 .side-note{font-size:12px;color:#6b7280;margin-top:6px}
 
-/* ======== ?踵?撘身閮?======== */
+/* ======== 響應式設計 ======== */
 
-/* 撟單?游? (481px - 768px) */
+/* 平板直向 (481px - 768px) */
 @media (min-width: 481px) and (max-width: 768px){
   .dashboard-container{max-width:100%;padding:15px;margin:10px auto}
   .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
   .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
-  /* Grid: 撟單隞乩???蝭拚?典??”?質??撖?*/
+  /* Grid: 平板以下時，篩選器和圖表都變成全寬 */
   .dashboard-container .cell.small-12.medium-4, .dashboard-container .cell.small-12.medium-8{width:100% !important;flex:0 0 100% !important}
-  /* ?”??閬賢撟單隞乩???霈?銝?撣? */
+  /* 圖表與概覽在平板以下時也變成上下布局 */
   .dashboard-container .grid-x.grid-margin-x .cell.medium-9, 
   .dashboard-container .grid-x.grid-margin-x .cell.medium-3{
     width:100% !important;
     flex:0 0 100% !important;
     max-width:100% !important;
   }
-  /* 蝣箔? grid-x ?典像?蹂誑銝??臬??游?撅 */
+  /* 確保 grid-x 在平板以下時是垂直布局 */
   .dashboard-container .grid-x.grid-margin-x{
     flex-direction:column !important;
     flex-wrap:wrap !important;
   }
   .dashboard-container h1{font-size:20px;margin-bottom:15px}
-  /* ?批?Ｘ?芸? */
+  /* 控制面板優化 */
   #filter{padding:16px;margin-bottom:14px}
   .dashboard-container .filter-row{
     flex-direction:column;
@@ -450,7 +337,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
 }
 
-/* 撟單璈怠? (769px - 1024px) */
+/* 平板橫向 (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px){
   .dashboard-container{max-width:100%;padding:18px;margin:15px auto}
   .dashboard-container h1{font-size:22px;margin-bottom:16px}
@@ -500,29 +387,29 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   .kpi .small{font-size:11px !important}
 }
 
-/* 獢?Ｗ? (1025px - 1200px) */
+/* 桌面螢幕 (1025px - 1200px) */
 @media (min-width: 1025px) and (max-width: 1200px){
   .dashboard-container{max-width:1200px;padding:20px;margin:20px auto}
 }
 
-/* 憭批??Ｗ? (1201px+) */
+/* 大型螢幕 (1201px+) */
 @media (min-width: 1201px){
   .dashboard-container{max-width:1440px;padding:24px;margin:24px auto}
 }
 
-/* ????(??480px) */
+/* 手機版 (≤ 480px) */
 @media (max-width: 480px){
-  /* 蝘駁?典? html/body 璅??嚗?蔣?踹??典??芣? */
+  /* 移除全局 html/body 樣式，避免影響外部導航欄 */
   .dashboard-container{padding:10px;margin:5px auto;border-radius:0;position:relative;min-height:auto;overflow-x:hidden}
   .dashboard-container h1{font-size:18px;margin-bottom:12px;padding:0 5px}
   
-  /* Splash Screen 隤踵 */
+  /* Splash Screen 調整 */
   .splash-title{font-size:2em !important}
   .splash-subtitle{font-size:1em !important;width:auto !important;text-align:center !important}
   .logo-and-text{flex-direction:column;text-align:center}
   .splash-logo{margin-right:0;margin-bottom:10px}
   
-  /* ?批?Ｘ?芸? */
+  /* 控制面板優化 */
   #filter{
     padding:14px;
     margin-bottom:12px;
@@ -619,10 +506,10 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
     gap:10px;
   }
   
-  /* ?”???*/
+  /* 圖表區域 */
   #graph{width:100% !important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
   svg{border-radius:6px;width:100% !important;max-width:100% !important;min-width:0;height:auto !important;touch-action:pan-y;display:block}
-  /* Grid: ???Ⅱ靽?cell ?典祝 */
+  /* Grid: 手機版確保 cell 全寬 */
   .dashboard-container .cell{width:100% !important;flex:0 0 100% !important}
   .dashboard-container .x-axis .tick text{font-size:9px !important}
   .dashboard-container .y-axis .tick text{font-size:8px !important}
@@ -632,27 +519,27 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   #popup{max-width:200px;font-size:12px;padding:8px}
   #popupContent{font-size:12px;line-height:1.4}
   
-  /* ?拇?撣??寧?格? */
+  /* 兩欄布局改為單欄 */
   .dashboard-layout > div > div[style*="display: grid"]{grid-template-columns:1fr !important;gap:12px}
   .main-grid-layout{grid-template-columns:1fr !important;gap:12px !important}
   
-  /* ??????蝷?*/
+  /* 按鈕和狀態提示 */
   .action-buttons-container{flex-direction:column;align-items:stretch;gap:8px;margin-top:10px}
   .action-btn{width:100%;padding:10px;font-size:14px;text-align:center}
   .side-note{font-size:11px;text-align:center !important}
   
-  /* ?∠?璅?? */
+  /* 卡片樣式 */
   .card{padding:10px;border-radius:8px}
   .card h3{font-size:14px;margin-bottom:8px}
   
-  /* KPI ?∠? */
+  /* KPI 卡片 */
   .kpi-row{grid-template-columns:1fr 1fr !important;gap:8px !important}
   .kpi{border-radius:4px !important;padding:8px 10px !important;box-shadow:none !important}
   .kpi .label{font-size:11px !important;line-height:1.4 !important}
   .kpi .val{font-size:15px !important;line-height:1.2 !important}
   .kpi .small{font-size:10px !important;line-height:1.3 !important}
   
-  /* 鈭辣??頠?*/
+  /* 事件時間軸 */
   #event-timeline-panel{margin-bottom:12px}
   #event-timeline-title{font-size:16px;margin-bottom:10px}
   .event-timeline-events{padding:8px;gap:8px}
@@ -664,42 +551,40 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   .event-timeline-content{font-size:12px;line-height:1.4}
   .event-timeline-tag{font-size:9px;padding:2px 6px}
   
-  /* 鈭辣隤芣??Ｘ */
+  /* 事件說明面板 */
   #event-detail-panel{max-height:250px}
   #event-detail-title{font-size:14px}
   #event-detail-content{font-size:12px}
   .event-detail-item{padding:6px;margin-bottom:8px}
   .event-detail-tag{font-size:10px;padding:2px 6px;margin-right:6px}
   
-  /* 敶閬? */
+  /* 彈出視窗 */
   #detailPopup{width:90% !important;max-width:400px !important;max-height:80vh !important;padding:15px;left:50% !important;transform:translate(-50%, -50%) !important}
   #sharePopup{width:90% !important;max-width:350px !important;padding:15px}
   .share-option{width:100% !important;min-width:100% !important;margin-bottom:8px}
   
-  /* 銝??詨 */
+  /* 下拉選單 */
   .dashboard-container .dropdown-button{width:100%;min-width:100%}
   .dashboard-container .dropdown-panel{width:calc(100% - 20px);left:10px;right:10px;max-width:calc(100vw - 20px)}
   
-  /* ?嗡?隤踵 */
+  /* 其他調整 */
   .side-note{margin-top:8px}
   
-  /* 閫豢?芸? */
+  /* 觸控優化 */
   .dot{cursor:pointer;touch-action:manipulation}
   .dashboard-container button, .dashboard-container .event-chip, .event-timeline-item{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(78,121,167,0.2)}
   #filter select, #filter .quarter-select, .dashboard-container .dropdown-button{cursor:pointer;touch-action:manipulation}
   
-  /* 蝣箔??冽?璈??臭誑瘞游像皛曉??” */
+  /* 確保在手機上可以水平滾動圖表 */
   #graph{width:100% !important;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-width:thin;box-sizing:border-box}
   
-  /* 蝣箔? dashboard-container 銝??餅迫皛曉? */
+  /* 確保 dashboard-container 不會阻止滾動 */
   .dashboard-container{overflow:visible !important;height:auto !important;max-height:none !important}
   .dashboard-layout{overflow:visible !important}
   
-  /* ?喃?閫?閮???? */
-  #rc-info-btn-wrapper{width:44px !important;height:44px !important;bottom:15px !important;right:15px !important}
-  #rc-info-btn{width:100% !important;height:100% !important;font-size:20px !important}
+  /* 資訊按鈕現在在控制面板中，使用 action-btn 樣式 */
   
-  /* 鞈??桃蔗?踵?撘?*/
+  /* 資訊遮罩響應式 */
   #rc-info-overlay{padding:50px 15px 20px 15px !important}
   #rc-info-overlay > div{max-width:100% !important;margin-top:0 !important}
   #rc-info-overlay h2{font-size:22px !important;margin-bottom:20px !important;padding-top:0 !important}
@@ -707,7 +592,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   #rc-close-info-overlay{width:32px !important;height:32px !important;top:15px !important;right:15px !important;font-size:18px !important;position:fixed !important}
 }
 
-/* ===== 璈怠??內?恍璅?? ===== */
+/* ===== 橫向提示畫面樣式 ===== */
 #rotate-screen-prompt{
   display:none;
   position:fixed;
@@ -808,7 +693,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   background:#40668c;
 }
 
-/* ===== 撟單?內?恍璅?? ===== */
+/* ===== 平板提示畫面樣式 ===== */
 #tablet-prompt{
   display:none;
   position:fixed;
@@ -893,7 +778,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   background:#40668c;
 }
 
-/* 蝣箔??冽?璈???480px嚗?獢嚗 1025px嚗?銝＊蝷箏像?踵?蝷?*/
+/* 確保在手機（≤ 480px）和桌面（≥ 1025px）上不顯示平板提示 */
 @media (max-width: 480px), (min-width: 1025px) {
   #tablet-prompt,
   #tablet-prompt.show {
@@ -902,7 +787,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   }
 }
 
-/* 蝣箔??典像?踵帖????769px嚗?獢銝?憿舐內璈怠??內 */
+/* 確保在平板橫向（≥ 769px）和桌面上不顯示橫向提示 */
 @media (min-width: 769px) {
   #rotate-screen-prompt,
   #rotate-screen-prompt.show {
@@ -911,7 +796,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   }
 }
 
-/* ??璈怠???憿舐內?內 */
+/* 手機橫向時不顯示提示 */
 @media (max-width: 480px) and (orientation: landscape) {
   #rotate-screen-prompt,
   #rotate-screen-prompt.show {
@@ -920,12 +805,12 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
   }
 }
 
-/* ===== 鈭辣隤芣?璅?? ===== */
+/* ===== 事件說明樣式 ===== */
 .event-detail{ padding:10px; background:#f8f9fa; border-radius:6px; margin-top:8px; }
 .event-detail h4{ margin:0 0 8px 0; font-size:14px; color:#2c3e50; }
 .event-detail p{ margin:0; font-size:13px; line-height:1.5; color:#555; }
 
-/* Toggle Switch 璅?? */
+/* Toggle Switch 樣式 */
 .dashboard-container .toggle-container{ display:flex; align-items:center; gap:8px; }
 .dashboard-container .toggle-switch{ position:relative; display:inline-block; width:50px; height:24px; }
 .dashboard-container .toggle-switch input{ opacity:0; width:0; height:0; }
@@ -935,14 +820,14 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
 .dashboard-container input:checked + .slider:before{ transform:translateX(26px); }
 .dashboard-container .toggle-text{ font-size:14px; font-weight:500; color:#555; }
 
-/* 鈭辣??頠豢見撘?*/
+/* 事件時間軸樣式 */
 .timeline-svg{ width:100%; height:60px; }
 .timeline-point{ cursor:pointer; transition:all 0.2s; }
 .timeline-point:hover{ stroke-width:3; }
 .timeline-point.active{ stroke-width:4; stroke:#4e79a7; }
 .timeline-line{ stroke:#ddd; stroke-width:2; }
 
-/* 鈭辣??頠賊?踵見撘?- 瘞游像撣?嚗僑隞賜??璅芸??? */
+/* 事件時間軸面板樣式 - 水平布局，年份為列，横向排列 */
 #event-timeline-panel{ overflow:hidden; }
 #event-timeline-title{ font-size:20px; font-weight:700; color:#2c3e50; text-align:center; margin-bottom:12px; }
 .event-timeline-events{ display:flex !important; overflow-x:auto !important; gap:12px; font-size:13px; padding:10px; scrollbar-width:thin; flex-wrap:nowrap !important; }
@@ -982,7 +867,7 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
 .event-timeline-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
 .event-timeline-current{ background:#e3f2fd !important; border-color:#4e79a7 !important; border-width:2px !important; box-shadow:0 2px 8px rgba(78,121,167,0.2) !important; }
 
-/* 鈭辣隤芣??Ｘ璅?? */
+/* 事件說明面板樣式 */
 #event-detail-panel{ min-height:150px; max-height:300px; overflow-y:auto; }
 #event-detail-content{ font-size:13px; line-height:1.6; }
 .event-detail-quarter{ font-weight:600; color:#4e79a7; margin-bottom:8px; font-size:14px; }
@@ -999,123 +884,125 @@ body > *:not(.dashboard-container):not(#splash-screen):not(#rotate-screen-prompt
 .event-detail-tag.macro{ background:rgba(136,98,62,0.15); color:#6b4d2f; border:1px solid #88623E; }
 .event-detail-label{ font-weight:600; color:#2c3e50; margin-bottom:4px; }
 
-/* ======== ?脫??銴ˊ嚗?????閮剖?嚗?======== */
+/* ======== 防截圖/複製（保留你的原設定） ======== */
 .dashboard-container{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}
 .dashboard-container *{-webkit-user-select:none !important;-moz-user-select:none !important;-ms-user-select:none !important;user-select:none !important}
 button,input,select,textarea{-webkit-user-select:text !important;-moz-user-select:text !important;-ms-user-select:text !important;user-select:text !important}
 </style>
+</head>
+<body>
 <!-- Splash -->
 <div id="splash-screen">
 <div>
-<h1 class="splash-title">銝??Ｗ之鈭?</h1>
+<h1 class="splash-title">不動產大事紀</h1>
 
-<div class="logo-and-text"><img alt="???踵祥憭批飛銝??Ｙ?蝛嗡葉敹?Logo" class="splash-logo" src="https://nccu.fun4.com.tw/content/img/logo.svg" />
-<p class="splash-subtitle">???踵祥憭批飛<br />
-銝??Ｙ?蝛嗡葉敹?/p>
+<div class="logo-and-text"><img alt="國立政治大學不動產研究中心 Logo" class="splash-logo" src="https://nccu.fun4.com.tw/content/img/logo.svg" />
+<p class="splash-subtitle">國立政治大學<br />
+不動產研究中心</p>
 </div>
 </div>
 </div>
-<!-- 璈怠??內?恍嚗??冽?璈??憿舐內嚗?-->
+<!-- 橫向提示畫面（僅在手機直向時顯示） -->
 
-<div id="rotate-screen-prompt"><button aria-label="??" class="close-prompt" id="close-rotate-prompt">&times;</button>
+<div id="rotate-screen-prompt"><button aria-label="關閉" class="close-prompt" id="close-rotate-prompt">&times;</button>
 
-<div class="rotate-icon">?</div>
+<div class="rotate-icon">📱</div>
 
-<h2>隢???頧璈怠?</h2>
+<h2>請將手機轉為橫向</h2>
 
-<p>?箔??脣??游末?汗擃?嚗遣霅唳撠?璈??箸帖?芋撘?迨?銵冽??/p>
+<p>為了獲得更好的瀏覽體驗，建議您將手機轉為橫向模式查看此儀表板。</p>
 
-<p class="desktop-suggestion">撱箄降雿輻?餉隞亦敺摰?汗擃?</p>
-<button class="continue-btn" id="continue-portrait">蝜潛?雿輻?游?璅∪?</button></div>
-<!-- 撟單?內?恍嚗??典像?蹂蝙?冽?憿舐內嚗?-->
+<p class="desktop-suggestion">建議使用電腦以獲得更完整的瀏覽體驗</p>
+<button class="continue-btn" id="continue-portrait">繼續使用直向模式</button></div>
+<!-- 平板提示畫面（僅在平板使用時顯示） -->
 
-<div id="tablet-prompt"><button aria-label="??" class="close-prompt" id="close-tablet-prompt">&times;</button>
+<div id="tablet-prompt"><button aria-label="關閉" class="close-prompt" id="close-tablet-prompt">&times;</button>
 
-<div class="tablet-icon">?</div>
+<div class="tablet-icon">💻</div>
 
-<h2>撱箄降雿輻?餉</h2>
+<h2>建議使用電腦</h2>
 
-<p>撱箄降雿輻?餉隞亦敺摰?汗擃?</p>
-<button class="continue-btn" id="continue-tablet">蝜潛?雿輻撟單</button></div>
+<p>建議使用電腦以獲得更完整的瀏覽體驗</p>
+<button class="continue-btn" id="continue-tablet">繼續使用平板</button></div>
 <!-- Dashboard -->
 
 <div class="dashboard-container" style="display:none;">
-<h1>銝??Ｗ之鈭?</h1>
-<!-- 蝭拚?典?嚗撖穿? -->
+<h1>不動產大事紀</h1>
+<!-- 篩選器區（全寬） -->
 <div id="filter">
 <div class="filter-row">
 <div class="filter-group" id="placeGroup">
-<div class="toggle-container no-border"><span class="toggle-text">?典?</span> <label class="toggle-switch"> <input id="filterToggle" type="checkbox" /> <span class="slider"></span> </label> <span class="toggle-text">蝮??</span></div>
-<select id="placeSelect" style="margin-left:15px;"><option value="Taipei">?啣?撣?/option><option value="NewTaipei">?啣?撣?/option><option value="Taoyuan">獢?撣?/option><option value="Taichung">?唬葉撣?/option><option value="Tainan">?啣?撣?/option><option value="Kaohsiung">擃?撣?/option><option value="Hsinchu">?啁姘蝮??</option> </select></div>
+<div class="toggle-container no-border"><span class="toggle-text">全國</span> <label class="toggle-switch"> <input id="filterToggle" type="checkbox" /> <span class="slider"></span> </label> <span class="toggle-text">縣市</span></div>
+<select id="placeSelect" style="margin-left:15px;"><option value="Taipei">台北市</option><option value="NewTaipei">新北市</option><option value="Taoyuan">桃園市</option><option value="Taichung">台中市</option><option value="Tainan">台南市</option><option value="Kaohsiung">高雄市</option><option value="Hsinchu">新竹縣市</option> </select></div>
 
-<div class="filter-group"><strong>??蝭?璅∪?:</strong>
+<div class="filter-group"><strong>時間範圍模式:</strong>
 
-<div class="btn-group" id="timeModeButtons"><input checked="checked" id="quarterMode" name="timeMode" type="radio" value="quarter" /><label for="quarterMode">摮??豢?</label> <input id="yearMode" name="timeMode" type="radio" value="year" /><label for="yearMode">撟港遢蝭?</label></div>
+<div class="btn-group" id="timeModeButtons"><input checked="checked" id="quarterMode" name="timeMode" type="radio" value="quarter" /><label for="quarterMode">季別選擇</label> <input id="yearMode" name="timeMode" type="radio" value="year" /><label for="yearMode">年份範圍</label></div>
 </div>
 
-<div class="filter-group" id="quarterControls"><strong>摮?蝭?:</strong>
+<div class="filter-group" id="quarterControls"><strong>季別範圍:</strong>
 
-<div class="quarter-range-container"><select class="quarter-select" id="startSelect"></select> <span class="range-separator">??/span> <select class="quarter-select" id="endSelect"></select></div>
+<div class="quarter-range-container"><select class="quarter-select" id="startSelect"></select> <span class="range-separator">至</span> <select class="quarter-select" id="endSelect"></select></div>
 </div>
 
-<div class="filter-group" id="yearControls" style="display:none;"><strong>撟港遢蝭?:</strong>
+<div class="filter-group" id="yearControls" style="display:none;"><strong>年份範圍:</strong>
 
-<div class="btn-group" id="yearRangeButtons"><input checked="checked" id="allYears" name="yearRange" type="radio" value="all" /><label for="allYears">?券撟港遢</label> <input id="year3Y" name="yearRange" type="radio" value="3Y" /><label for="year3Y">餈?撟?/label> <input id="year5Y" name="yearRange" type="radio" value="5Y" /><label for="year5Y">餈?撟?/label> <input id="year10Y" name="yearRange" type="radio" value="10Y" /><label for="year10Y">餈?0撟?/label></div>
+<div class="btn-group" id="yearRangeButtons"><input checked="checked" id="allYears" name="yearRange" type="radio" value="all" /><label for="allYears">全部年份</label> <input id="year3Y" name="yearRange" type="radio" value="3Y" /><label for="year3Y">近3年</label> <input id="year5Y" name="yearRange" type="radio" value="5Y" /><label for="year5Y">近5年</label> <input id="year10Y" name="yearRange" type="radio" value="10Y" /><label for="year10Y">近10年</label></div>
 </div>
 </div>
 
 <div class="filter-row">
-<div class="filter-group"><strong>鈭辣憿?:</strong>
+<div class="filter-group"><strong>事件類型:</strong>
 
-<div class="event-type-buttons" id="eventChips"><button class="event-chip national active" data-value="national" type="button">? ?輻?瘜?</button><button class="event-chip macro active" data-value="macro" type="button">? 摰?蝬??冗??隞?/button></div>
+<div class="event-type-buttons" id="eventChips"><button class="event-chip national active" data-value="national" type="button">💡 政策法規</button><button class="event-chip macro active" data-value="macro" type="button">💡 宏觀經濟與社會事件</button></div>
 </div>
 <div class="filter-group">
-<div class="action-buttons-container" style="margin: 0; gap: 10px;"><button class="action-btn" id="export-chart-btn" title="?臬??">?</button><button class="action-btn" id="share-btn" title="?澈">??</button></div>
+<div class="action-buttons-container" style="margin: 0; gap: 10px;"><button class="action-btn" id="export-chart-btn" title="匯出圖片">📥</button><button class="action-btn" id="share-btn" title="分享">🔗</button><button class="action-btn" id="rc-info-btn" title="顯示資訊">ⓘ</button></div>
 </div>
 </div>
 </div>
 </div>
-<!-- ?內?????典祝嚗?-->
+<!-- 提示和狀態（全寬） -->
 <div style="display: flex; flex-direction: column; gap: 8px; padding: 0; margin-bottom: 16px;">
-<div class="side-note" id="lock-status" style="color: #e74c3c; font-weight: bold; margin: 0; text-align: left;">????芷?摰?/div>
-<div class="side-note" id="kpi-extra" style="margin: 0; text-align: left;">?內嚗宏??曌??摮????暺?????嚗??圾??/div>
+<div class="side-note" id="lock-status" style="color: #e74c3c; font-weight: bold; margin: 0; text-align: left;">狀態：未鎖定</div>
+<div class="side-note" id="kpi-extra" style="margin: 0; text-align: left;">提示：移動滑鼠查看各季資料，點擊圓點鎖定，雙擊解鎖</div>
 </div>
-<!-- 鈭辣??頠詨?鈭辣隤芣?銝行?嚗頞典???對? -->
+<!-- 事件時間軸和事件說明並排（在趨勢圖上方） -->
 <div class="main-grid-layout" id="top-grid" style="margin-bottom: 16px; width: 100%;">
   <div class="card" id="event-timeline-panel">
-    <h3 id="event-timeline-title">鈭辣??頠?/h3>
+    <h3 id="event-timeline-title">事件時間軸</h3>
     <div id="event-timeline-events">&nbsp;</div>
   </div>
   <div class="card" id="event-detail-panel">
-    <h3 id="event-detail-title">鈭辣隤芣?</h3>
+    <h3 id="event-detail-title">事件說明</h3>
     <div id="event-detail-content">&nbsp;</div>
   </div>
 </div>
-<!-- 頞典??璁汗銝行? -->
+<!-- 趨勢圖與概覽並排 -->
 <div class="grid-x grid-margin-x" style="align-items: start; width: 100%;">
-<!-- ?祆?璁汗嚗椰?湛?雿?撠祝摨佗? -->
+<!-- 本期概覽（左側，佔較小寬度） -->
 <div class="cell small-12 medium-3">
 <div id="overview-section" style="display: flex; flex-direction: column; gap: 0; padding-top: 0;">
 <div class="card" style="margin-top: 0; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,.03);">
-<h3 id="side-title" style="margin-top: 0; margin-bottom: 12px; padding-top: 0; line-height: 1.3; font-size: 16px; font-weight: 600; color: #2c3e50;">?祆?璁汗</h3>
+<h3 id="side-title" style="margin-top: 0; margin-bottom: 12px; padding-top: 0; line-height: 1.3; font-size: 16px; font-weight: 600; color: #2c3e50;">本期概覽</h3>
 <div class="kpi-row">
 <div class="kpi">
-<div class="label">?祆?銝凋??賂????迎?</div>
+<div class="label">本期中位數（萬/坪）</div>
 <div class="val" id="kpi-now">&mdash;</div>
 <div class="small" id="kpi-quarter">&mdash;</div>
 </div>
 <div class="kpi">
-<div class="label">?撟游???YoY嚗?/div>
+<div class="label">與去年同期（YoY）</div>
 <div class="val" id="kpi-yoy">&mdash;</div>
 <div class="small" id="kpi-yoy-note">&mdash;</div>
 </div>
 <div class="kpi">
-<div class="label">??銝摮??QoQ嚗?/div>
+<div class="label">與上一季（QoQ）</div>
 <div class="val" id="kpi-qoq">&mdash;</div>
 <div class="small" id="kpi-qoq-note">&mdash;</div>
 </div>
 <div class="kpi">
-<div class="label">???擃?/ ?雿?/div>
+<div class="label">期間最高 / 最低</div>
 <div class="val" id="kpi-hi-lo">&mdash;</div>
 <div class="small" id="kpi-hi-lo-note">&mdash;</div>
 </div>
@@ -1123,7 +1010,7 @@ button,input,select,textarea{-webkit-user-select:text !important;-moz-user-selec
 </div>
 </div>
 </div>
-<!-- 頞典???喳嚗?頛之撖砍漲嚗?-->
+<!-- 趨勢圖（右側，佔較大寬度） -->
 <div class="cell small-12 medium-9">
 <div id="bottom-grid" style="margin-bottom: 0; padding-top: 0;">
 <div id="graph" style="display: flex; flex-direction: column; width: 100%;">&nbsp;</div>
@@ -1140,99 +1027,65 @@ button,input,select,textarea{-webkit-user-select:text !important;-moz-user-selec
 
 <div id="detailContent">&nbsp;</div>
 </div>
-<!-- ?澈?Ｘ -->
+<!-- 分享面板 -->
 
 <div id="sharePopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #ccc;padding:20px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.15);border-radius:8px;width:400px;text-align:center;"><button id="closeSharePopup" style="float:right;background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;transition:.2s">X</button>
 
-<h3 style="margin-top:0;font-size:18px;color:#2c3e50;">?澈??/h3>
+<h3 style="margin-top:0;font-size:18px;color:#2c3e50;">分享到</h3>
 
 <div id="shareButtonsContainer" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px;align-items:center;">
-  <div id="lineButtonContainer" style="flex: 1; min-width: 120px; display: flex; justify-content: center; align-items: center; height: 40px;"></div>
-  <div id="facebookButtonContainer" style="flex: 1; min-width: 120px; display: flex; justify-content: center; align-items: center; height: 40px;">
-    <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Fnccu.fun4.com.tw%2Farticle%2Fdetail%2F2506025893274&layout=button&size=large&width=120&height=28&appId" width="120" height="28" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-  </div>
-  <button class="share-option" data-platform="copy" style="padding:12px 20px;border:2px solid #4e79a7;background:#fff;color:#4e79a7;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;transition:.2s;flex:1;min-width:120px;">?? 銴ˊ???</button>
+  <button class="share-option" data-platform="copy" style="padding:12px 20px;border:2px solid #4e79a7;background:#fff;color:#4e79a7;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;transition:.2s;flex:1;min-width:120px;">🔗 複製連結</button>
 </div>
 </div>
-<!-- ?桃蔗撅?-->
+<!-- 遮罩層 -->
 
 <div id="shareOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1999;">&nbsp;</div>
 
-<!-- ?喃?閫?閮???-->
-<div id="rc-info-btn-wrapper" class="rc-info-btn-wrapper">
-  <button id="rc-info-btn" class="rc-info-btn" aria-label="憿舐內鞈?">??/button>
-</div>
 
-<!-- 鞈??桃蔗 Overlay -->
+<!-- 資訊遮罩 Overlay -->
 <div id="rc-info-overlay" class="rc-info-overlay">
   <div class="rc-info-overlay-container">
-    <button id="rc-close-info-overlay" class="rc-close-info-overlay" aria-label="??">?</button>
+    <button id="rc-close-info-overlay" class="rc-close-info-overlay" aria-label="關閉">×</button>
     <div id="rc-info-content" class="rc-info-content">
-      <h2 style="color:#fff;margin-top:0;margin-bottom:24px;font-size:28px;border-bottom:2px solid rgba(255,255,255,0.3);padding-bottom:12px;text-align:center;padding-top:0;">隤芣?</h2>
+      <h2 style="color:#fff;margin-top:0;margin-bottom:24px;font-size:28px;border-bottom:2px solid rgba(255,255,255,0.3);padding-bottom:12px;text-align:center;padding-top:0;">說明</h2>
       
-      <!-- 鞈?皜??摩 -->
+      <!-- 資料清理邏輯 -->
       <div style="margin-bottom:32px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
-        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">鞈?皜??摩??蝷箄牧??/h3>
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">資料清理邏輯與圖示說明</h3>
         <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
-          ?祈????芸祕?寧???箸??桀皞Ⅱ?改????蜓閬?摰???憒撖?摰之璅?鈭斗?嚗蒂?閬芸??畾?靽?鈭斗??迨憭?鈭血??斤畾隞塚?憒?頠???璅???嚗?撌脣??桀?蜇?寡?撅翩蝑扔蝡臬潮脰???嚗Ⅱ靽隅?Ｗ???游??扼?        </p>
+          本資料源自實價登錄，為求單價準確性，僅保留主要住宅類型（如公寓、住宅大樓）交易，並排除親友、特殊關係等交易。此外，亦剔除特殊物件（如僅車位、頂樓加蓋），且已對單價、總價與屋齡等極端值進行處理，確保趨勢具備市場參考性。
+        </p>
         <hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.2);">
         <div style="font-size:15px;line-height:1.8;">
-          <p style="margin-bottom:12px;"><strong>?典?鈭辣憿?嚗?/strong></p>
+          <p style="margin-bottom:12px;"><strong>全國事件類型：</strong></p>
           <ul style="margin-left:20px;margin-bottom:20px;padding-left:20px;list-style:none;">
-            <li style="margin-bottom:8px;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>?輻?瘜?</strong></li>
-            <li style="margin-bottom:0;"><span class="color-block macro" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88623E;"></span><strong>摰?蝬??冗??隞?/strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>政策法規</strong></li>
+            <li style="margin-bottom:0;"><span class="color-block macro" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88623E;"></span><strong>宏觀經濟與社會事件</strong></li>
           </ul>
-          <p style="margin-bottom:12px;"><strong>?唳鈭辣憿?嚗?/strong></p>
+          <p style="margin-bottom:12px;"><strong>地方事件類型：</strong></p>
           <ul style="margin-left:20px;margin-bottom:0;padding-left:20px;list-style:none;">
-            <li style="margin-bottom:8px;"><span class="color-block tax" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#E09861;"></span><strong>靘??抒??箄矽??/strong></li>
-            <li style="margin-bottom:8px;"><span class="color-block infra" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88B4CC;"></span><strong>?之撱箄身</strong></li>
-            <li style="margin-bottom:8px;"><span class="color-block dev" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#1C9A85;"></span><strong>?閬?????/strong></li>
-            <li style="margin-bottom:0;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>?輻?瘜?</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block tax" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#E09861;"></span><strong>例行性稅基調整</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block infra" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#88B4CC;"></span><strong>重大建設</strong></li>
+            <li style="margin-bottom:8px;"><span class="color-block dev" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#1C9A85;"></span><strong>土地規劃與開發</strong></li>
+            <li style="margin-bottom:0;"><span class="color-block national" style="display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:3px;vertical-align:middle;background-color:#f1c54e;"></span><strong>政策法規</strong></li>
           </ul>
         </div>
       </div>
       
-      <!-- ?痊?脫? -->
+      <!-- 免責聲明 -->
       <div style="margin-bottom:24px;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;">
-        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">?痊?脫?</h3>
+        <h3 style="color:#fff;font-size:20px;margin-top:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:8px;">免責聲明</h3>
         <p style="font-size:15px;line-height:1.8;margin:0;text-align:justify;">
-          ?砌葉敹遣蝡??憭找?蝝嚗?冽?靘????游??潔???賊?鈭辣蝝??敶嚗蒂?誑?踹銝凋??貉???橘?隞乩噶瘞??摰嗅飛????望?踹敶梢???曉?嚗?隞嗥??潛?撠?摰?澆蔣?踹?賣????趙撱嗥???嚗”銝剖??曆?隞嗉??寞頞典銝阡???撠?靽??誑鈭辣蝝?撘??整?        </p>
+          本中心建立不動產大事紀，旨在提供資料市場對於不動產相關事件紀錄之彙整，並加以房價中位數聯合呈現，以便民眾或專家學者參考。然由於房價影響因素眾多，事件的發生對住宅價格影響可能有提前或滯延的關係，表中呈現事件與價格趨勢並非有絕對關係，僅以事件紀錄方式呈現。
+        </p>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-/* RC Overlay ?賢?蝛粹??見撘?*/
-.rc-info-btn-wrapper {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 48px;
-  height: 48px;
-  z-index: 1500;
-  padding: 0;
-  margin: 0;
-}
-
-.rc-info-btn {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #4e79a7;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  padding: 0;
-  margin: 0;
-}
+/* RC Overlay 命名空間化樣式 */
+/* rc-info-btn 現在使用 action-btn 樣式，無需單獨定義 */
 
 .rc-info-overlay {
   display: none;
@@ -1354,98 +1207,56 @@ button,input,select,textarea{-webkit-user-select:text !important;-moz-user-selec
 </style>
 </div>
 <script>
-// ?澈?
+// 分享功能
 function initShareFeature() {
   const sharePopup = document.getElementById('sharePopup');
   const shareOverlay = document.getElementById('shareOverlay');
   const shareBtn = document.getElementById('share-btn');
   const closeShareBtn = document.getElementById('closeSharePopup');
   
-  if(!sharePopup || !shareBtn) return;
+  if(!shareBtn) return;
   
-  function showSharePopup() {
-    sharePopup.style.display = 'block';
-    shareOverlay.style.display = 'block';
+  function copyShareLink() {
+    const pageUrl = window.location.href;
     
-    // ???萄遣 LINE ?澈??
-    const lineContainer = document.getElementById('lineButtonContainer');
-    if(lineContainer) {
-      // 皜????
-      lineContainer.innerHTML = '';
-      // ?萄遣?啁? LINE ??
-      const lineButton = document.createElement('div');
-      lineButton.className = 'line-it-button';
-      lineButton.setAttribute('data-lang', 'en');
-      lineButton.setAttribute('data-type', 'share-b');
-      lineButton.setAttribute('data-env', 'PROD');
-      lineButton.setAttribute('data-url', 'https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/#using-custom-icons');
-      lineButton.setAttribute('data-color', 'default');
-      lineButton.setAttribute('data-size', 'large');
-      lineButton.setAttribute('data-count', 'false');
-      lineButton.setAttribute('data-ver', '3');
-      lineButton.style.display = 'none';
-      lineContainer.appendChild(lineButton);
-      
-      // 蝑? LINE ?單頛摰?敺?憪???
-      let retryCount = 0;
-      function initLineButton() {
-        retryCount++;
-        // 瑼Ｘ LINE API ?臬撌脰???        if(window.LineIt) {
-          try {
-            // ?岫憭車???瘜?            if(typeof window.LineIt.loadButton === 'function') {
-              window.LineIt.loadButton();
-            } else if(typeof window.LineIt.parse === 'function') {
-              window.LineIt.parse();
-            } else if(typeof window.LineIt.render === 'function') {
-              window.LineIt.render();
-            }
-            // ????憿舐內??
-            lineButton.style.display = 'inline-block';
-            // 憒? LineIt 撠情摮嚗虜?????            console.log('LINE ??撌脣?憪?');
-          } catch(e) {
-            console.log('LINE ?????隤?', e);
-          }
-        } else if(retryCount < 50) {
-          // ?憭?閰?50 甈∴?5蝘?
-          setTimeout(initLineButton, 100);
-        } else {
-          console.warn('LINE ?單頛頞?嚗???賜瘜＊蝷箝?瑼Ｘ蝬脰楝?????LINE ?單?臬甇?Ⅱ頛??);
-          // ?喃蝙?單?芾??伐?銋＊蝷箸??捆??          lineButton.style.display = 'inline-block';
-        }
-      }
-      // 撱園????蝣箔? DOM 撌脫?唬??單??????      setTimeout(initLineButton, 200);
+    const fallbackCopy = () => {
+      const textarea = document.createElement('textarea');
+      textarea.value = pageUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('連結已複製到剪貼簿！');
+    };
+    
+    if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(pageUrl).then(() => {
+        alert('連結已複製到剪貼簿！');
+      }).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
     }
   }
   
   function hideSharePopup() {
-    sharePopup.style.display = 'none';
-    shareOverlay.style.display = 'none';
+    if(sharePopup) sharePopup.style.display = 'none';
+    if(shareOverlay) shareOverlay.style.display = 'none';
   }
   
-  shareBtn.addEventListener('click', showSharePopup);
+  shareBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    copyShareLink();
+  });
   if(closeShareBtn) closeShareBtn.addEventListener('click', hideSharePopup);
   if(shareOverlay) shareOverlay.addEventListener('click', hideSharePopup);
   
   document.querySelectorAll('.share-option').forEach(btn => {
     btn.addEventListener('click', function() {
       const platform = this.dataset.platform;
-      const pageUrl = window.location.href;
-      const pageTitle = document.title;
       
       switch(platform) {
-        // LINE ??Facebook ?澈撌脫?典??寞???iframe嚗???
         case 'copy':
-          navigator.clipboard.writeText(pageUrl).then(() => {
-            alert('???撌脰?鋆賢?芾票蝪選?');
-          }).catch(() => {
-            const textarea = document.createElement('textarea');
-            textarea.value = pageUrl;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('???撌脰?鋆賢?芾票蝪選?');
-          });
+          copyShareLink();
           break;
       }
       
@@ -1463,21 +1274,79 @@ function initShareFeature() {
   });
 }
 
+function initInlineShareLinks() {
+  const facebookLink = document.getElementById('inlineFacebookLink');
+  const lineButton = document.getElementById('inlineLineButton');
+  const lineFallback = document.getElementById('inlineLineFallback');
+  
+  if(!facebookLink && !lineButton && !lineFallback) return;
+  
+  const defaultShareUrl = 'https://nccu.fun4.com.tw/article/detail/2506025893274';
+  const pageUrl = window.location.href;
+  const usePageUrl = /^https?:/i.test(pageUrl);
+  const shareUrl = usePageUrl ? pageUrl : defaultShareUrl;
+  const encodedUrl = encodeURIComponent(shareUrl);
+  
+  if(facebookLink) {
+    facebookLink.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  }
+  
+  if(lineFallback) {
+    lineFallback.href = `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`;
+    lineFallback.style.display = 'inline-flex';
+  }
+  
+  if(lineButton) {
+    lineButton.setAttribute('data-url', shareUrl);
+    let retryCount = 0;
+    const maxRetries = 50;
+    
+    function initLineButton() {
+      retryCount++;
+      if(window.LineIt) {
+        try {
+          if(typeof window.LineIt.loadButton === 'function') {
+            window.LineIt.loadButton();
+          } else if(typeof window.LineIt.parse === 'function') {
+            window.LineIt.parse();
+          } else if(typeof window.LineIt.render === 'function') {
+            window.LineIt.render();
+          }
+          lineButton.style.display = 'inline-flex';
+          if(lineFallback) lineFallback.style.display = 'none';
+        } catch(err) {
+          console.warn('LINE 分享按鈕初始化失敗', err);
+          lineButton.style.display = 'inline-flex';
+        }
+      } else if(retryCount < maxRetries) {
+        setTimeout(initLineButton, 100);
+      } else {
+        console.warn('LINE 腳本載入逾時，請檢查網路狀態');
+        lineButton.style.display = 'inline-flex';
+        if(lineFallback) lineFallback.style.display = 'inline-flex';
+      }
+    }
+    
+    initLineButton();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  // ????Foundation 6嚗?雿??dashboard-container嚗?  if (typeof Foundation !== 'undefined') {
-    // ?芸 dashboard-container ?批?憪? Foundation
+  // 初始化 Foundation 6（僅作用於 dashboard-container）
+  if (typeof Foundation !== 'undefined') {
+    // 只在 dashboard-container 內初始化 Foundation
     const dashboardContainer = document.querySelector('.dashboard-container');
     if (dashboardContainer) {
       Foundation.reInit(dashboardContainer);
     }
   }
   
-  // ======== 璈怠??內瑼Ｘ葫嚗??冽?璈??憿舐內嚗?========
+  // ======== 橫向提示檢測（僅在手機直向時顯示） ========
   const rotatePrompt = document.getElementById('rotate-screen-prompt');
   const closeBtn = document.getElementById('close-rotate-prompt');
   const continueBtn = document.getElementById('continue-portrait');
   
-  // ??????
+  // 關閉按鈕處理
   if (closeBtn) {
     closeBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -1486,12 +1355,12 @@ document.addEventListener('DOMContentLoaded', function() {
         rotatePrompt.classList.remove('show');
         rotatePrompt.style.setProperty('display', 'none', 'important');
         sessionStorage.setItem('rotate-prompt-dismissed', 'true');
-        console.log('璈怠??內撌脤???);
+        console.log('橫向提示已關閉');
       }
     });
   }
   
-  // 蝜潛?雿輻?游?璅∪???
+  // 繼續使用直向模式按鈕
   if (continueBtn) {
     continueBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -1500,36 +1369,40 @@ document.addEventListener('DOMContentLoaded', function() {
         rotatePrompt.classList.remove('show');
         rotatePrompt.style.setProperty('display', 'none', 'important');
         sessionStorage.setItem('rotate-prompt-dismissed', 'true');
-        console.log('?冽?豢?蝜潛?雿輻?游?璅∪?');
+        console.log('用戶選擇繼續使用直向模式');
       }
     });
   }
   
   function checkOrientation() {
     if (!rotatePrompt) {
-      console.error('?曆???rotate-screen-prompt ??');
+      console.error('找不到 rotate-screen-prompt 元素');
       return;
     }
     
-    // 瑼Ｘ?臬?箸?璈?撖砍漲撠768px嚗?    const width = window.innerWidth || document.documentElement.clientWidth;
+    // 檢查是否為手機（寬度小於768px）
+    const width = window.innerWidth || document.documentElement.clientWidth;
     const height = window.innerHeight || document.documentElement.clientHeight;
     const isMobile = width <= 768;
     
-    // 瑼Ｘ?臬?箇??擃漲憭扳撖砍漲嚗?    const isPortrait = height > width;
+    // 檢查是否為直向（高度大於寬度）
+    const isPortrait = height > width;
     
-    // 銋炎??orientation API嚗???嚗?    let orientationPortrait = false;
+    // 也檢查 orientation API（如果有）
+    let orientationPortrait = false;
     if (window.orientation !== undefined) {
       orientationPortrait = (window.orientation === 0 || window.orientation === 180);
     }
     
-    // ?蝯?瑟?衣?游?
+    // 最終判斷是否為直向
     const finalIsPortrait = isPortrait || orientationPortrait;
     
-    // 瑼Ｘ?冽?臬撌脤????蝷綽?雿輻 sessionStorage嚗?甈⊥?閰梢憿舐內銝甈∴?
-    // ?寧 sessionStorage ????localStorage嚗見瘥活???汗?券??唳???＊蝷?    const dismissed = sessionStorage.getItem('rotate-prompt-dismissed') === 'true';
+    // 檢查用戶是否已選擇關閉提示（使用 sessionStorage，每次會話都顯示一次）
+    // 改用 sessionStorage 而不是 localStorage，這樣每次關閉瀏覽器重新打開都會顯示
+    const dismissed = sessionStorage.getItem('rotate-prompt-dismissed') === 'true';
     
-    // 隤輯岫靽⊥
-    console.log('? 璈怠??內瑼Ｘ葫:', {
+    // 調試信息
+    console.log('📱 橫向提示檢測:', {
       width: width,
       height: height,
       isMobile: isMobile,
@@ -1538,20 +1411,22 @@ document.addEventListener('DOMContentLoaded', function() {
       orientation: window.orientation
     });
     
-    // ?寞???憿舐內??帖??蝷?    if (isMobile && finalIsPortrait && !dismissed) {
-      // ???游?銝???內??憿舐內璈怠??內
-      console.log('??憿舐內璈怠??內');
+    // 根據情況顯示或隱藏橫向提示
+    if (isMobile && finalIsPortrait && !dismissed) {
+      // 手機直向且未關閉提示時，顯示橫向提示
+      console.log('✅ 顯示橫向提示');
       rotatePrompt.classList.add('show');
-      // 撘瑕閮剔蔭璅??蝣箔?憿舐內嚗蝙??setProperty ?寞?嚗?      rotatePrompt.style.setProperty('display', 'flex', 'important');
+      // 強制設置樣式確保顯示（使用 setProperty 方法）
+      rotatePrompt.style.setProperty('display', 'flex', 'important');
       rotatePrompt.style.setProperty('visibility', 'visible', 'important');
       rotatePrompt.style.setProperty('opacity', '1', 'important');
       rotatePrompt.style.setProperty('z-index', '10000', 'important');
       rotatePrompt.style.setProperty('position', 'fixed', 'important');
       rotatePrompt.style.setProperty('inset', '0', 'important');
-      console.log('璈怠??內璅??撌脰身蝵?);
+      console.log('橫向提示樣式已設置');
     } else {
-      // ?嗡????梯??內
-      console.log('???梯?璈怠??內 - ??:', {
+      // 其他情況隱藏提示
+      console.log('❌ 隱藏橫向提示 - 原因:', {
         isMobile: isMobile,
         isPortrait: finalIsPortrait,
         dismissed: dismissed
@@ -1561,9 +1436,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // 蝡瑼Ｘ嚗?蝑? splash嚗?  checkOrientation();
+  // 立即檢查（不等待 splash）
+  checkOrientation();
   
-  // 蝑? DOM 摰頛敺?瑼Ｘ銝甈?  if (document.readyState === 'loading') {
+  // 等待 DOM 完全載入後再檢查一次
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(checkOrientation, 500);
     });
@@ -1571,11 +1448,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(checkOrientation, 500);
   }
   
-  // 蝑? splash screen 瘨仃敺?瑼Ｘ銝甈?  function checkAfterSplash() {
+  // 等待 splash screen 消失後再檢查一次
+  function checkAfterSplash() {
     const splashScreen = document.getElementById('splash-screen');
     if (splashScreen) {
-      console.log('蝑? splash screen 瘨仃...');
-      // ?? splash ??憭?      const checkSplash = setInterval(function() {
+      console.log('等待 splash screen 消失...');
+      // 監聽 splash 的消失
+      const checkSplash = setInterval(function() {
         const splashDisplay = getComputedStyle(splashScreen).display;
         const splashOpacity = getComputedStyle(splashScreen).opacity;
         const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
@@ -1583,10 +1462,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (splashHidden || splashFaded) {
           clearInterval(checkSplash);
-          console.log('Splash screen 撌脫?憭梧?瑼Ｘ璈怠??內');
+          console.log('Splash screen 已消失，檢查橫向提示');
           setTimeout(function() {
             checkOrientation();
-            // 撘瑕蝣箔?憿舐內嚗???閬?
+            // 強制確保顯示（如果需要）
             const width = window.innerWidth || document.documentElement.clientWidth;
             const height = window.innerHeight || document.documentElement.clientHeight;
             const isMobile = width <= 768;
@@ -1604,16 +1483,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }, 100);
       
-      // ?憭?敺?10 蝘?      setTimeout(function() {
+      // 最多等待 10 秒
+      setTimeout(function() {
         clearInterval(checkSplash);
-        console.log('10蝘???撘瑕瑼Ｘ璈怠??內');
+        console.log('10秒超時，強制檢查橫向提示');
         checkOrientation();
       }, 10000);
     } else {
-      console.log('瘝? splash screen嚗?交炎?交帖??蝷?);
-      // 瘝? splash嚗?交炎??      setTimeout(function() {
+      console.log('沒有 splash screen，直接檢查橫向提示');
+      // 沒有 splash，直接檢查
+      setTimeout(function() {
         checkOrientation();
-        // 撘瑕蝣箔?憿舐內嚗???閬?
+        // 強制確保顯示（如果需要）
         const width = window.innerWidth || document.documentElement.clientWidth;
         const height = window.innerHeight || document.documentElement.clientHeight;
         const isMobile = width <= 768;
@@ -1631,13 +1512,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // 撱園?瑁?嚗Ⅱ靽???蝝撌脰???  setTimeout(checkAfterSplash, 1000);
+  // 延遲執行，確保所有元素都已載入
+  setTimeout(checkAfterSplash, 1000);
   
-  // 憿?瑼Ｘ嚗?摰頛敺?甈⊥炎??  window.addEventListener('load', function() {
-    console.log('?頛摰? - ?活瑼Ｘ璈怠??內');
+  // 額外檢查：在頁面完全載入後再次檢查
+  window.addEventListener('load', function() {
+    console.log('頁面載入完成 - 再次檢查橫向提示');
     setTimeout(function() {
       checkOrientation();
-      // 撘瑕蝣箔?憿舐內嚗???閬?
+      // 強制確保顯示（如果需要）
       const width = window.innerWidth || document.documentElement.clientWidth;
       const height = window.innerHeight || document.documentElement.clientHeight;
       const isMobile = width <= 768;
@@ -1654,17 +1537,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1500);
   });
   
-  // ??閬?憭批??????  let resizeTimeout;
+  // 監聽視窗大小和方向變化
+  let resizeTimeout;
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(checkOrientation, 200);
   });
   
   window.addEventListener('orientationchange', function() {
-    // ?孵??寡??辣?脖?銝?瑼Ｘ嚗Ⅱ靽偕撖詨歇?湔
+    // 方向改變時延遲一下再檢查，確保尺寸已更新
     setTimeout(function() {
       checkOrientation();
-      // 撘瑕蝣箔?憿舐內嚗???閬?
+      // 強制確保顯示（如果需要）
       const width = window.innerWidth || document.documentElement.clientWidth;
       const height = window.innerHeight || document.documentElement.clientHeight;
       const isMobile = width <= 768;
@@ -1681,12 +1565,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
   });
   
-  // ======== 撟單?內瑼Ｘ葫嚗??典像?蹂蝙?冽?憿舐內嚗?========
+  // ======== 平板提示檢測（僅在平板使用時顯示） ========
   const tabletPrompt = document.getElementById('tablet-prompt');
   const closeTabletBtn = document.getElementById('close-tablet-prompt');
   const continueTabletBtn = document.getElementById('continue-tablet');
   
-  // ??????
+  // 關閉按鈕處理
   if (closeTabletBtn) {
     closeTabletBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -1695,12 +1579,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tabletPrompt.classList.remove('show');
         tabletPrompt.style.setProperty('display', 'none', 'important');
         sessionStorage.setItem('tablet-prompt-dismissed', 'true');
-        console.log('撟單?內撌脤???);
+        console.log('平板提示已關閉');
       }
     });
   }
   
-  // 蝜潛?雿輻撟單??
+  // 繼續使用平板按鈕
   if (continueTabletBtn) {
     continueTabletBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -1709,41 +1593,45 @@ document.addEventListener('DOMContentLoaded', function() {
         tabletPrompt.classList.remove('show');
         tabletPrompt.style.setProperty('display', 'none', 'important');
         sessionStorage.setItem('tablet-prompt-dismissed', 'true');
-        console.log('?冽?豢?蝜潛?雿輻撟單');
+        console.log('用戶選擇繼續使用平板');
       }
     });
   }
   
   function checkTablet() {
     if (!tabletPrompt) {
-      console.error('?曆???tablet-prompt ??');
+      console.error('找不到 tablet-prompt 元素');
       return;
     }
     
-    // 瑼Ｘ?臬?箏像?選?撖砍漲??769px ??992px 銋?嚗?    const width = window.innerWidth || document.documentElement.clientWidth;
+    // 檢查是否為平板（寬度在 769px 到 992px 之間）
+    const width = window.innerWidth || document.documentElement.clientWidth;
     const isTablet = width > 768 && width <= 992;
     
-    // 瑼Ｘ?冽?臬撌脤????蝷?    const dismissed = sessionStorage.getItem('tablet-prompt-dismissed') === 'true';
+    // 檢查用戶是否已選擇關閉提示
+    const dismissed = sessionStorage.getItem('tablet-prompt-dismissed') === 'true';
     
-    // 隤輯岫靽⊥
-    console.log('? 撟單?內瑼Ｘ葫:', {
+    // 調試信息
+    console.log('💻 平板提示檢測:', {
       width: width,
       isTablet: isTablet,
       dismissed: dismissed
     });
     
-    // ?寞???憿舐內??像?踵?蝷?    if (isTablet && !dismissed) {
-      console.log('??憿舐內撟單?內');
+    // 根據情況顯示或隱藏平板提示
+    if (isTablet && !dismissed) {
+      console.log('✅ 顯示平板提示');
       tabletPrompt.classList.add('show');
-      // 撘瑕閮剔蔭璅??蝣箔?憿舐內嚗蝙?典?舀見撘?????CSS嚗?      tabletPrompt.style.setProperty('display', 'flex', 'important');
+      // 強制設置樣式確保顯示（使用內聯樣式覆蓋所有 CSS）
+      tabletPrompt.style.setProperty('display', 'flex', 'important');
       tabletPrompt.style.setProperty('visibility', 'visible', 'important');
       tabletPrompt.style.setProperty('opacity', '1', 'important');
       tabletPrompt.style.setProperty('z-index', '10001', 'important');
       tabletPrompt.style.setProperty('position', 'fixed', 'important');
       tabletPrompt.style.setProperty('inset', '0', 'important');
-      console.log('撟單?內璅??撌脰身蝵?);
+      console.log('平板提示樣式已設置');
     } else {
-      console.log('???梯?撟單?內 - ??:', {
+      console.log('❌ 隱藏平板提示 - 原因:', {
         isTablet: isTablet,
         dismissed: dismissed,
         width: width
@@ -1753,12 +1641,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // 蝑? splash screen 瘨仃敺?瑼Ｘ
+  // 等待 splash screen 消失後再檢查
   function checkTabletAfterSplash() {
     const splashScreen = document.getElementById('splash-screen');
     
     if (splashScreen) {
-      // ?? splash ??憭?      const checkSplash = setInterval(function() {
+      // 監聽 splash 的消失
+      const checkSplash = setInterval(function() {
         const splashDisplay = getComputedStyle(splashScreen).display;
         const splashOpacity = getComputedStyle(splashScreen).opacity;
         const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
@@ -1766,10 +1655,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (splashHidden || splashFaded) {
           clearInterval(checkSplash);
-          // splash 瘨仃敺??單炎?乩蒂憿舐內撟單?內
+          // splash 消失後立即檢查並顯示平板提示
           setTimeout(function() {
             checkTablet();
-            // 撘瑕蝣箔?憿舐內嚗???閬?
+            // 強制確保顯示（如果需要）
             const width = window.innerWidth || document.documentElement.clientWidth;
             const isTablet = width > 768 && width <= 992;
             if (isTablet && tabletPrompt && !sessionStorage.getItem('tablet-prompt-dismissed')) {
@@ -1785,24 +1674,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }, 100);
       
-      // ?憭?敺?10 蝘?撘瑕瑼Ｘ
+      // 最多等待 10 秒後強制檢查
       setTimeout(function() {
         clearInterval(checkSplash);
         checkTablet();
       }, 10000);
     } else {
-      // 瘝? splash嚗?交炎??      setTimeout(checkTablet, 1500);
+      // 沒有 splash，直接檢查
+      setTimeout(checkTablet, 1500);
     }
   }
   
-  // ??瑼Ｘ嚗辣?脣銵?蝣箔? splash 撌脰???
+  // 初始檢查（延遲執行，確保 splash 已處理）
   setTimeout(checkTabletAfterSplash, 500);
   
-  // 憿?瑼Ｘ嚗?摰頛敺?甈⊥炎??  window.addEventListener('load', function() {
+  // 額外檢查：在頁面完全載入後再次檢查
+  window.addEventListener('load', function() {
     setTimeout(checkTablet, 2000);
   });
   
-  // ??閬?憭批?霈?
+  // 監聽視窗大小變化
   let resizeTabletTimeout;
   window.addEventListener('resize', function() {
     clearTimeout(resizeTabletTimeout);
@@ -1811,8 +1702,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   loadDashboardData()
     .then(apiData=>{
-      console.log('本地資料載入完成！');
-      console.log('鞈?蝯?:', {
+      console.log('本地資料載入成功，準備初始化圖表');
+      console.log('資料結構:', {
         hasNewData: !!apiData.newData,
         newDataLength: apiData.newData ? (Array.isArray(apiData.newData) ? apiData.newData.length : 'not array') : 'missing',
         keys: Object.keys(apiData)
@@ -1820,19 +1711,19 @@ document.addEventListener('DOMContentLoaded', function() {
       initializeChart(apiData);
     })
     .catch(error=>{
-      console.error('讀取本地資料時發生錯誤');
-      console.error('?航炊憿?:', error.constructor.name);
-      console.error('?航炊閮:', error.message);
-      console.error('?航炊??:', error.stack);
-      console.error('摰?航炊撠情:', error);
+      console.error('讀取本地資料時發生問題:');
+      console.error('錯誤類型:', error.constructor.name);
+      console.error('錯誤訊息:', error.message);
+      console.error('錯誤堆疊:', error.stack);
+      console.error('完整錯誤對象:', error);
       
-      // 瑼Ｘ?臬?舐雯頝舫????
+      // 檢查是否是檔案存取或伺服器設定問題
       let errorMsg = '本地資料載入失敗';
       if(error.message === 'Failed to fetch'){
-        errorMsg = '無法讀取本地 json 檔案。\n';
-        errorMsg += '1. 請確認專案目錄中存在 json 資料檔\n';
-        errorMsg += '2. 若透過伺服器預覽，請確保靜態檔案可被讀取\n';
-        errorMsg += '3. 檢查瀏覽器 Console / Network 了解詳細原因';
+        errorMsg = '無法讀取 json 檔案。可能的原因：\n';
+        errorMsg += '1. 本地檔案不存在或路徑錯誤\n';
+        errorMsg += '2. 預覽伺服器未正確提供靜態檔案\n';
+        errorMsg += '3. 瀏覽器阻擋檔案讀取（file:// 導覽限制）';
       } else if(error.message){
         errorMsg += ': ' + error.message;
       } else if(error.name){
@@ -1841,7 +1732,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const dashboard=document.querySelector('.dashboard-container');dashboard.style.display='block';
       const banner=document.createElement('div');
-      banner.innerHTML=errorMsg.replace(/\n/g, '<br>') + '<br>如需更多資訊請檢查瀏覽器開發者工具。';
+      banner.innerHTML=errorMsg.replace(/\n/g, '<br>') + '<br>請檢查 json 檔案或預覽伺服器設定。';
       banner.setAttribute('style','max-width:1200px;margin:10px auto;padding:10px 14px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:6px;white-space:pre-line;');
       document.body.insertBefore(banner,dashboard);
       const splashScreen=document.getElementById('splash-screen');if(splashScreen){splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
@@ -1853,30 +1744,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if(splashScreen&&splashScreen.style.display!=='none'){dashboard.style.display='block';splashScreen.style.opacity='0';setTimeout(()=>{if(splashScreen&&splashScreen.style.opacity==='0'){splashScreen.style.display='none';}},3000);}
   },8000);
   
-  // ????鈭怠???  initShareFeature();
+  // 初始化分享功能
+  initShareFeature();
+  initInlineShareLinks();
   
-  // ????閮?????  initInfoButton();
+  // 初始化資訊按鈕功能
+  initInfoButton();
 });
 
-// 鞈????嚗C Overlay ?賢?蝛粹???
+// 資訊按鈕功能（RC Overlay 命名空間化）
 function initInfoButton() {
-  const infoBtnWrapper = document.getElementById('rc-info-btn-wrapper');
   const infoBtn = document.getElementById('rc-info-btn');
   const infoOverlay = document.getElementById('rc-info-overlay');
   const closeInfoBtn = document.getElementById('rc-close-info-overlay');
   
   if (!infoBtn || !infoOverlay) return;
   
-  // ?游之 hover ??????摨?啣蔣
-  if (infoBtnWrapper) {
-    infoBtnWrapper.style.pointerEvents = 'auto';
-  }
+  // 按鈕現在在控制面板中，無需額外設定
   
-  // 瑼Ｘ葫?臬?箸??Ｚ?蝵殷?閬?撖砍漲憭扳 992px嚗?  function isDesktop() {
+  // 檢測是否為桌面裝置（視窗寬度大於 992px）
+  function isDesktop() {
     return window.innerWidth > 992;
   }
   
-  // 瑼Ｘ葫?臬?箄孛?扯?蝵?  function isTouchDevice() {
+  // 檢測是否為觸控裝置
+  function isTouchDevice() {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   }
   
@@ -1884,9 +1776,9 @@ function initInfoButton() {
   let leaveTimeout;
   let isOverlayVisible = false;
   
-  // 憿舐內?桃蔗
+  // 顯示遮罩
   function showInfoOverlay() {
-    // 蝣箔?蝘駁瘛∪憿銝阡?蝵?opacity
+    // 確保移除淡出類別並重置 opacity
     infoOverlay.classList.remove('fade-out');
     infoOverlay.style.opacity = '1';
     infoOverlay.style.display = 'flex';
@@ -1894,92 +1786,88 @@ function initInfoButton() {
     isOverlayVisible = true;
   }
   
-  // ?梯??桃蔗
+  // 隱藏遮罩
   function hideInfoOverlay() {
-    // 瘛餃?瘛∪??
+    // 添加淡出效果
     infoOverlay.classList.add('fade-out');
     setTimeout(() => {
       infoOverlay.style.display = 'none';
       infoOverlay.classList.remove('fade-out');
       document.body.style.overflow = '';
       isOverlayVisible = false;
-    }, 500); // 蝑?瘛∪?摰?
+    }, 500); // 等待淡出動畫完成
   }
   
-  // 皜??辣?脰??
+  // 清除所有延遲計時器
   function clearAllTimeouts() {
     clearTimeout(hoverTimeout);
     clearTimeout(leaveTimeout);
   }
   
-  // 獢??hover 鈭?嚗敺桀辣?莎?銝??
+  // 桌面版 hover 互動（含微延遲，不卡頓）
   if (isDesktop() && !isTouchDevice()) {
-    const hoverTarget = infoBtnWrapper || infoBtn;
+    const hoverTarget = infoBtn;
     
-    // 皛??脣??
+    // 滑鼠進入按鈕
     hoverTarget.addEventListener('mouseenter', function() {
-      if (infoBtn) {
-        infoBtn.style.transform = 'scale(1.1)';
-        infoBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
-      }
-      
       clearAllTimeouts();
       
-      // 撱園憿舐內?桃蔗嚗凝撱園嚗???
+      // 延遲顯示遮罩（微延遲，避免卡頓）
       hoverTimeout = setTimeout(() => {
         if (!isOverlayVisible) {
           showInfoOverlay();
         }
-      }, 200); // 敺?300ms ?寧 200ms嚗瘚
+      }, 200); // 從 300ms 改為 200ms，更流暢
     });
     
-    // 皛??ａ???
+    // 滑鼠離開按鈕
     hoverTarget.addEventListener('mouseleave', function(e) {
-      if (infoBtn) {
-        infoBtn.style.transform = 'scale(1)';
-        infoBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-      }
       
       clearTimeout(hoverTimeout);
       
-      // 瑼Ｘ皛?蝘餃??啁??格???
+      // 檢查滑鼠移動到的目標元素
       const relatedTarget = e.relatedTarget;
       
-      // 憒?皛?蝘餃??圈蝵拇??嗅???銝?銝??日蝵?      if (relatedTarget && (relatedTarget === infoOverlay || infoOverlay.contains(relatedTarget))) {
+      // 如果滑鼠移動到遮罩或其子元素上，不清除遮罩
+      if (relatedTarget && (relatedTarget === infoOverlay || infoOverlay.contains(relatedTarget))) {
         return;
       }
       
-      // 撱園??嚗策?冽??蝘餃?皛??圈蝵拐?嚗凝撱園嚗?      clearTimeout(leaveTimeout);
+      // 延遲關閉，給用戶時間移動滑鼠到遮罩上（微延遲）
+      clearTimeout(leaveTimeout);
       leaveTimeout = setTimeout(() => {
         if (infoOverlay.style.display === 'none' || !isOverlayVisible) return;
         
-        // 雿輻 document.elementFromPoint 瑼Ｘ?嗅?皛?雿蔭銝???
+        // 使用 document.elementFromPoint 檢查當前滑鼠位置下的元素
         const currentElement = document.elementFromPoint(e.clientX || 0, e.clientY || 0);
         if (currentElement && (currentElement === infoOverlay || infoOverlay.contains(currentElement))) {
-          return; // 皛??券蝵拐?嚗?皜
+          return; // 滑鼠在遮罩上，不清除
         }
         
         hideInfoOverlay();
-      }, 100); // 敺?150ms ?寧 100ms嚗瘚
+      }, 100); // 從 150ms 改為 100ms，更流暢
     });
     
-    // ?桃蔗 hover ???＊蝷?    infoOverlay.addEventListener('mouseenter', function() {
+    // 遮罩 hover 時保持顯示
+    infoOverlay.addEventListener('mouseenter', function() {
       clearAllTimeouts();
       isOverlayVisible = true;
     });
     
-    // 皛??ａ??桃蔗?????    infoOverlay.addEventListener('mouseleave', function() {
+    // 滑鼠離開遮罩時自動關閉
+    infoOverlay.addEventListener('mouseleave', function() {
       hideInfoOverlay();
     });
     
-    // 暺??桃蔗???嚗??Ｙ?嚗?    infoOverlay.addEventListener('click', function(e) {
+    // 點擊遮罩背景關閉（桌面版）
+    infoOverlay.addEventListener('click', function(e) {
       if (e.target === infoOverlay) {
         hideInfoOverlay();
       }
     });
   }
   
-  // 暺???憿舐內/?梯??桃蔗嚗???蝵殷?
+  // 點擊按鈕顯示/隱藏遮罩（所有裝置）
   infoBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     clearAllTimeouts();
@@ -1990,7 +1878,7 @@ function initInfoButton() {
     }
   });
   
-  // ????嚗???蝵殷?
+  // 關閉按鈕（所有裝置）
   if (closeInfoBtn) {
     closeInfoBtn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1998,7 +1886,8 @@ function initInfoButton() {
     });
   }
   
-  // 銵?鋆蔭嚗??蝵抵??舫???  if (!isDesktop() || isTouchDevice()) {
+  // 行動裝置：點擊遮罩背景關閉
+  if (!isDesktop() || isTouchDevice()) {
     infoOverlay.addEventListener('click', function(e) {
       if (e.target === infoOverlay) {
         hideInfoOverlay();
@@ -2006,16 +1895,16 @@ function initInfoButton() {
     });
   }
   
-  // ESC ?菟??????蝵殷?
+  // ESC 鍵關閉（所有裝置）
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && (infoOverlay.style.display === 'flex' || infoOverlay.style.display === 'block')) {
       hideInfoOverlay();
     }
   });
   
-  // ?頛??＊蝷粹蝵抬??嗅??芸?瘛∪
+  // 頁面載入時自動顯示遮罩，然後自動淡出
   function showInfoOverlayOnLoad() {
-    // 蝑? splash screen 瘨仃敺?憿舐內
+    // 等待 splash screen 消失後再顯示
     const splashScreen = document.getElementById('splash-screen');
     const checkSplash = setInterval(function() {
       const splashDisplay = getComputedStyle(splashScreen).display;
@@ -2023,43 +1912,46 @@ function initInfoButton() {
       const splashHidden = splashScreen.style.display === 'none' || splashDisplay === 'none';
       const splashFaded = parseFloat(splashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
       
-      // 憒? splash screen ?憿舐內嚗Ⅱ靽牧???Ｖ?憿舐內
+      // 如果 splash screen 還在顯示，確保說明頁面不顯示
       if (!splashHidden && !splashFaded) {
         if (isOverlayVisible) {
           hideInfoOverlay();
         }
-        return; // 蝜潛?蝑?
+        return; // 繼續等待
       }
       
       if (splashHidden || splashFaded) {
         clearInterval(checkSplash);
-        // Splash screen 撌脫?憭梧?蝑?銝撠挾??敺＊蝷箄?閮蝵?        setTimeout(() => {
-          // ?活蝣箄? splash screen 撌脣??冽?憭?          const finalSplashDisplay = getComputedStyle(splashScreen).display;
+        // Splash screen 已消失，等待一小段時間後顯示資訊遮罩
+        setTimeout(() => {
+          // 再次確認 splash screen 已完全消失
+          const finalSplashDisplay = getComputedStyle(splashScreen).display;
           const finalSplashOpacity = getComputedStyle(splashScreen).opacity;
           const finalSplashHidden = splashScreen.style.display === 'none' || finalSplashDisplay === 'none';
           const finalSplashFaded = parseFloat(finalSplashOpacity) <= 0.01 || splashScreen.style.opacity === '0';
           
           if (finalSplashHidden || finalSplashFaded) {
-            // 蝣箔?蝘駁瘛∪憿
+            // 確保移除淡出類別
             infoOverlay.classList.remove('fade-out');
             showInfoOverlay();
             isOverlayVisible = true;
             
-            // 60蝘??芸?瘛∪
+            // 60秒後自動淡出
             setTimeout(() => {
               if (isOverlayVisible) {
                 hideInfoOverlay();
               }
-            }, 60000); // 憿舐內60蝘??芸?瘛∪
+            }, 60000); // 顯示60秒後自動淡出
           }
-        }, 800); // 憓?蝑?????.8蝘?蝣箔? splash screen 摰瘨仃
+        }, 800); // 增加等待時間到0.8秒，確保 splash screen 完全消失
       }
     }, 100);
     
-    // ?憭?敺?2蝘?憒?splash screen??瘨仃嚗?憿舐內鞈??桃蔗
+    // 最多等待12秒，如果splash screen還沒消失，也顯示資訊遮罩
     setTimeout(() => {
       clearInterval(checkSplash);
-      // ?活蝣箄? splash screen ???      const finalCheck = document.getElementById('splash-screen');
+      // 再次確認 splash screen 狀態
+      const finalCheck = document.getElementById('splash-screen');
       const finalDisplay = getComputedStyle(finalCheck).display;
       const finalOpacity = getComputedStyle(finalCheck).opacity;
       const finalHidden = finalCheck.style.display === 'none' || finalDisplay === 'none';
@@ -2070,7 +1962,7 @@ function initInfoButton() {
         showInfoOverlay();
         isOverlayVisible = true;
         
-        // 60蝘??芸?瘛∪
+        // 60秒後自動淡出
         setTimeout(() => {
           if (isOverlayVisible) {
             hideInfoOverlay();
@@ -2080,12 +1972,12 @@ function initInfoButton() {
     }, 12000);
   }
   
-  // ???芸?憿舐內?
+  // 啟動自動顯示功能
   showInfoOverlayOnLoad();
 }
 
 function initializeChart(apiData){
-  // ======== ?雿?鞈?蝯? ========
+  // ======== 取用你的資料結構 ========
   let rawNewData = apiData.newData || [];
   if(Array.isArray(rawNewData) && rawNewData.length>0 && Array.isArray(rawNewData[0])){ rawNewData = rawNewData[0]; }
   const nationalEvents = apiData.oldLabelData || [];
@@ -2099,41 +1991,47 @@ function initializeChart(apiData){
 
   const allEvents = [...nationalEvents,...taipeiEvents,...newtaipeiEvents,...taoyuanEvents,...hsinchuEvents,...taichungEvents,...tainanEvents,...kaohsiungEvents];
 
-  // 隤輯岫靽⊥
-  console.log('API鞈?頛??:');
-  console.log('- ?踹鞈?蝑:', rawNewData.length);
-  console.log('- 鈭辣鞈?蝑:', allEvents.length);
+  // 調試信息
+  console.log('API資料載入成功:');
+  console.log('- 房價資料筆數:', rawNewData.length);
+  console.log('- 事件資料筆數:', allEvents.length);
 
   function processData(){
     const dataMap=new Map();
     
-    // ?????踹鞈??迤摨?    rawNewData.forEach(d=>{
+    // 先處理有房價資料的季度
+    rawNewData.forEach(d=>{
       const newD={...d};
       if(newD.HsinchuCity||newD.HsinchuCounty){ newD.Hsinchu=newD.HsinchuCity||newD.HsinchuCounty; delete newD.HsinchuCity; delete newD.HsinchuCounty; }
       dataMap.set(newD.Quarter,{...newD,events:[]});
     });
     
-    // ?????隞塚?雿?2013撟游?隞亙???隞?    let processedEventsCount = 0;
+    // 處理所有事件，但只包含2013年及以後的事件
+    let processedEventsCount = 0;
     let filteredEventsCount = 0;
     allEvents.forEach(ev=>{ 
       processedEventsCount++;
       
-      // 瑼Ｘ鈭辣?臬????Quarter
+      // 檢查事件是否有有效的Quarter
       if (!ev.Quarter || typeof ev.Quarter !== 'string') {
-        console.warn('?潛?⊥???隞貴uarter:', ev);
-        return; // 頝喲???隞?      }
+        console.warn('發現無效的事件Quarter:', ev);
+        return; // 跳過這個事件
+      }
       
-      // 瑼Ｘ鈭辣?僑隞踝??芾???013撟游?隞亙???隞?      const eventYear = parseInt(ev.Quarter.substring(0, 4));
+      // 檢查事件的年份，只處理2013年及以後的事件
+      const eventYear = parseInt(ev.Quarter.substring(0, 4));
       if(eventYear >= 2013) {
         filteredEventsCount++;
         if(dataMap.has(ev.Quarter)){
-          // 憒?閰脣迤摨血歇??寡????湔瘛餃?鈭辣
+          // 如果該季度已有房價資料，直接添加事件
           dataMap.get(ev.Quarter).events.push(ev);
         } else {
-          // 憒?閰脣迤摨行???寡?????隞塚??萄遣銝???隞嗥?鞈?暺?          dataMap.set(ev.Quarter, {
+          // 如果該季度沒有房價資料但有事件，創建一個只有事件的資料點
+          dataMap.set(ev.Quarter, {
             Quarter: ev.Quarter,
             events: [ev],
-            // ?箸???寡???摮?漲閮剔蔭?身??            Nation: { all: null },
+            // 為沒有房價資料的季度設置預設值
+            Nation: { all: null },
             Taipei: { all: null },
             NewTaipei: { all: null },
             Taoyuan: { all: null },
@@ -2146,10 +2044,10 @@ function initializeChart(apiData){
       }
     });
     
-    console.log('鈭辣??蝯梯?:');
-    console.log('- 蝮賭?隞嗆:', processedEventsCount);
-    console.log('- 2013撟游?鈭辣??', filteredEventsCount);
-    console.log('- ??敺?????', dataMap.size);
+    console.log('事件處理統計:');
+    console.log('- 總事件數:', processedEventsCount);
+    console.log('- 2013年後事件數:', filteredEventsCount);
+    console.log('- 處理後資料點數:', dataMap.size);
     
     const arr=Array.from(dataMap.values());
     arr.sort((a,b)=>{
@@ -2162,43 +2060,48 @@ function initializeChart(apiData){
 
   const fullData = processData();
 
-  // ======== 敹急摮? DOM ========
+  // ======== 快捷存取 DOM ========
   const placeSelect = d3.select('#placeSelect');
   const filterToggle = d3.select('#filterToggle');
   const yearRangeButtons = d3.selectAll('input[name="yearRange"]');
-  // 撅翩蝭拚撌脩宏?歹??箏?雿輻?券撅翩
+  // 屋齡篩選已移除，固定使用全部屋齡
   const timeModeButtons = d3.selectAll('input[name="timeMode"]');
   let eventTypeButtons = d3.selectAll('.event-chip');
 
-  // ======== ???========
-  // ?踵?撘偕撖貉?蝞?憓之?”撠箏站嚗??餃漲摮?頠豢?憿皜?嚗?  function getResponsiveDimensions(){
+  // ======== 狀態 ========
+  // 響應式尺寸計算（增大圖表尺寸，讓刻度字和軸標題更清楚）
+  function getResponsiveDimensions(){
     const isMobile = window.innerWidth <= 768;
     const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
     
-    // ?脣? #graph 摰孵?祕?祝摨?    const graphElement = document.getElementById('graph');
+    // 獲取 #graph 容器的實際寬度
+    const graphElement = document.getElementById('graph');
     const graphWidth = graphElement ? graphElement.getBoundingClientRect().width : (window.innerWidth || document.documentElement.clientWidth);
     
     if(isMobile){
-      // ????雿輻撖阡??Ｗ?撖砍漲嚗?蝣箔??雲憭征??      const screenWidth = window.innerWidth || document.documentElement.clientWidth;
-      const availableWidth = screenWidth - 20; // ?撌血??
+      // 手機版：使用實際螢幕寬度，但確保有足夠空間
+      const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+      const availableWidth = screenWidth - 20; // 留出左右邊距
       return {
-        margin: {top:50,right:25,bottom:100,left:70}, // 蝔凝皜? margin
+        margin: {top:50,right:25,bottom:100,left:70}, // 稍微減少 margin
         baseWidth: availableWidth,
-        baseHeight: 360 // 皜?擃漲嚗??”?游?
+        baseHeight: 360 // 減少高度，讓圖表更小
       };
     } else if(isTablet){
-      // 撟單??雿輻?”摰孵?祕?祝摨?      const availableWidth = graphWidth > 0 ? graphWidth : (window.innerWidth - 40);
+      // 平板版：使用圖表容器的實際寬度
+      const availableWidth = graphWidth > 0 ? graphWidth : (window.innerWidth - 40);
       return {
-        margin: {top:60,right:70,bottom:85,left:90}, // 蝔凝皜? margin
-        baseWidth: Math.max(600, Math.min(1100, availableWidth)), // ?寞?撖阡?摰孵撖砍漲隤踵
-        baseHeight: 580 // 皜?擃漲嚗??”?游?
+        margin: {top:60,right:70,bottom:85,left:90}, // 稍微減少 margin
+        baseWidth: Math.max(600, Math.min(1100, availableWidth)), // 根據實際容器寬度調整
+        baseHeight: 580 // 減少高度，讓圖表更小
       };
     } else {
-      // 獢??雿輻?”摰孵?祕?祝摨佗???喳?Ｘ350px + gap 16px嚗?      const availableWidth = graphWidth > 0 ? graphWidth : 1000;
+      // 桌面版：使用圖表容器的實際寬度（考慮右側面板350px + gap 16px）
+      const availableWidth = graphWidth > 0 ? graphWidth : 1000;
       return {
-        margin: {top:65,right:110,bottom:90,left:115}, // 蝔凝皜? margin
+        margin: {top:65,right:110,bottom:90,left:115}, // 稍微減少 margin
         baseWidth: availableWidth,
-        baseHeight: 520 // 皜?擃漲嚗??”?游?
+        baseHeight: 520 // 減少高度，讓圖表更小
       };
     }
   }
@@ -2208,7 +2111,7 @@ function initializeChart(apiData){
   let width = responsiveDims.baseWidth - margin.left - margin.right;
   let height = responsiveDims.baseHeight - margin.top - margin.bottom;
   
-  // 閬?憭批??寡????啗?蝞?撠 SVG ?萄遣敺身蝵殷?
+  // 視窗大小改變時重新計算（將在 SVG 創建後設置）
   let resizeHandler = null;
 
   const allQuarters = rawNewData.map(d=>d.Quarter);
@@ -2222,13 +2125,17 @@ function initializeChart(apiData){
     .style("width", "100%")
     .style("height", "auto");
   mainSvg.append("defs").append("clipPath").attr("id","clip").append("rect").attr("width",width).attr("height",height);
-  // ?寞?鋆蔭憿?閮剖?頠豢?蝐支?蝵桀?摮?憭批?
+  // 根據裝置類型設定軸標籤位置和字體大小
   const isMobileInit = window.innerWidth <= 768;
   const isTabletInit = window.innerWidth > 768 && window.innerWidth <= 992;
-  const yLabelX = isMobileInit ? 5 : 35; // 隤踵雿蔭隞亙捆蝝?擃?  const xLabelY = isMobileInit ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30; // 隤踵雿蔭隞亙捆蝝?擃?  const titleFontSize = isMobileInit ? 16 : (isTabletInit ? 20 : 22);
+  const yLabelX = isMobileInit ? 5 : 35; // 調整位置以容納字體
+  const xLabelY = isMobileInit ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30; // 調整位置以容納字體
+  const titleFontSize = isMobileInit ? 16 : (isTabletInit ? 20 : 22);
   const axisLabelFontSize = isMobileInit ? 11 : (isTabletInit ? 14 : 16);
   
-  // 璅?雿蔭?寞? margin.top ??隤踵嚗Ⅱ靽?蝵桀??拐?銝?鋡恍??  // 璅??府?典?銵券??其??對???拍??頝?  const titleY = isMobileInit ? 28 : (isTabletInit ? 35 : 38);
+  // 標題位置根據 margin.top 動態調整，確保位置合適且不會被遮擋
+  // 標題應該在圖表頂部上方，留出適當的間距
+  const titleY = isMobileInit ? 28 : (isTabletInit ? 35 : 38);
   mainSvg.append("text")
     .attr("id","chart-title")
     .style("font-size",`${titleFontSize}px`)
@@ -2237,17 +2144,18 @@ function initializeChart(apiData){
     .style("fill","#2c3e50")
     .attr("x",(width+margin.left+margin.right)/2)
     .attr("y",titleY);
-  mainSvg.append("text").attr("class","axis-label").attr("x",yLabelX).attr("y",margin.top+height/2).attr("text-anchor","middle").attr("transform",`rotate(-90, ${yLabelX}, ${margin.top+height/2})`).style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("瘥?桀嚗??");
-  mainSvg.append("text").attr("class","axis-label").attr("x",margin.left+width/2).attr("y",xLabelY).attr("text-anchor","middle").style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("??嚗迤?伐?");
+  mainSvg.append("text").attr("class","axis-label").attr("x",yLabelX).attr("y",margin.top+height/2).attr("text-anchor","middle").attr("transform",`rotate(-90, ${yLabelX}, ${margin.top+height/2})`).style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("每坪單價（萬元）");
+  mainSvg.append("text").attr("class","axis-label").attr("x",margin.left+width/2).attr("y",xLabelY).attr("text-anchor","middle").style("font-size",`${axisLabelFontSize}px`).style("font-weight","bold").style("fill","#2c3e50").text("時間（季別）");
 
 
   const watermarkGroup=mainSvg.append("g").attr("class","watermark").attr("transform",`translate(${margin.left+20}, ${margin.top+30})`).style("opacity","0");
-  watermarkGroup.append("text").attr("x","0").attr("y","-10").attr("text-anchor","start").style("font-family","Noto Sans TC, Microsoft JhengHei, sans-serif").style("font-size","18px").style("font-weight","bold").style("fill","#003399").text("?踹之銝??Ｙ?蝛嗡葉敹?);
+  watermarkGroup.append("text").attr("x","0").attr("y","-10").attr("text-anchor","start").style("font-family","Noto Sans TC, Microsoft JhengHei, sans-serif").style("font-size","18px").style("font-weight","bold").style("fill","#003399").text("政大不動產研究中心");
   watermarkGroup.append("text").attr("x","0").attr("y","15").attr("text-anchor","start").style("font-family","Inter, Arial, sans-serif").style("font-size","12px").style("fill","#003399").text("Center For Real Estate Research, NCCU");
 
   const focus = mainSvg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
 
-  // 閮??踵?撘?擃之撠??賣嚗??SVG 撖阡?蝮格瘥?嚗?  function getResponsiveFontSize(baseSize, isMobile = false) {
+  // 計算響應式字體大小的函數（根據 SVG 實際縮放比例）
+  function getResponsiveFontSize(baseSize, isMobile = false) {
     if (!mainSvg || !mainSvg.node()) return baseSize;
     
     const svgNode = mainSvg.node();
@@ -2258,7 +2166,7 @@ function initializeChart(apiData){
     const actualWidth = svgNode.getBoundingClientRect().width;
     const scale = actualWidth / vbWidth;
     
-    // ?寞?蝮格瘥?隤踵摮?憭批?嚗?靽???蝭?嚗?憭抒??誑?舀??游之??擃?
+    // 根據縮放比例調整字體大小，但保持合理範圍（增大範圍以支持更大的字體）
     const scaledSize = baseSize * scale;
     const minSize = isMobile ? 10 : 14;
     const maxSize = isMobile ? 18 : 24;
@@ -2266,7 +2174,8 @@ function initializeChart(apiData){
     return Math.max(minSize, Math.min(maxSize, scaledSize));
   }
 
-  // ???舐摮?  function getAvailableDataRange(){
+  // 動態可用季
+  function getAvailableDataRange(){
     const arr=[];
     allQuarters.forEach((q,i)=>{
       const d=rawNewData[i];
@@ -2279,16 +2188,19 @@ function initializeChart(apiData){
   }
   const availableData = getAvailableDataRange();
 
-  // 蝭拚???  let startIndex = 0;
+  // 篩選狀態
+  let startIndex = 0;
   let endIndex = availableData.length>0 ? availableData[availableData.length-1].index : allQuarters.length-1;
   let selectedPlace = placeSelect.property('value');
   let selectedDataType = deriveDataType();
   let selectedEventTypes = getSelectedEventTypes();
-  let selectedQuarterKey = fullData[endIndex]?.Quarter || fullData[fullData.length-1]?.Quarter; // ?喳甈?閮剝?摰?敺?摮?  let isLocked = false; // ?臬撌脤?摰摰迤摨?  let lastRenderedQuarter = null; // 閮?銝活皜脫??迤摨佗??踹???皜脫?
-  let lastUpdatedKpiQuarter = null; // 閮?銝活?湔KPI?迤摨佗??踹????湔撠??
+  let selectedQuarterKey = fullData[endIndex]?.Quarter || fullData[fullData.length-1]?.Quarter; // 右側欄預設鎖定最後一季
+  let isLocked = false; // 是否已鎖定特定季度
+  let lastRenderedQuarter = null; // 記錄上次渲染的季度，避免重複渲染
+  let lastUpdatedKpiQuarter = null; // 記錄上次更新KPI的季度，避免重複更新導致閃爍
 
   // scales / axes
-  // ????閮剔蔭 paddingInner嚗???updateChart 銝剜??蝵桅?????堆?
+  // 初始化時設置 paddingInner（會在 updateChart 中根據裝置類型動態更新）
   const x=d3.scaleBand().range([0,width]).paddingInner(0.5).paddingOuter(0);
   const y=d3.scaleLinear().range([height,0]);
 
@@ -2297,7 +2209,7 @@ function initializeChart(apiData){
 
   focus.append("path").attr("class","line focus-line").attr("clip-path","url(#clip)");
 
-  // 銝餃???撠蝺??蝺?
+  // 主圖十字對照線（垂直線）
   const mainCrosshair = focus.append("line")
     .attr("class","crosshair-main")
     .attr("x1",0)
@@ -2311,9 +2223,9 @@ function initializeChart(apiData){
     .style("cursor", "pointer");
 
 
-  // 頛嚗???????
+  // 輔助：資料取值/分類
   function deriveDataType(){
-    // ?箏?雿輻?券撅翩
+    // 固定使用全部屋齡
     return 'all';
   }
   function getValue(d){ 
@@ -2322,39 +2234,43 @@ function initializeChart(apiData){
   }
   function getSelectedEventTypes(){ const nodes=document.querySelectorAll('.event-chip.active'); return Array.from(nodes).map(el=>el.getAttribute('data-value')); }
   function getEventCategory(e){ 
-    // ???典?鈭辣?ategory??
+    // 處理全國事件的Category分類
     if(e.Category) {
       let categories = [];
       
-      // ??????澆?
+      // 處理陣列格式
       if(Array.isArray(e.Category)) {
         categories = e.Category;
       } 
-      // ??摮葡?澆?
+      // 處理字串格式
       else if(typeof e.Category === 'string') {
         categories = [e.Category];
       }
       
-      // 瑼Ｘ???憿?      for(let category of categories) {
-        // ?駁??蝛箸
+      // 檢查所有分類值
+      for(let category of categories) {
+        // 去除前後空格
         category = category.trim();
         
-        // ?蝑?閬絞銝甇賊??箏??隞?        if(category === '?輻?瘜?') return 'national';
-        // ??閫蝬??冗??隞嗚飛憿 'macro'
-        if(category === '摰?蝬??冗??隞?) return 'macro';
+        // 「政策法規」統一歸類為全國事件
+        if(category === '政策法規') return 'national';
+        // 「宏觀經濟與社會事件」歸類為 'macro'
+        if(category === '宏觀經濟與社會事件') return 'macro';
         
-        // ???唳鈭辣??憿?        if(category === '靘??抒??箄矽??) return 'tax';      // ?唳瘜?蝔
-        if(category === '?之撱箄身') return 'infra';            // ?唳?之撱箄身
-        if(category === '?閬?????) return 'dev';        // ?唳??
+        // 處理地方事件的分類
+        if(category === '例行性稅基調整') return 'tax';      // 地方法律稅制
+        if(category === '重大建設') return 'infra';            // 地方重大建設
+        if(category === '土地規劃與開發') return 'dev';        // 地方土地開發
       }
     }
     
-    // ?身?箏??隞塚??輻?瘜?嚗?    return 'national'; 
+    // 預設為全國事件（政策法規）
+    return 'national'; 
   }
   function formatWan(v){ return (v/10000).toFixed(1); }
   function quarterToText(q){ return q.replace('_Q',' Q'); }
   
-  // 瑼Ｘ?迤摨行?行?鈭辣
+  // 檢查某個季度是否有事件
   function hasEventsForQuarter(quarterKey) {
     const row = fullData.find(d => d.Quarter === quarterKey);
     if (!row || !row.events) return false;
@@ -2383,7 +2299,8 @@ function initializeChart(apiData){
     });
   }
 
-  // 靘?芋撘?敺?摮??憿舐內??隞塚?撌脣??典??蝮????chip 蝭拚嚗?  function pickEventsFor(quarterKey){
+  // 依目前模式取得某季要顯示的事件（已套用全國/縣市與 chip 篩選）
+  function pickEventsFor(quarterKey){
     const showCity = d3.select('#filterToggle').property('checked');
     const place    = d3.select('#placeSelect').property('value');
     const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.dataset.value);
@@ -2392,20 +2309,21 @@ function initializeChart(apiData){
     if(!row || !row.events) return [];
 
     return row.events.map(ev=>{
-        // 瑼Ｘ?典?鈭辣璅惜嚗??Label ??NationalLabel嚗?        const hasNational = ev.hasOwnProperty('Label');
+        // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+        const hasNational = ev.hasOwnProperty('Label');
         const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
         const hasPlace = ev.hasOwnProperty(`${place}Label`);
         
-        // ?寞?璅∪?瘙箏?憿舐內?芰車鈭辣
+        // 根據模式決定顯示哪種事件
         let label = '';
         if(showCity && place !== 'Nation') {
-          // 蝮??璅∪?嚗憿舐內蝮??鈭辣
+          // 縣市模式：只顯示縣市事件
           if(hasPlace) {
             label = ev[`${place}Label`] || '';
           }
         } else {
-          // ?典?璅∪?嚗憿舐內?典?鈭辣
-          // ?芸?雿輻 Label嚗?????雿輻 NationalLabel
+          // 全國模式：只顯示全國事件
+          // 優先使用 Label，如果沒有則使用 NationalLabel
           if(hasNational) {
             label = ev.Label || '';
           } else if(hasNationalLabel) {
@@ -2419,46 +2337,48 @@ function initializeChart(apiData){
       .filter(e => e.__label && selected.includes(e.__cat));
   }
 
-  // ?箸??遘???迤閬＊蝷箇?鈭辣嚗蝙?其??寞?嗅??隞嗥祟?賂?
+  // 為時間軸取得某季要顯示的事件（使用上方控制台的事件篩選）
   function pickEventsForTimeline(quarterKey){
     const showCity = d3.select('#filterToggle').property('checked');
     const place    = d3.select('#placeSelect').property('value');
-    // 雿輻??getSelectedEventTypes ?詨??瘜?銝剔?鈭辣憿?
+    // 使用與 getSelectedEventTypes 相同的方法獲取選中的事件類型
     const selected = Array.from(document.querySelectorAll('.event-chip.active')).map(el=>el.getAttribute('data-value'));
 
     const row = fullData.find(d=>d.Quarter===quarterKey);
     if(!row || !row.events) return [];
 
-    // 隤輯岫靽⊥ - ?芸??隞嗆?頛詨嚗??芾撓?粹??萎縑??    if(row.events.length > 0) {
+    // 調試信息 - 只在有事件時輸出，且只輸出關鍵信息
+    if(row.events.length > 0) {
       const hasMacroEvents = row.events.some(ev => {
         const cat = getEventCategory(ev);
         return cat === 'macro';
       });
       if(hasMacroEvents) {
-        console.log(`?? pickEventsForTimeline [${quarterKey}]:`, {
-          璅∪?: showCity ? `蝮??璅∪? (${place})` : '?典?璅∪?',
-          ?訾葉??隞園????? selected,
-          閰脣迤摨衣蜇鈭辣?? row.events.length,
-          ?摰?蝬?鈭辣: true
+        console.log(`📋 pickEventsForTimeline [${quarterKey}]:`, {
+          模式: showCity ? `縣市模式 (${place})` : '全國模式',
+          選中的事件類型按鈕: selected,
+          該季度總事件數: row.events.length,
+          包含宏觀經濟事件: true
         });
       }
     }
 
     return row.events.map(ev=>{
-        // 瑼Ｘ?典?鈭辣璅惜嚗??Label ??NationalLabel嚗?        const hasNational = ev.hasOwnProperty('Label');
+        // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+        const hasNational = ev.hasOwnProperty('Label');
         const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
         const hasPlace = ev.hasOwnProperty(`${place}Label`);
         
-        // ?寞?璅∪?瘙箏?憿舐內?芰車鈭辣
+        // 根據模式決定顯示哪種事件
         let label = '';
         if(showCity && place !== 'Nation') {
-          // 蝮??璅∪?嚗憿舐內蝮??鈭辣
+          // 縣市模式：只顯示縣市事件
           if(hasPlace) {
             label = ev[`${place}Label`] || '';
           }
         } else {
-          // ?典?璅∪?嚗憿舐內?典?鈭辣
-          // ?芸?雿輻 Label嚗?????雿輻 NationalLabel
+          // 全國模式：只顯示全國事件
+          // 優先使用 Label，如果沒有則使用 NationalLabel
           if(hasNational) {
             label = ev.Label || '';
           } else if(hasNationalLabel) {
@@ -2469,41 +2389,41 @@ function initializeChart(apiData){
         const cat = getEventCategory(ev);
         const result = {...ev, __label: label, __cat: cat, full: ev };
         
-        // ?孵?釣摰?蝬??冗??隞?- 閰喟敦隤輯岫
-        if(cat === 'macro' || (ev.Category && (JSON.stringify(ev.Category).includes('摰?') || ev.Category === '摰?蝬??冗??隞?))) {
+        // 特別關注宏觀經濟與社會事件 - 詳細調試
+        if(cat === 'macro' || (ev.Category && (JSON.stringify(ev.Category).includes('宏觀') || ev.Category === '宏觀經濟與社會事件'))) {
           const eventInfo = {
-            摮?漲: quarterKey,
-            鈭辣璅惜: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '?⊥?蝐?,
-            Category???? ev.Category,
-            霅?箇???: cat,
-            ????蝐? label,
-            ?abel: hasNational,
-            ?ationalLabel: hasNationalLabel,
-            ?腦撣?蝐? hasPlace,
-            ?訾葉???? selected,
-            ?臬???蕪: label && selected.includes(cat),
-            ?蕪璇辣1_??蝐? !!label,
-            ?蕪璇辣2_憿??寥?: selected.includes(cat),
-            ??????? Array.from(document.querySelectorAll('.event-chip')).map(el => ({
-              ??: el.textContent.trim(),
+            季度: quarterKey,
+            事件標籤: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '無標籤',
+            Category原始值: ev.Category,
+            識別出的分類: cat,
+            提取的標籤: label,
+            有Label: hasNational,
+            有NationalLabel: hasNationalLabel,
+            有縣市標籤: hasPlace,
+            選中的類型: selected,
+            是否通過過濾: label && selected.includes(cat),
+            過濾條件1_有標籤: !!label,
+            過濾條件2_類型匹配: selected.includes(cat),
+            所有按鈕狀態: Array.from(document.querySelectorAll('.event-chip')).map(el => ({
+              文字: el.textContent.trim(),
               dataValue: el.getAttribute('data-value'),
               isActive: el.classList.contains('active')
             }))
           };
-          console.log('?? 摰?蝬??冗??隞嗆炎皜?', eventInfo);
+          console.log('🔍 宏觀經濟與社會事件檢測:', eventInfo);
           
-          // 憒?鋡恍?瞈橘?憿舐內閰喟敦??
+          // 如果被過濾，顯示詳細原因
           if(!label || !selected.includes(cat)) {
-            console.log(`  ?? 摰?蝬?鈭辣鋡恍?瞈?[${quarterKey}]:`, {
-              璅惜: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '?⊥?蝐?,
-              ??: cat,
-              ?訾葉憿?: selected,
-              ??: !label ? '???⊥?蝐歹?銝泵?芋撘?' : !selected.includes(cat) ? `??憿?銝???閬銝?${cat} ??嚗?銝? ${selected.join(', ')}嚗 : '?芰'
+            console.log(`  ⚠️ 宏觀經濟事件被過濾 [${quarterKey}]:`, {
+              標籤: ev.Label || ev.NationalLabel || ev[`${place}Label`] || '無標籤',
+              分類: cat,
+              選中類型: selected,
+              原因: !label ? '❌ 無標籤（不符合模式）' : !selected.includes(cat) ? `❌ 類型不匹配（需要選中 ${cat} 按鈕，當前選中: ${selected.join(', ')}）` : '未知'
             });
           } else {
-            console.log(`  ??摰?蝬?鈭辣?? [${quarterKey}]:`, {
-              璅惜: label,
-              ??: cat
+            console.log(`  ✅ 宏觀經濟事件通過 [${quarterKey}]:`, {
+              標籤: label,
+              分類: cat
             });
           }
         }
@@ -2512,11 +2432,11 @@ function initializeChart(apiData){
       })
       .filter(e => {
         const match = e.__label && selected.includes(e.__cat);
-        // ?芸?摰?蝬?鈭辣頛詨??靽⊥
+        // 只對宏觀經濟事件輸出通過信息
         if(match && e.__cat === 'macro') {
-          console.log(`  ??摰?蝬?鈭辣???蕪 [${quarterKey}]:`, {
-            璅惜: e.__label,
-            ??: e.__cat
+          console.log(`  ✅ 宏觀經濟事件通過過濾 [${quarterKey}]:`, {
+            標籤: e.__label,
+            分類: e.__cat
           });
         }
         return match;
@@ -2524,35 +2444,42 @@ function initializeChart(apiData){
   }
 
 
-  // ??撠?
+  // 十字對照功能
   function updateCrosshair(mouseX, clientX = null, updateTooltip = true) {
     if(mouseX !== null) {
-      // 閮??其蜓?葉?撠?蝵?      const relativeX = mouseX - margin.left;
-      // ?湔銝餃?銝??蝺?      mainCrosshair
+      // 計算在主圖中的相對位置
+      const relativeX = mouseX - margin.left;
+      // 更新主圖上的垂直線
+      mainCrosshair
         .attr("x1", relativeX)
         .attr("x2", relativeX)
         .style("opacity", 1)
         .style("pointer-events", "all");
       
-      // ?芸?閬?配ooltip??閮剔蔭嚗?摮遘蝘餃???堆???hover???湔嚗?      if(updateTooltip && selectedQuarterKey) {
+      // 只在需要更新tooltip時才設置（十字軸移動時更新，圓點hover時不更新）
+      if(updateTooltip && selectedQuarterKey) {
         const mode = d3.select('input[name="timeMode"]:checked').property("value");
         let currentFilteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
         const d = currentFilteredData.find(d => d.Quarter === selectedQuarterKey);
         if(d) {
           const v = getValue(d);
-          const valueText = (typeof v === 'number') ? `${formatWan(v)}???注 : "?∟???;
+          const valueText = (typeof v === 'number') ? `${formatWan(v)}萬/坪` : "無資料";
           
-          // 閮? tooltip 雿蔭嚗＊蝷箏?”?嚗??格?頞典蝺?          const svgRect = mainSvg.node().getBoundingClientRect();
+          // 計算 tooltip 位置，顯示在圖表頂部，不遮擋趨勢線
+          const svgRect = mainSvg.node().getBoundingClientRect();
           
-          // X雿蔭嚗??典?摮遘雿蔭嚗?蝔凝?宏隞仿???          let tooltipX;
+          // X位置：跟隨十字軸位置，但稍微偏移以避免遮擋
+          let tooltipX;
           if(clientX !== null) {
-            tooltipX = clientX - 40; // ?典?摮遘撌血
+            tooltipX = clientX - 40; // 在十字軸左側
           } else {
             tooltipX = svgRect.left + relativeX + margin.left - 40;
           }
           
-          // Y雿蔭嚗摰?”?嚗?頝?豢?暺??踹??格???嚗?          const tooltipY = svgRect.top + margin.top - 45; // 憿舐內?典?銵券??其???          
-          d3.select("#popupContent").html(`<strong>${quarterToText(selectedQuarterKey)}</strong><br>銝凋???${valueText}`);
+          // Y位置：固定在圖表頂部（不跟隨數據點，避免遮擋折線）
+          const tooltipY = svgRect.top + margin.top - 45; // 顯示在圖表頂部上方
+          
+          d3.select("#popupContent").html(`<strong>${quarterToText(selectedQuarterKey)}</strong><br>中位數 ${valueText}`);
           d3.select("#popup")
             .style("display", "block")
             .style("left", `${tooltipX}px`)
@@ -2568,18 +2495,20 @@ function initializeChart(apiData){
   }
 
 
-  // ?寞?皛?雿蔭?湔鈭辣鞈?
+  // 根據滑鼠位置更新事件資訊
   function updateEventInfoFromMouse(mouseX, event = null) {
     if(mouseX === null) {
       return;
     }
     
-    // 閮??其蜓?葉?撠?蝵?    const relativeX = mouseX - margin.left;
+    // 計算在主圖中的相對位置
+    const relativeX = mouseX - margin.left;
     
-    // ?寞?X雿蔭?曉撠??迤摨?    const mode = d3.select('input[name="timeMode"]:checked').property("value");
+    // 根據X位置找到對應的季度
+    const mode = d3.select('input[name="timeMode"]:checked').property("value");
     let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
     
-    // ?曉??亥????嚗憭扯孛?潛???????摨佗?
+    // 找到最接近的數據點（擴大觸發範圍，提升靈敏度）
     let closestQuarter = null;
     let minDistance = Infinity;
     
@@ -2592,84 +2521,95 @@ function initializeChart(apiData){
       }
     });
     
-    // ????摨佗??芾?皛??典?銵函??撠梢＊蝷箏?摮遘嚗??頝嚗?    if(relativeX >= 0 && relativeX <= width) {
-      // ?芾??典?銵函??嚗停憿舐內??頠訾蒂?湔?唳??亥??迤摨?      if(closestQuarter) {
+    // 提升靈敏度：只要滑鼠在圖表範圍內就顯示十字軸（不限制距離）
+    if(relativeX >= 0 && relativeX <= width) {
+      // 只要在圖表範圍內，就顯示十字軸並更新到最接近的季度
+      if(closestQuarter) {
         selectedQuarterKey = closestQuarter;
         const clientX = event ? event.clientX : null;
-        // 憪?憿舐內??頠賂?????摨?        updateCrosshair(mouseX, clientX);
+        // 始終顯示十字軸，提升靈敏度
+        updateCrosshair(mouseX, clientX);
       } else {
-        // 憒??曆??啣迤摨佗?隞憿舐內??頠詨?嗅?雿蔭
+        // 如果找不到季度，仍然顯示十字軸在當前位置
         const clientX = event ? event.clientX : null;
         updateCrosshair(mouseX, clientX);
       }
     } else {
-      // 皛??ａ??”蝭?嚗??摮遘
+      // 滑鼠離開圖表範圍，隱藏十字軸
       updateCrosshair(null);
     }
     
     if(closestQuarter) {
-      // ?芸?芷?摰??湔鈭辣??頠賂?銝阡??銴葡??      if(!isLocked && closestQuarter !== lastRenderedQuarter) {
+      // 只在未鎖定時更新事件時間軸，並避免重複渲染
+      if(!isLocked && closestQuarter !== lastRenderedQuarter) {
         lastRenderedQuarter = closestQuarter;
         renderEventTimeline(closestQuarter, filteredData);
         renderEventDetail(closestQuarter, filteredData);
       }
       
-      // ?∟??臬??嚗閬?圈銝剔?摮?漲嚗?澆?摮?憿舐內嚗?      selectedQuarterKey = closestQuarter;
+      // 無論是否鎖定，都要更新選中的季度（用於十字標顯示）
+      selectedQuarterKey = closestQuarter;
       
-      // 憒??芷?摰??湔??擃漁嚗??函??摮遘雿蔭嚗?      if(!isLocked) {
-        // 蝘駁???暺?擃漁
+      // 如果未鎖定，更新圓點高亮（跟隨當前十字軸位置）
+      if(!isLocked) {
+        // 移除所有圓點的高亮
         d3.selectAll('.dot').classed('dot-highlight', false);
-        // 擃漁?嗅???頠豢??函???
+        // 高亮當前十字軸所在的圓點
         const currentDot = d3.selectAll('.dot').filter(function(d) {
           return d.Quarter === closestQuarter;
         });
         currentDot.classed('dot-highlight', true);
         
-        // 擃漁????隞嗅?獢???        currentDot.each(function(d) {
+        // 高亮時保持事件外框效果
+        currentDot.each(function(d) {
           const dot = d3.select(this);
           if (hasEventsForQuarter(d.Quarter)) {
             dot.classed('dot-has-events', true);
           }
         });
         
-        // ?湔KPI??隞嗆??遘
-        // ?芸摮?漲?寡???袁PI嚗?蝜?啣??湧???        if(closestQuarter !== lastUpdatedKpiQuarter) {
+        // 更新KPI和事件時間軸
+        // 只在季度改變時更新KPI，避免頻繁更新導致閃爍
+        if(closestQuarter !== lastUpdatedKpiQuarter) {
           lastUpdatedKpiQuarter = closestQuarter;
           updateSidePanelFromQuarter(closestQuarter, filteredData);
         }
       }
-      // 憒?撌脤?摰?銝?啣?暺?鈭殷?靽?????擃漁???
+      // 如果已鎖定，不更新圓點高亮（保持鎖定時的高亮狀態）
     } else {
       lastRenderedQuarter = null;
       lastUpdatedKpiQuarter = null;
     }
   }
 
-  // 閫豢鈭辣??霈
+  // 觸控事件處理變數
   let touchStartY = null;
   let touchStartX = null;
   let isVerticalScroll = false;
   
-  // 閫豢??
+  // 觸控開始
   function handleTouchStart(event) {
     if(event.touches.length === 1) {
       touchStartY = event.touches[0].clientY;
       touchStartX = event.touches[0].clientX;
       isVerticalScroll = false;
       
-      // 閫豢?????湔??頠訾?蝵?      const svgRect = mainSvg.node().getBoundingClientRect();
+      // 觸控開始時也更新十字軸位置
+      const svgRect = mainSvg.node().getBoundingClientRect();
       const touchClientX = event.touches[0].clientX;
       const touchClientY = event.touches[0].clientY;
       
-      // 瑼Ｘ閫豢暺?血 SVG 蝭???      if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+      // 檢查觸控點是否在 SVG 範圍內
+      if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
          touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
         const relativeX = touchClientX - svgRect.left;
         updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
-        // ?急?銝甇ａ?閮剛??綽?蝑? touchmove ?斗?臬?箸遝??      }
+        // 暫時不阻止預設行為，等待 touchmove 判斷是否為滾動
+      }
     }
   }
   
-  // 閫豢蝘餃?
+  // 觸控移動
   function handleTouchMove(event) {
     if(event.touches.length === 1 && touchStartY !== null && touchStartX !== null) {
       const touchY = event.touches[0].clientY;
@@ -2677,26 +2617,31 @@ function initializeChart(apiData){
       const deltaY = Math.abs(touchY - touchStartY);
       const deltaX = Math.abs(touchX - touchStartX);
       
-      // 憒??蝘餃?頝?＊憭扳瘞游像蝘餃?頝嚗??誑銝?嚗?閬?皛曉?
+      // 如果垂直移動距離明顯大於水平移動距離（2倍以上），則視為垂直滾動
       if(deltaY > deltaX * 2 && deltaY > 15) {
         isVerticalScroll = true;
-        // ?迂?皛曉?嚗??餅迫?身銵
+        // 允許頁面滾動，不阻止預設行為
         return;
       }
       
-      // 瘞游像蝘餃??宏???Ｗ?撠?????頠?      if(!isVerticalScroll) {
-        // 瑼Ｘ閫豢暺?血 SVG 蝭???        const svgRect = mainSvg.node().getBoundingClientRect();
+      // 水平移動或移動距離很小，處理十字軸
+      if(!isVerticalScroll) {
+        // 檢查觸控點是否在 SVG 範圍內
+        const svgRect = mainSvg.node().getBoundingClientRect();
         const touchClientX = event.touches[0].clientX;
         const touchClientY = event.touches[0].clientY;
         
-        // 憒?閫豢暺 SVG 蝭???        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
+        // 如果觸控點在 SVG 範圍內
+        if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
            touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
-          // 憒??舀?憿舐?瘞游像蝘餃?嚗甇ａ?閮剛??箔蒂????頠?          if(deltaX > 10 || (deltaX > 5 && deltaX > deltaY)) {
+          // 如果是明顯的水平移動，阻止預設行為並處理十字軸
+          if(deltaX > 10 || (deltaX > 5 && deltaX > deltaY)) {
             event.preventDefault();
             const relativeX = touchClientX - svgRect.left;
             updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
           } else if(deltaY < 5 && deltaX < 5) {
-            // 蝘餃?敺?嚗?賣??閫豢嚗?????頠?            const relativeX = touchClientX - svgRect.left;
+            // 移動很小，可能是初始觸控，也處理十字軸
+            const relativeX = touchClientX - svgRect.left;
             updateEventInfoFromMouse(relativeX, { clientX: touchClientX });
           }
         }
@@ -2704,15 +2649,16 @@ function initializeChart(apiData){
     }
   }
   
-  // 閫豢蝯?
+  // 觸控結束
   function handleTouchEnd(event) {
-    // 瑼Ｘ?臬?粹???蝘餃?頝敺?嚗?    if(touchStartY !== null && touchStartX !== null && event.changedTouches.length === 1) {
+    // 檢查是否為點擊（移動距離很小）
+    if(touchStartY !== null && touchStartX !== null && event.changedTouches.length === 1) {
       const touchEndY = event.changedTouches[0].clientY;
       const touchEndX = event.changedTouches[0].clientX;
       const deltaY = Math.abs(touchEndY - touchStartY);
       const deltaX = Math.abs(touchEndX - touchStartX);
       
-      // 憒?蝘餃?頝敺?嚗??粹???嚗?銝?皛曉?嚗?閫豢暺 SVG 蝭??改??餅迫?身銵?脫迫?皛曉?
+      // 如果移動距離很小（視為點擊），且不是垂直滾動，且觸控點在 SVG 範圍內，阻止預設行為防止頁面滾動
       if(!isVerticalScroll && deltaY < 10 && deltaX < 10) {
         const svgRect = mainSvg.node().getBoundingClientRect();
         const touchClientX = event.changedTouches[0].clientX;
@@ -2720,7 +2666,8 @@ function initializeChart(apiData){
         
         if(touchClientX >= svgRect.left && touchClientX <= svgRect.right &&
            touchClientY >= svgRect.top && touchClientY <= svgRect.bottom) {
-          // ?餅迫?身銵嚗甇ａ??Ｘ遝??          event.preventDefault();
+          // 阻止預設行為，防止頁面滾動
+          event.preventDefault();
         }
       }
     }
@@ -2730,7 +2677,7 @@ function initializeChart(apiData){
     isVerticalScroll = false;
   }
 
-  // 瘛餃?皛??孛?找?隞嗅銝餃?
+  // 添加滑鼠和觸控事件到主圖
   mainSvg
     .on("mouseover", function(event) {
       const mouseX = d3.pointer(event, this)[0];
@@ -2746,9 +2693,11 @@ function initializeChart(apiData){
     .on("touchcancel", handleTouchEnd)
     .on("mouseout", function() {
       updateCrosshair(null);
-      lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??      lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???      // 皛??ａ???憒??芷?摰??Ｗ儔?圈?閮剔??蒂蝘駁??擃漁
+      lastRenderedQuarter = null; // 重置，允許下次渲染
+      lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+      // 滑鼠離開時，如果未鎖定則恢復到預設狀態並移除圓點高亮
       if(!isLocked) {
-        // 蝘駁??擃漁??
+        // 移除圓點高亮效果
         d3.selectAll('.dot').classed('dot-highlight', false);
         
         const mode = d3.select('input[name="timeMode"]:checked').property("value");
@@ -2760,17 +2709,18 @@ function initializeChart(apiData){
       }
     })
     .on("click", function(event){
-      // ?冽?璈?暺??甇ａ?閮剛??綽??脫迫?皛曉?
+      // 在手機上點擊時阻止預設行為，防止頁面滾動
       if(window.innerWidth <= 768) {
         event.preventDefault();
         event.stopPropagation();
       }
       
-      // 暺?蝛箇???舫?摰?嗅?皛???典迤摨?      const target = event.target;
+      // 點擊空白處也可鎖定到當前滑鼠所在季度
+      const target = event.target;
       const clickedDot = target && target.classList && target.classList.contains('dot');
       const mouseX = d3.pointer(event, this)[0];
       
-      console.log('銝餃?暺?鈭辣閫貊', { 
+      console.log('主圖點擊事件觸發', { 
         target: target.tagName, 
         className: target.className,
         clickedDot, 
@@ -2779,31 +2729,38 @@ function initializeChart(apiData){
       });
       
       if(clickedDot){
-        // dots ?芾澈撌脫? click handler ??摰?        return;
+        // dots 自身已有 click handler 會鎖定
+        return;
       }
       
-      // 瑼Ｘ?臬?粹???      const now = Date.now();
+      // 檢查是否為雙擊
+      const now = Date.now();
       const lastClick = mainSvg.datum()?.lastClickTime || 0;
-      const isDoubleClick = (now - lastClick) < 300; // 300ms?扯??粹???      
+      const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
+      
       if(isDoubleClick) {
-        // ??嚗圾??        isLocked = false;
+        // 雙擊：解鎖
+        isLocked = false;
         if(mainSvg.datum()) {
           mainSvg.datum().lastClickTime = 0;
         } else {
           mainSvg.datum({ lastClickTime: 0 });
         }
-        // ?Ｗ儔?圈?閮剔????敺?摮??
+        // 恢復到預設狀態（最後一季）
         const mode = d3.select('input[name="timeMode"]:checked').property("value");
         let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
         selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
         updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
-        // 蝘駁??擃漁??
+        // 移除圓點高亮效果
         d3.selectAll('.dot').classed('dot-highlight', false);
-        // 閫??敺??摮?
+        // 解鎖後隱藏十字標
         updateCrosshair(null);
-        lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??        lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???        // ?湔??＊蝷?        d3.select('#lock-status').text('????芷?摰?).style('color', '#e74c3c');
+        lastRenderedQuarter = null; // 重置，允許下次渲染
+        lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+        // 更新狀態顯示
+        d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
       } else {
-        // ?格?嚗?摰?餈?摮?漲
+        // 單擊：鎖定最近的季度
         const relativeX = mouseX - margin.left;
         const mode = d3.select('input[name="timeMode"]:checked').property("value");
         let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
@@ -2822,25 +2779,28 @@ function initializeChart(apiData){
             mainSvg.datum({ lastClickTime: now });
           }
           updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
-          lastRenderedQuarter = selectedQuarterKey; // 閮??嗅?摮?漲
+          lastRenderedQuarter = selectedQuarterKey; // 記錄當前季度
           renderEventTimeline(selectedQuarterKey, filteredData);
           renderEventDetail(selectedQuarterKey, filteredData);
-          // 蝘駁?嗡?暺?擃漁??
+          // 移除其他點的高亮效果
           d3.selectAll('.dot').classed('dot-highlight', false);
-          // 擃漁撠????
+          // 高亮對應的數據點
           const targetDot = d3.selectAll('.dot').filter(function(d) {
             return d.Quarter === selectedQuarterKey;
           });
           targetDot.classed('dot-highlight', true);
           
-          // 擃漁????隞嗅?獢???          targetDot.each(function(d) {
+          // 高亮時保持事件外框效果
+          targetDot.each(function(d) {
             const dot = d3.select(this);
             if (hasEventsForQuarter(d.Quarter)) {
               dot.classed('dot-has-events', true);
             }
           });
-          // ??敺＊蝷箏?摮??刻府暺?蝵?          updateCrosshair(mouseX, event.clientX);
-          // ?湔??＊蝷?          d3.select('#lock-status').text('???撌脤?摰?).style('color', '#27ae60');
+          // 鎖定後顯示十字標在該點位置
+          updateCrosshair(mouseX, event.clientX);
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
         }
       }
     });
@@ -2861,43 +2821,48 @@ function initializeChart(apiData){
     d3.select("#yearControls").style("display", mode==='year'?null:'none');
   }
 
-  // ======== ?”蝜芾ˊ ========
+  // ======== 圖表繪製 ========
   function updateChart(){
-    // 蝣箔? selectedPlace 甇?Ⅱ?湔
+    // 確保 selectedPlace 正確更新
     const isCityMode = d3.select('#filterToggle').property('checked');
     selectedPlace = isCityMode ? d3.select('#placeSelect').property('value') : 'Nation';
     selectedEventTypes=getSelectedEventTypes();
-    // 瘜冽?嚗??蔭 isLocked嚗???摰???
+    // 注意：不重置 isLocked，保持鎖定狀態
+
     const mode=d3.select('input[name="timeMode"]:checked').property("value");
     let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
 
-    // ?寞?鋆蔭憿???隤踵 paddingInner ??暺之撠?    const isMobileNow = window.innerWidth <= 768;
-    x.paddingInner(isMobileNow ? 0.7 : 0.5); // ??????頝?
+    // 根據裝置類型動態調整 paddingInner 和圓點大小
+    const isMobileNow = window.innerWidth <= 768;
+    x.paddingInner(isMobileNow ? 0.7 : 0.5); // 手機版增加間距
+
     x.domain(filteredData.map(d=>d.Quarter));
     const yValues=filteredData.map(getValue).filter(v=>v!==null);
     if(yValues.length>0){ y.domain([d3.min(yValues)*0.9, d3.max(yValues)*1.05]).nice(); } else { y.domain([0,100000]).nice(); }
 
-    // X 頠詨摨佗??寞?鋆蔭憿?隤踵憿舐內撖漲嚗?撠?摨佗??踹??銝韏瘀?
+    // X 軸刻度：根據裝置類型調整顯示密度（減少密度，避免擠在一起）
     const isMobile = window.innerWidth <= 768;
     const isTablet = window.innerWidth > 768 && window.innerWidth <= 992;
     let tickValues;
     if(mode==='year'){
       tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
-      // ?寞?鋆蔭憿?皜??餃漲撖漲
+      // 根據裝置類型減少刻度密度
       if(isMobile && tickValues.length > 4){
-        // ????瘥?-3撟湧＊蝷箔?甈?        const sparse = [];
+        // 手機版：每2-3年顯示一次
+        const sparse = [];
         for(let i = 0; i < tickValues.length; i += 3){
           sparse.push(tickValues[i]);
         }
         tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 3));
       } else if(isTablet && tickValues.length > 6){
-        // 撟單??瘥?撟湧＊蝷箔?甈?        const sparse = [];
+        // 平板版：每2年顯示一次
+        const sparse = [];
         for(let i = 0; i < tickValues.length; i += 2){
           sparse.push(tickValues[i]);
         }
         tickValues = sparse.length > 0 ? sparse : tickValues.slice(0, Math.ceil(tickValues.length / 2));
       } else if(!isMobile && !isTablet && tickValues.length > 8){
-        // 獢??瘥?撟湧＊蝷箔?甈∴?憒?頞?8??
+        // 桌面版：每2年顯示一次（如果超過8個）
         const sparse = [];
         for(let i = 0; i < tickValues.length; i += 2){
           sparse.push(tickValues[i]);
@@ -2906,8 +2871,10 @@ function initializeChart(apiData){
       }
     }else{
       if(isMobile){
-        // ???迤?交芋撘??芷＊蝷箸?撟崴1嚗＊蝷箏僑隞踝?嚗?撠摨血?摨?        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
-        // 憒??憭芸?嚗??拙僑憿舐內銝甈?        if(tickValues.length > 6){
+        // 手機版季別模式：只顯示每年Q1（顯示年份），減少刻度密度
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 如果還是太多，每兩年顯示一次
+        if(tickValues.length > 6){
           const everyOther = [];
           for(let i = 0; i < tickValues.length; i += 2){
             everyOther.push(tickValues[i]);
@@ -2915,7 +2882,8 @@ function initializeChart(apiData){
           tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
         }
       }else if(isTablet){
-        // 撟單???芷＊蝷箸?撟崴1嚗??云憭?瘥撟湧＊蝷箔?甈?        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
+        // 平板版：只顯示每年Q1，如果太多則每兩年顯示一次
+        tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
         if(tickValues.length > 8){
           const everyOther = [];
           for(let i = 0; i < tickValues.length; i += 2){
@@ -2924,9 +2892,10 @@ function initializeChart(apiData){
           tickValues = everyOther.length > 0 ? everyOther : tickValues.slice(0, Math.ceil(tickValues.length / 2));
         }
       }else{
-        // 獢???芷＊蝷箸?撟崴1嚗?撠?摨佗??踹??銝韏瘀?
+        // 桌面版：只顯示每年Q1（減少密度，避免擠在一起）
         tickValues = filteredData.filter(d=>d.Quarter.endsWith('Q1')).map(d=>d.Quarter);
-        // 憒?頞?10??瘥撟湧＊蝷箔?甈?        if(tickValues.length > 10){
+        // 如果超過10個，每兩年顯示一次
+        if(tickValues.length > 10){
           const everyOther = [];
           for(let i = 0; i < tickValues.length; i += 2){
             everyOther.push(tickValues[i]);
@@ -2940,117 +2909,137 @@ function initializeChart(apiData){
       const year=d.substring(0,4), q=d.substring(5);
       if(mode==='year'){ return year; }
       if(isMobile){
-        // ???憿舐內撟港遢嚗??摮???        return year;
+        // 手機版只顯示年份，避免文字過長
+        return year;
       }
-      return q==='Q1'?year:q; // Q1 憿舐內撟港遢?3 憿舐內摮?漲
-    }).tickSize(8).tickPadding(isMobile ? 22 : 14); // 憓? tickPadding 隞亙捆蝝憭抒?摮?
+      return q==='Q1'?year:q; // Q1 顯示年份、Q3 顯示季度
+    }).tickSize(8).tickPadding(isMobile ? 22 : 14); // 增加 tickPadding 以容納更大的字體
     
-    // Y頠賂?皜??餃漲?賊?嚗???其?韏瘀?憓? tickPadding 隞亙捆蝝憭抒?摮?
-    // ?寞?鋆蔭憿??批 Y 頠詨摨行??isTablet 撌脣銝?脫?嚗?    let yTickCount;
+    // Y軸：減少刻度數量，避免擠在一起，增加 tickPadding 以容納更大的字體
+    // 根據裝置類型控制 Y 軸刻度數量（isTablet 已在上面聲明）
+    let yTickCount;
     if(isMobile){
-      yTickCount = 5; // ????5?摨?    } else if(isTablet){
-      yTickCount = 6; // 撟單??6?摨?    } else {
-      yTickCount = 7; // 獢??7?摨?    }
+      yTickCount = 5; // 手機版：5個刻度
+    } else if(isTablet){
+      yTickCount = 6; // 平板版：6個刻度
+    } else {
+      yTickCount = 7; // 桌面版：7個刻度
+    }
     const yAxis=d3.axisLeft(y)
-      .ticks(yTickCount) // ??餃漲?賊?
-      .tickFormat(d=>formatWan(d)+"??)
+      .ticks(yTickCount) // 限制刻度數量
+      .tickFormat(d=>formatWan(d)+"萬")
       .tickSize(8)
       .tickPadding(isMobile ? 20 : 14);
     
-    // ?寞?鋆蔭憿?閮剔蔭X頠豢?摮見撘??踵?撘?擃之撠?
+    // 根據裝置類型設置X軸文字樣式（響應式字體大小）
     const xAxisText = xAxisGroup.transition().duration(450).call(xAxis).selectAll("text");
-    const baseXFontSize = isMobile ? 9 : (isTablet ? 13 : 15); // 摮?憭批?
+    const baseXFontSize = isMobile ? 9 : (isTablet ? 13 : 15); // 字體大小
     const responsiveXFontSize = getResponsiveFontSize(baseXFontSize, isMobile);
     
     if(isMobile){
-      // ????????銝血???頝?摮??游之
+      // 手機版：旋轉文字並增加間距，字體更大
       xAxisText
         .style("text-anchor","end")
         .attr("dx","-8px")
-        .attr("dy","14px") // 憓???
+        .attr("dy","14px") // 增加間距
         .style("font-size",`${responsiveXFontSize}px`)
-        .style("font-weight","600") // 憓?摮?蝎敦
+        .style("font-weight","600") // 增加字體粗細
         .style("transform","rotate(-45deg)")
         .style("transform-origin","center top");
     }else{
-      // 獢??甇?虜憿舐內嚗?擃憭?      xAxisText
+      // 桌面版：正常顯示，字體更大
+      xAxisText
         .style("text-anchor","middle")
         .attr("dx","0")
-        .attr("dy","0.6em") // 憓???
+        .attr("dy","0.6em") // 增加間距
         .style("font-size",`${responsiveXFontSize}px`)
-        .style("font-weight","600") // 憓?摮?蝎敦
+        .style("font-weight","600") // 增加字體粗細
         .style("transform","")
         .style("transform-origin","");
     }
     
-    // Y 頠詨摨佗??踵?撘?擃之撠?
+    // Y 軸刻度（響應式字體大小）
     const yAxisText = yAxisGroup.transition().duration(450).call(yAxis).selectAll("text");
-    const baseYFontSize = isMobile ? 8 : (isTablet ? 13 : 15); // 摮?憭批?
+    const baseYFontSize = isMobile ? 8 : (isTablet ? 13 : 15); // 字體大小
     const responsiveYFontSize = getResponsiveFontSize(baseYFontSize, isMobile);
     yAxisText.style("font-size",`${responsiveYFontSize}px`).style("font-weight","600");
 
-    // ??
+    // 折線
     const lineGen=d3.line().x(d=>x(d.Quarter)+x.bandwidth()/2).y(d=>y(getValue(d))).defined(d=>getValue(d)!==null);
     focus.select(".focus-line").datum(filteredData).transition().duration(450).attr("d",lineGen);
 
-    // ??嚗憓?click嚗?摰迤摨????湔?喳?湔?嚗?    // ?芷＊蝷箸??踹鞈??迤摨?    const dotsData=filteredData.filter(d=>getValue(d)!==null);
+    // 圓點（新增 click：鎖定季度 → 更新右側側欄）
+    // 只顯示有房價資料的季度
+    const dotsData=filteredData.filter(d=>getValue(d)!==null);
     const dots=focus.selectAll(".dot").data(dotsData, d=>d.Quarter);
     dots.exit().remove();
-    // ?寞?鋆蔭憿?隤踵??憭批?
+    // 根據裝置類型調整圓點大小
     const isMobileDot = window.innerWidth <= 768;
-    const dotRadius = isMobileDot ? 3.5 : 5; // ????暺?撠?    
+    const dotRadius = isMobileDot ? 3.5 : 5; // 手機版圓點稍小
+    
     dots.enter().append("circle").attr("class", function(d) {
-      // 瑼Ｘ閰脣迤摨行?行?鈭辣嚗捱摰蝙?典?見撘?      return hasEventsForQuarter(d.Quarter) ? "dot dot-has-events" : "dot";
+      // 檢查該季度是否有事件，決定使用哪個樣式
+      return hasEventsForQuarter(d.Quarter) ? "dot dot-has-events" : "dot";
     }).attr("r", dotRadius)
       .on("mouseover",(event,d)=>{
-        const v=getValue(d); const valueText=(typeof v==='number')?`${formatWan(v)}???注:"?∟???;
-        d3.select("#popupContent").html(`<strong>${quarterToText(d.Quarter)}</strong><br>銝凋???${valueText}`);
-        // 憿舐內popup?典?暺銝?嚗?鞎澆?暺?
+        const v=getValue(d); const valueText=(typeof v==='number')?`${formatWan(v)}萬/坪`:"無資料";
+        d3.select("#popupContent").html(`<strong>${quarterToText(d.Quarter)}</strong><br>中位數 ${valueText}`);
+        // 顯示popup在圓點右上角（緊貼圓點）
         d3.select("#popup")
           .style("display", "block")
           .style("left", (event.clientX + 15) + "px")
           .style("top", (event.clientY - 50) + "px");
         const mouseX = d3.pointer(event, mainSvg.node())[0];
-        // 憿舐內??頠賂?雿??湔tooltip雿蔭嚗??箏?暺歇蝬身蝵桐?雿蔭嚗?        updateCrosshair(mouseX, event.clientX, false);
+        // 顯示十字軸，但不更新tooltip位置（因為圓點已經設置了位置）
+        updateCrosshair(mouseX, event.clientX, false);
       })
       .on("mouseout",(event)=>{
         d3.select("#popup").style("display","none");
-        // ?梯???頠?        updateCrosshair(null);
+        // 隱藏十字軸
+        updateCrosshair(null);
       })
       .on("click",(event,d)=>{
-        // ?冽?璈?暺??甇ａ?閮剛??綽??脫迫?皛曉?
+        // 在手機上點擊時阻止預設行為，防止頁面滾動
         if(window.innerWidth <= 768) {
           event.preventDefault();
           event.stopPropagation();
         }
         
-        console.log('??暺?鈭辣閫貊', { quarter: d.Quarter, isLocked });
+        console.log('圓點點擊事件觸發', { quarter: d.Quarter, isLocked });
         
-        // 瑼Ｘ?臬?粹???        const now = Date.now();
+        // 檢查是否為雙擊
+        const now = Date.now();
         const lastClick = d3.select(this).datum()?.lastClickTime || 0;
-        const isDoubleClick = (now - lastClick) < 300; // 300ms?扯??粹???        
-        console.log('??瑼Ｘ', { now, lastClick, isDoubleClick });
+        const isDoubleClick = (now - lastClick) < 300; // 300ms內視為雙擊
         
-        // ???嗅??祟?貉???        const mode = d3.select('input[name="timeMode"]:checked').property("value");
+        console.log('雙擊檢查', { now, lastClick, isDoubleClick });
+        
+        // 取得當前的篩選資料
+        const mode = d3.select('input[name="timeMode"]:checked').property("value");
         let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
         
         if(isDoubleClick) {
-          // ??嚗圾??          isLocked = false;
+          // 雙擊：解鎖
+          isLocked = false;
           if(d3.select(this).datum()) {
             d3.select(this).datum().lastClickTime = 0;
           } else {
             d3.select(this).datum({ lastClickTime: 0 });
           }
-          // ?Ｗ儔?圈?閮剔????敺?摮??
+          // 恢復到預設狀態（最後一季）
           selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
           updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
-          // 蝘駁??擃漁??
+          // 移除圓點高亮效果
           d3.selectAll('.dot').classed('dot-highlight', false);
-          // 閫??敺??摮?
+          // 解鎖後隱藏十字標
           updateCrosshair(null);
-          lastRenderedQuarter = null; // ?蔭嚗?閮曹?甈⊥葡??          lastUpdatedKpiQuarter = null; // ?蔭KPI?湔???          // ?湔??＊蝷?          d3.select('#lock-status').text('????芷?摰?).style('color', '#e74c3c');
+          lastRenderedQuarter = null; // 重置，允許下次渲染
+          lastUpdatedKpiQuarter = null; // 重置KPI更新狀態
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：未鎖定').style('color', '#e74c3c');
         } else {
-          // ?格?嚗?摰?迤摨?          selectedQuarterKey = d.Quarter;
+          // 單擊：鎖定當前季度
+          selectedQuarterKey = d.Quarter;
           isLocked = true;
           if(d3.select(this).datum()) {
             d3.select(this).datum().lastClickTime = now;
@@ -3058,26 +3047,30 @@ function initializeChart(apiData){
             d3.select(this).datum({ lastClickTime: now });
           }
           updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
-          lastRenderedQuarter = selectedQuarterKey; // 閮??嗅?摮?漲
+          lastRenderedQuarter = selectedQuarterKey; // 記錄當前季度
           renderEventTimeline(selectedQuarterKey, filteredData);
           renderEventDetail(selectedQuarterKey, filteredData);
-          // 蝘駁?嗡?暺?擃漁??
+          // 移除其他點的高亮效果
           d3.selectAll('.dot').classed('dot-highlight', false);
-          // 擃漁?嗅???
+          // 高亮當前圓點
           d3.select(this).classed('dot-highlight', true);
           
-          // 擃漁????隞嗅?獢???          const currentDot = d3.select(this);
+          // 高亮時保持事件外框效果
+          const currentDot = d3.select(this);
           if (hasEventsForQuarter(d.Quarter)) {
             currentDot.classed('dot-has-events', true);
           }
-          // ??敺＊蝷箏?摮??刻府暺?蝵?          const mouseX = d3.pointer(event, mainSvg.node())[0];
+          // 鎖定後顯示十字標在該點位置
+          const mouseX = d3.pointer(event, mainSvg.node())[0];
           updateCrosshair(mouseX, event.clientX);
-          // ?湔??＊蝷?          d3.select('#lock-status').text('???撌脤?摰?).style('color', '#27ae60');
+          // 更新狀態顯示
+          d3.select('#lock-status').text('狀態：已鎖定').style('color', '#27ae60');
         }
       })
       .merge(dots)
       .attr("class", function(d) {
-        // 瑼Ｘ閰脣迤摨行?行?鈭辣嚗捱摰蝙?典?見撘?        const isHighlighted = d3.select(this).classed('dot-highlight');
+        // 檢查該季度是否有事件，決定使用哪個樣式
+        const isHighlighted = d3.select(this).classed('dot-highlight');
         const hasEvents = hasEventsForQuarter(d.Quarter);
         
         if (isHighlighted && hasEvents) {
@@ -3090,19 +3083,23 @@ function initializeChart(apiData){
           return "dot";
         }
       })
-      .attr("r", dotRadius) // 蝣箔????暺雿輻甇?Ⅱ??敺?      .transition().duration(450)
+      .attr("r", dotRadius) // 確保所有圓點都使用正確的半徑
+      .transition().duration(450)
       .attr("cx",d=>x(d.Quarter)+x.bandwidth()/2)
       .attr("cy",d=>y(getValue(d)));
 
-    // 銝??其蜓??鈭辣?內
+    // 不再在主圖疊事件圖示
     focus.selectAll(".event-icon-text").remove();
 
-    // ?喳甈??亙??芣??????身隞亦???敺?摮?銝?    if(!filteredData.find(d=>d.Quarter===selectedQuarterKey)){
+    // 右側欄：若尚未手動點擊，預設以範圍最後一季為主
+    if(!filteredData.find(d=>d.Quarter===selectedQuarterKey)){
       selectedQuarterKey = filteredData[filteredData.length-1]?.Quarter;
     }
     updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
     
-    // ???葡??隞嗆??遘??隞嗉牧??    // ?冽芋撘???蝭拚璇辣?寡???蝮賣?皜脫?鈭辣??頠?    renderEventTimeline(selectedQuarterKey, filteredData);
+    // 初始化渲染事件時間軸和事件說明
+    // 在模式切換或篩選條件改變時，總是重新渲染事件時間軸
+    renderEventTimeline(selectedQuarterKey, filteredData);
     renderEventDetail(selectedQuarterKey, filteredData);
   }
 
@@ -3127,17 +3124,18 @@ function initializeChart(apiData){
       const placeNode=d3.select('#placeSelect').node();
       placeText=placeNode.options[placeNode.selectedIndex].text;
     }else{
-      placeText='?典?';
+      placeText='全國';
     }
-    // ?箏?雿輻?券撅翩嚗?瑼Ｘ撅翩憿?
-    d3.select("#chart-title").text('??瘥?桀銝凋???);
-    d3.select("#side-title").text(`${placeText} ?祆?璁汗`);
+    // 固定使用全部屋齡，無需檢查屋齡類型
+    d3.select("#chart-title").text('實價登錄成屋每坪單價');
+    d3.select("#side-title").text(`${placeText} 本期概覽`);
   }
 
 
 
   function getEventsForQuarter(qKey, usePlace){
-    // 蝣箔? selectedPlace ?舀??啁???    const currentPlace = d3.select('#placeSelect').property('value');
+    // 確保 selectedPlace 是最新的值
+    const currentPlace = d3.select('#placeSelect').property('value');
     const isCityMode = d3.select('#filterToggle').property('checked');
     const actualPlace = isCityMode ? currentPlace : 'Nation';
     
@@ -3145,67 +3143,98 @@ function initializeChart(apiData){
     if(!q||!q.events) return [];
     const arr = q.events.map(ev=>{
       const cat=getEventCategory(ev);
-      const label = usePlace ? (ev[`${actualPlace}Label`]||ev.Label||'') : (ev.Label||'');
+      
+      // 檢查全國事件標籤（支援 Label 和 NationalLabel）
+      const hasNational = ev.hasOwnProperty('Label');
+      const hasNationalLabel = ev.hasOwnProperty('NationalLabel');
+      const hasPlace = ev.hasOwnProperty(`${actualPlace}Label`);
+      
+      // 根據模式決定顯示哪種事件標籤
+      let label = '';
+      if(usePlace && actualPlace !== 'Nation') {
+        // 縣市模式：優先使用縣市標籤，如果沒有則使用全國標籤
+        if(hasPlace) {
+          label = ev[`${actualPlace}Label`] || '';
+        } else if(hasNational) {
+          label = ev.Label || '';
+        } else if(hasNationalLabel) {
+          label = ev.NationalLabel || '';
+        }
+      } else {
+        // 全國模式：只顯示全國事件
+        // 優先使用 Label，如果沒有則使用 NationalLabel
+        if(hasNational) {
+          label = ev.Label || '';
+        } else if(hasNationalLabel) {
+          label = ev.NationalLabel || '';
+        }
+      }
+      
       return {...ev,__cat:cat,__label:label,full:ev};
     }).filter(e=>e.__label);
-    // 靘??隞園????瞈?    return arr.filter(e=> selectedEventTypes.includes(e.__cat) || (usePlace && !e.Category));
+    // 依目前事件類型選擇過濾
+    return arr.filter(e=> selectedEventTypes.includes(e.__cat) || (usePlace && !e.Category));
   }
 
-  // ======== ?喳甈??勗迤摨行??========
+  // ======== 右側欄：由季度更新 ========
   function updateSidePanelFromQuarter(qKey, filteredData){
-    // 靽??嗅?蝭拚璇辣嚗?閮???銝剛???    const savedPlace = d3.select('#placeSelect').property('value');
+    // 保存當前篩選條件，避免在計算過程中變更
+    const savedPlace = d3.select('#placeSelect').property('value');
     const savedFilterToggle = d3.select('#filterToggle').property('checked');
     const savedPlaceForCalc = savedFilterToggle ? savedPlace : 'Nation';
     const savedDataType = selectedDataType;
     
-    // ?急??湔 selectedPlace ??selectedDataType ?冽閮?
+    // 暫時更新 selectedPlace 和 selectedDataType 用於計算
     const originalPlace = selectedPlace;
     const originalDataType = selectedDataType;
     
     selectedPlace = savedPlaceForCalc;
     
-    // ?湔璅?嚗?摰?憿舐內撟游漲?迤摨?    const isCity = savedFilterToggle;
+    // 更新標題：鎖定時顯示年度及季度
+    const isCity = savedFilterToggle;
     let placeText;
     if(isCity){
       const placeNode=d3.select('#placeSelect').node();
       placeText=placeNode.options[placeNode.selectedIndex].text;
     }else{
-      placeText='?典?';
+      placeText='全國';
     }
     
     if(isLocked) {
-      d3.select("#side-title").text(`${placeText} ${quarterToText(qKey)} 璁汗`);
+      d3.select("#side-title").text(`${placeText} ${quarterToText(qKey)} 概覽`);
     } else {
-      d3.select("#side-title").text(`${placeText} ?祆?璁汗`);
+      d3.select("#side-title").text(`${placeText} 本期概覽`);
     }
     
-    // KPI嚗?oY?oQ????雿?    const now = fullData.find(d=>d.Quarter===qKey);
+    // KPI：本期、YoY、QoQ、期間高低
+    const now = fullData.find(d=>d.Quarter===qKey);
     if(!now){ return; }
     const nowV = getValue(now);
-    d3.select('#kpi-now').text( (nowV!=null)? formatWan(nowV) : '?? );
+    d3.select('#kpi-now').text( (nowV!=null)? formatWan(nowV) : '—' );
     d3.select('#kpi-quarter').text( quarterToText(qKey) );
     
-    // 憒?閰脣迤摨行???寡???憿舐內?寞??內
+    // 如果該季度沒有房價資料，顯示特殊提示
     if(nowV == null) {
-      d3.select('#kpi-yoy').text('??).attr('class','val');
-      d3.select('#kpi-yoy-note').text('閰脣迤摨衣?踹鞈?');
-      d3.select('#kpi-qoq').text('??).attr('class','val');
-      d3.select('#kpi-qoq-note').text('閰脣迤摨衣?踹鞈?');
-      d3.select('#kpi-hi-lo').text('??);
-      d3.select('#kpi-hi-lo-note').text('閰脣迤摨衣?踹鞈?');
+      d3.select('#kpi-yoy').text('—').attr('class','val');
+      d3.select('#kpi-yoy-note').text('該季度無房價資料');
+      d3.select('#kpi-qoq').text('—').attr('class','val');
+      d3.select('#kpi-qoq-note').text('該季度無房價資料');
+      d3.select('#kpi-hi-lo').text('—');
+      d3.select('#kpi-hi-lo-note').text('該季度無房價資料');
       return;
     }
 
-    // YoY嚗?摮?-4嚗?    const idx = fullData.findIndex(d=>d.Quarter===qKey);
+    // YoY（同季 -4）
+    const idx = fullData.findIndex(d=>d.Quarter===qKey);
     const yoyIdx = idx-4;
-    let yoyText='??, yoyNote='??;
+    let yoyText='—', yoyNote='—';
     if(yoyIdx>=0){
       const prevYear = fullData[yoyIdx];
       const pv = getValue(prevYear);
       if(nowV!=null && pv!=null){
         const diff = nowV - pv;
         const pct = (pv===0)?0:(diff/pv*100);
-        yoyText = `${diff>=0?'+':''}${formatWan(diff)}???注;
+        yoyText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
         yoyNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevYear.Quarter)}`;
         d3.select('#kpi-yoy').attr('class','val '+(diff>=0?'delta up':'delta down'));
       }
@@ -3213,14 +3242,15 @@ function initializeChart(apiData){
     d3.select('#kpi-yoy').text(yoyText);
     d3.select('#kpi-yoy-note').text(yoyNote);
 
-    // QoQ嚗?銝摮?-1嚗?    let qoqText='??, qoqNote='??;
+    // QoQ（上一季 -1）
+    let qoqText='—', qoqNote='—';
     if(idx-1>=0){
       const prevQ = fullData[idx-1];
       const pv = getValue(prevQ);
       if(nowV!=null && pv!=null){
         const diff = nowV - pv;
         const pct = (pv===0)?0:(diff/pv*100);
-        qoqText = `${diff>=0?'+':''}${formatWan(diff)}???注;
+        qoqText = `${diff>=0?'+':''}${formatWan(diff)}萬/坪`;
         qoqNote = `${pct>=0?'+':''}${pct.toFixed(1)}% vs ${quarterToText(prevQ.Quarter)}`;
         d3.select('#kpi-qoq').attr('class','val '+(diff>=0?'delta up':'delta down'));
       }
@@ -3228,7 +3258,7 @@ function initializeChart(apiData){
     d3.select('#kpi-qoq').text(qoqText);
     d3.select('#kpi-qoq-note').text(qoqNote);
 
-    // ???擃??雿?隞亦??銝???
+    // 期間最高/最低（以目前圖上範圍）
     const mode=d3.select('input[name="timeMode"]:checked').property("value");
     const dataScope = (mode==='quarter') ? fullData.slice(startIndex,endIndex+1) : applyYearRangeFilter(fullData);
     const vals = dataScope.map(getValue).filter(v=>v!=null);
@@ -3237,47 +3267,52 @@ function initializeChart(apiData){
       const hiQ = dataScope.find(d=>getValue(d)===hi)?.Quarter;
       const loQ = dataScope.find(d=>getValue(d)===lo)?.Quarter;
       d3.select('#kpi-hi-lo').text(`${formatWan(hi)} / ${formatWan(lo)}`);
-      d3.select('#kpi-hi-lo-note').text(`${hiQ?quarterToText(hiQ):'??} / ${loQ?quarterToText(loQ):'??}`);
+      d3.select('#kpi-hi-lo-note').text(`${hiQ?quarterToText(hiQ):'—'} / ${loQ?quarterToText(loQ):'—'}`);
     }else{
-      d3.select('#kpi-hi-lo').text('??); d3.select('#kpi-hi-lo-note').text('??);
+      d3.select('#kpi-hi-lo').text('—'); d3.select('#kpi-hi-lo-note').text('—');
     }
 
-    // ?Ｗ儔????    selectedPlace = originalPlace;
+    // 恢復原始值
+    selectedPlace = originalPlace;
     selectedDataType = originalDataType;
 
   }
   function catLabel(cat){
-    if(cat==='tax') return '靘??抒??箄矽??;
-    if(cat==='infra') return '?之撱箄身';
-    if(cat==='dev') return '?閬?????;
-    if(cat==='national') return '?輻?瘜?';
-    if(cat==='macro') return '摰?蝬??冗??隞?;
-    // 靽?????隞亙?敺摰?    if(cat==='monetary') return '鞎典馳?輻?';
-    if(cat==='fiscal') return '鞎⊥?輻?';
-    if(cat==='other') return '?嗡?';
-    return '?輻?瘜?';
+    if(cat==='tax') return '例行性稅基調整';
+    if(cat==='infra') return '重大建設';
+    if(cat==='dev') return '土地規劃與開發';
+    if(cat==='national') return '政策法規';
+    if(cat==='macro') return '宏觀經濟與社會事件';
+    // 保留舊的分類以向後兼容
+    if(cat==='monetary') return '貨幣政策';
+    if(cat==='fiscal') return '財政政策';
+    if(cat==='other') return '其他';
+    return '政策法規';
   }
   
-  // 皜脫?鈭辣??頠賂?憿舐內2013撟游?隞亙?????隞塚?
+  // 渲染事件時間軸（顯示2013年及以後的所有事件）
   function renderEventTimeline(currentQuarter, filteredData) {
-    // ?脣??嗅??銝凋?隞園???    const currentSelectedEventTypes = getSelectedEventTypes();
+    // 獲取當前的選中事件類型
+    const currentSelectedEventTypes = getSelectedEventTypes();
     
-    // ?脣??嗅?摮?漲??fullData 銝剔?蝝Ｗ?
+    // 獲取當前季度在 fullData 中的索引
     const currentIdx = fullData.findIndex(d => d.Quarter === currentQuarter);
     if(currentIdx === -1) {
       return;
     }
     
-    // 憿舐內???鈭辣?迤摨佗?銝??審ilteredData
+    // 顯示所有有事件的季度，不限於filteredData
     const eventsInRange = [];
-    const yearsFound = new Set(); // 餈質馱?曉?僑隞?    
+    const yearsFound = new Set(); // 追蹤找到的年份
+    
     fullData.forEach(d => {
-      // 瑼Ｘ Quarter ?澆?銝行??僑隞踝??舀 2023_Q1 ?澆?嚗?      let dYear;
+      // 檢查 Quarter 格式並提取年份（支援 2023_Q1 格式）
+      let dYear;
       if (d.Quarter && typeof d.Quarter === 'string') {
         const yearMatch = d.Quarter.match(/^(\d{4})/);
         dYear = yearMatch ? parseInt(yearMatch[1]) : null;
       } else {
-        console.warn('?? ?⊥???Quarter ?澆?:', d.Quarter);
+        console.warn('⚠️ 無效的 Quarter 格式:', d.Quarter);
         return;
       }
       
@@ -3287,7 +3322,8 @@ function initializeChart(apiData){
       
       const evs = pickEventsForTimeline(d.Quarter);
       evs.forEach(ev => {
-        // 敺迤摨血?蝚虫葡??摮?漲?詨?嚗??2023_Q1 ?澆?嚗?        let quarterNum = null;
+        // 從季度字符串提取季度數字（支援 2023_Q1 格式）
+        let quarterNum = null;
         const qMatch = d.Quarter.match(/Q(\d)/);
         if (qMatch) {
           quarterNum = parseInt(qMatch[1]);
@@ -3302,47 +3338,49 @@ function initializeChart(apiData){
       });
     });
     
-    // 蝯梯?摰?蝬?鈭辣
+    // 統計宏觀經濟事件
     const macroEvents = eventsInRange.filter(ev => ev.__cat === 'macro');
     
-    // 隤輯岫靽⊥ - 瘛餃?撟港遢鞈?
-    console.log('?? 鈭辣??頠貊???', {
-      ?嗅?摮?漲: currentQuarter,
-      ?訾葉鈭辣憿?: currentSelectedEventTypes,
-      ?曉??隞嗆: eventsInRange.length,
-      摰?蝬?鈭辣?? macroEvents.length,
-      摰?蝬?鈭辣?”: macroEvents.map(ev => ({
-        摮?漲: ev.quarter,
-        璅惜: ev.__label,
-        ??: ev.__cat
+    // 調試信息 - 添加年份資訊
+    console.log('📊 事件時間軸狀態:', {
+      當前季度: currentQuarter,
+      選中事件類型: currentSelectedEventTypes,
+      找到的事件數: eventsInRange.length,
+      宏觀經濟事件數: macroEvents.length,
+      宏觀經濟事件列表: macroEvents.map(ev => ({
+        季度: ev.quarter,
+        標籤: ev.__label,
+        分類: ev.__cat
       })),
-      蝮質??迤摨行: fullData.length,
-      ?曉?僑隞? Array.from(yearsFound).sort((a, b) => a - b),
-      撟港遢?賊?: yearsFound.size,
-      璅∪?: d3.select('#filterToggle').property('checked') ? `蝮??璅∪? (${d3.select('#placeSelect').property('value')})` : '?典?璅∪?'
+      總資料季度數: fullData.length,
+      找到的年份: Array.from(yearsFound).sort((a, b) => a - b),
+      年份數量: yearsFound.size,
+      模式: d3.select('#filterToggle').property('checked') ? `縣市模式 (${d3.select('#placeSelect').property('value')})` : '全國模式'
     });
     
-    // 憒??府??閫蝬?鈭辣雿??＊蝷綽?頛詨霅血?
+    // 如果應該有宏觀經濟事件但沒有顯示，輸出警告
     if(macroEvents.length === 0 && currentSelectedEventTypes.includes('macro')) {
-      console.warn('?? 撌脤銝剖?閫蝬?鈭辣??嚗??芣?唬遙雿?閫蝬?鈭辣', {
-        ?訾葉憿?: currentSelectedEventTypes,
-        撱箄降: '隢Ⅱ隤?JSON 鞈?銝剜?行? Category ?箝?閫蝬??冗??隞嗚?鈭辣'
+      console.warn('⚠️ 已選中宏觀經濟事件按鈕，但未找到任何宏觀經濟事件', {
+        選中類型: currentSelectedEventTypes,
+        建議: '請確認 JSON 資料中是否有 Category 為「宏觀經濟與社會事件」的事件'
       });
     }
     
-    // 憒?瘝??曉鈭辣嚗?靘閰喟敦?矽閰虫縑??    if(eventsInRange.length === 0) {
-      console.warn('?? 鈭辣??頠賂?瘝??曉隞颱?鈭辣', {
-        ?訾葉鈭辣憿?: currentSelectedEventTypes,
-        璅∪?: d3.select('#filterToggle').property('checked') ? `蝮??璅∪? (${d3.select('#placeSelect').property('value')})` : '?典?璅∪?',
-        撱箄降: '隢Ⅱ隤歇?訾葉撠???隞園?????
+    // 如果沒有找到事件，提供更詳細的調試信息
+    if(eventsInRange.length === 0) {
+      console.warn('⚠️ 事件時間軸：沒有找到任何事件', {
+        選中事件類型: currentSelectedEventTypes,
+        模式: d3.select('#filterToggle').property('checked') ? `縣市模式 (${d3.select('#placeSelect').property('value')})` : '全國模式',
+        建議: '請確認已選中對應的事件類型按鈕'
       });
     }
     
-    // ?湔璅?
+    // 更新標題
     d3.select('#event-timeline-title')
-      .text(`鈭辣??頠節);
+      .text(`事件時間軸`);
     
-    // ?僑隞賢?蝏?    const eventsByYear = {};
+    // 按年份分组
+    const eventsByYear = {};
     eventsInRange.forEach(ev => {
       if(!eventsByYear[ev.year]) {
         eventsByYear[ev.year] = [];
@@ -3350,79 +3388,86 @@ function initializeChart(apiData){
       eventsByYear[ev.year].push(ev);
     });
     
-    // 皜脫?鈭辣
+    // 渲染事件
     const eventsEl = d3.select('#event-timeline-events');
     eventsEl.html('');
-    // 蝣箔?雿輻璈怠???
+    // 確保使用橫向排列
     eventsEl.style('display', 'flex').style('overflow-x', 'auto').style('flex-wrap', 'nowrap');
     
-    // 璉?交?阡鈭遙雿?隞嗥掩??    if(currentSelectedEventTypes.length === 0) {
+    // 检查是否选择了任何事件类型
+    if(currentSelectedEventTypes.length === 0) {
       eventsEl.append('div')
         .attr('class', 'small')
         .style('text-align', 'center')
         .style('padding', '20px')
         .style('color', '#999')
-        .text('?芷??隞園???);
+        .text('未選取事件類型');
       return;
     }
     
     if(eventsInRange.length === 0) {
       eventsEl.append('div')
         .attr('class', 'small')
-        .text('甇斗??鈭辣');
+        .text('此期間無事件');
       return;
     }
     
-    // ?僑隞賣?摨僎皜脫? - 瘞游像撣?
+    // 按年份排序并渲染 - 水平布局
     const years = Object.keys(eventsByYear).map(y => parseInt(y)).sort((a, b) => a - b);
     
     years.forEach(year => {
       const yearEvents = eventsByYear[year];
       
-      // ?遣撟港遢蝏?      const yearGroup = eventsEl.append('div')
+      // 创建年份组
+      const yearGroup = eventsEl.append('div')
         .attr('class', 'event-timeline-year-group');
       
-      // 撟港遢??
+      // 年份标题
       yearGroup.append('div')
         .attr('class', 'event-timeline-year-header')
         .text(year);
       
-      // 霂亙僑隞賭???隞嗅捆??      const itemsContainer = yearGroup.append('div')
+      // 该年份下的事件容器
+      const itemsContainer = yearGroup.append('div')
         .attr('class', 'event-timeline-items');
       
-      // 皜脫?霂亙僑隞賜?瘥葵鈭辣
+      // 渲染该年份的每个事件
       yearEvents.forEach((ev) => {
         const isCurrent = ev.quarter === currentQuarter;
         const item = itemsContainer.append('div')
           .attr('class', `event-timeline-item event-type-${ev.__cat} ${isCurrent ? 'event-timeline-current' : ''}`)
           .style('cursor', 'pointer')
           .on('click', function() {
-            // ?湔?訾葉?迤摨虫蒂?皜脫?鈭辣隤芣?嚗???璅宏????頛臭??湛?
+            // 更新選中的季度並重新渲染事件說明（與十字標移動時的邏輯一致）
             selectedQuarterKey = ev.quarter;
             lastRenderedQuarter = ev.quarter;
             
             const mode = d3.select('input[name="timeMode"]:checked').property("value");
             let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
             
-            // ?湔?典?璁汗?豢?嚗?嚗?
+            // 更新全國概覽數據（這是關鍵！）
             updateSidePanelFromQuarter(ev.quarter, filteredData);
             
-            // ?湔鈭辣隤芣?嚗＊蝷箄府摮?漲????隞塚?
+            // 更新事件說明（顯示該季度的所有事件）
             renderEventDetail(ev.quarter, filteredData);
             
-            // 蝘駁???鈭格??????頠賊?鈭桀?暺?擃漁嚗?            d3.selectAll('.event-timeline-item').classed('event-timeline-current', false).classed('event-timeline-clicked', false);
-            // 蝘駁??????????            d3.selectAll('.dot').classed('dot-highlight', false);
+            // 移除所有高亮效果（包括十字軸高亮和點擊高亮）
+            d3.selectAll('.event-timeline-item').classed('event-timeline-current', false).classed('event-timeline-clicked', false);
+            // 移除所有數據點的光暈效果
+            d3.selectAll('.dot').classed('dot-highlight', false);
             
-            // 擃漁暺???隞?            d3.select(this).classed('event-timeline-clicked', true);
+            // 高亮點擊的事件
+            d3.select(this).classed('event-timeline-clicked', true);
             
-            // 擃漁頞典??撠????嚗??府摮?漲??寡???
+            // 高亮趨勢圖上對應的數據點（如果該季度有房價資料）
             const targetDot = d3.selectAll('.dot').filter(function(d) {
               return d.Quarter === ev.quarter;
             });
             if(targetDot.size() > 0) {
               targetDot.classed('dot-highlight', true);
               
-              // 擃漁????隞嗅?獢???              targetDot.each(function(d) {
+              // 高亮時保持事件外框效果
+              targetDot.each(function(d) {
                 const dot = d3.select(this);
                 if (hasEventsForQuarter(d.Quarter)) {
                   dot.classed('dot-has-events', true);
@@ -3430,73 +3475,77 @@ function initializeChart(apiData){
               });
             }
             
-            // 憒?閰脣迤摨行???寡????梯???頠?            const hasPriceData = getValue(fullData.find(d => d.Quarter === ev.quarter)) !== null;
+            // 如果該季度沒有房價資料，隱藏十字軸
+            const hasPriceData = getValue(fullData.find(d => d.Quarter === ev.quarter)) !== null;
             if(!hasPriceData) {
               updateCrosshair(null);
             }
           });
         
-        // 摮?漲
+        // 季度
         const quarterPart = ev.quarter.substring(5);
         item.append('div')
           .attr('class', 'event-timeline-quarter')
           .text(quarterPart);
         
-        // 鈭辣璅?嚗??＊蝷粹???蝐歹?
+        // 事件標題（不再顯示類型標籤）
         item.append('div')
           .attr('class', 'event-timeline-content')
-          .text(ev.__label || '鈭辣');
+          .text(ev.__label || '事件');
       });
     });
     
-    // 摰??啁?迤摨衣?閬?嚗赤??撌血笆朣?
+    // 定位到當前季度的視圖（横向往左对齐）
     const currentItem = eventsEl.select('.event-timeline-current').node();
     if(currentItem) {
       currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }
   
-  // 皜脫?鈭辣隤芣?嚗?迤摨西底蝝唬縑?荔?
+  // 渲染事件說明（當前季度詳細信息）
   function renderEventDetail(currentQuarter, filteredData) {
     const currentSelectedEventTypes = getSelectedEventTypes();
     const detailEl = d3.select('#event-detail-content');
     detailEl.html('');
     
-    // ?湔璅?
+    // 更新標題
     d3.select('#event-detail-title')
-      .text(`鈭辣隤芣? (${currentQuarter.replace('_', ' ')})`);
+      .text(`事件說明 (${currentQuarter.replace('_', ' ')})`);
     
-    // 瑼Ｘ?臬?豢?鈭?隞園???    if(currentSelectedEventTypes.length === 0) {
+    // 檢查是否選擇了事件類型
+    if(currentSelectedEventTypes.length === 0) {
       detailEl.append('div')
         .attr('class', 'small')
         .style('text-align', 'center')
         .style('padding', '20px')
         .style('color', '#999')
-        .text('?芷??隞園???);
+        .text('未選取事件類型');
       return;
     }
     
-    // ?脣??嗅?摮?漲??隞?    const events = pickEventsForTimeline(currentQuarter);
+    // 獲取當前季度的事件
+    const events = pickEventsForTimeline(currentQuarter);
     
     if(events.length === 0) {
       detailEl.append('div')
         .attr('class', 'small')
-        .text('甇文迤摨衣鈭辣');
+        .text('此季度無事件');
       return;
     }
     
-    // 皜脫?瘥?隞塚?銝?憿舐內摮?漲璅?嚗?    events.forEach(ev => {
+    // 渲染每個事件（不再顯示季度標題）
+    events.forEach(ev => {
       const item = detailEl.append('div')
         .attr('class', 'event-detail-item');
       
-      // ?芷＊蝷箸?蝐歹?銝＊蝷箔?隞嗆?憿?
+      // 只顯示標籤（不顯示事件標題）
       const header = item.append('div')
         .style('margin-bottom', '8px');
       header.append('span')
         .attr('class', `event-detail-tag ${ev.__cat}`)
         .text(catLabel(ev.__cat));
       
-      // 憿舐內閰喟敦隤芣?
+      // 顯示詳細說明
       if(ev.full && ev.full.Detail) {
         item.append('div')
           .style('font-size', '12px')
@@ -3507,7 +3556,7 @@ function initializeChart(apiData){
     });
   }
   
-  // ======== 鈭辣?? ========
+  // ======== 事件監聽 ========
   placeSelect.on('change',()=>{ 
     if(filterToggle.property('checked')) {
       selectedPlace=placeSelect.property('value'); 
@@ -3515,8 +3564,8 @@ function initializeChart(apiData){
       resetAndRedraw(); 
     }
   });
-  // 撅翩蝭拚撌脩宏?歹??箏?雿輻?券撅翩
-  // selectedDataType 撌脰身??'all'嚗??湔
+  // 屋齡篩選已移除，固定使用全部屋齡
+  // selectedDataType 已設為 'all'，無需更新
 
   filterToggle.on('change',()=>{ updateToggleState(); resetAndRedraw(); });
   function updateToggleState(){
@@ -3524,36 +3573,39 @@ function initializeChart(apiData){
     const chips=d3.select('#eventChips');
     const placeSel=d3.select('#placeSelect');
     
-    // 憿舐內/?梯?蝮???豢???    placeSel.style('display', isCity?null:'none');
+    // 顯示/隱藏縣市選擇器
+    placeSel.style('display', isCity?null:'none');
     
     if(isCity){
-      // 蝮??璅∪?嚗蝙?券??蝮??
+      // 縣市模式：使用選擇的縣市
       selectedPlace = placeSelect.property('value');
     }else{
-      // ?典?璅∪?
+      // 全國模式
       selectedPlace='Nation';
     }
     
     updateChartTitle();
     chips.html('');
     if(!isCity){
-      // ?典?璅∪?嚗＊蝷箸蝑?閬?摰?蝬??冗??隞嗆???      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('? ?輻?瘜?');
-      chips.append('button').attr('type','button').attr('class','event-chip macro active').attr('data-value','macro').text('? 摰?蝬??冗??隞?);
+      // 全國模式：顯示政策法規和宏觀經濟與社會事件按鈕
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('💡 政策法規');
+      chips.append('button').attr('type','button').attr('class','event-chip macro active').attr('data-value','macro').text('💡 宏觀經濟與社會事件');
     }else{
-      // 蝮??璅∪?嚗＊蝷箏???嫣?隞園?????      chips.append('button').attr('type','button').attr('class','event-chip tax active').attr('data-value','tax').text('? 靘??抒??箄矽??);
-      chips.append('button').attr('type','button').attr('class','event-chip infra active').attr('data-value','infra').text('? ?之撱箄身');
-      chips.append('button').attr('type','button').attr('class','event-chip dev active').attr('data-value','dev').text('? ?閬?????);
-      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('? ?輻?瘜?');
+      // 縣市模式：顯示四個地方事件類型按鈕
+      chips.append('button').attr('type','button').attr('class','event-chip tax active').attr('data-value','tax').text('💡 例行性稅基調整');
+      chips.append('button').attr('type','button').attr('class','event-chip infra active').attr('data-value','infra').text('💡 重大建設');
+      chips.append('button').attr('type','button').attr('class','event-chip dev active').attr('data-value','dev').text('💡 土地規劃與開發');
+      chips.append('button').attr('type','button').attr('class','event-chip national active').attr('data-value','national').text('💡 政策法規');
     }
     eventTypeButtons=d3.selectAll('.event-chip');
     eventTypeButtons.on('click',function(){ const btn=d3.select(this); btn.classed('active', !btn.classed('active')); selectedEventTypes=getSelectedEventTypes(); updateChart(); });
     
-    // ??敺??單?啣?湔?
+    // 切換後立即更新右側欄
     const mode = d3.select('input[name="timeMode"]:checked').property("value");
     let filteredData = (mode==='quarter') ? fullData.slice(startIndex, endIndex+1) : applyYearRangeFilter(fullData);
     updateSidePanelFromQuarter(selectedQuarterKey, filteredData);
     
-    // ?皜脫?鈭辣??頠詨?鈭辣隤芣?
+    // 重新渲染事件時間軸和事件說明
     renderEventTimeline(selectedQuarterKey, filteredData);
     renderEventDetail(selectedQuarterKey, filteredData);
   }
@@ -3569,18 +3621,18 @@ function initializeChart(apiData){
   d3.select("#export-chart-btn").on("click",function(){
     const watermark=mainSvg.select(".watermark"); watermark.style("opacity","0.6");
     
-    // ?萄遣銝??捆?其????????ｇ?鈭辣??頠詻?隞嗉牧?隅?Ｗ????閬踝?
+    // 創建一個臨時容器來包含所有四個版面（事件時間軸、事件說明、趨勢圖、本期概覽）
     const topGrid = document.getElementById('top-grid');
     const bottomGrid = document.getElementById('bottom-grid');
     const overviewSection = document.getElementById('overview-section');
     
     if(!topGrid || !bottomGrid) {
-      alert('?⊥??曉????ｇ?隢?閰?);
+      alert('無法找到所有版面，請重試');
       watermark.style("opacity","0");
       return;
     }
     
-    // ?萄遣?冽?摰孵
+    // 創建臨時容器
     const exportContainer = document.createElement('div');
     exportContainer.style.position = 'absolute';
     exportContainer.style.left = '-9999px';
@@ -3590,18 +3642,20 @@ function initializeChart(apiData){
     exportContainer.style.padding = '20px';
     document.body.appendChild(exportContainer);
     
-    // 銴ˊ????Ｗ?冽?摰孵
+    // 複製所有版面到臨時容器
     const topGridClone = topGrid.cloneNode(true);
     const bottomGridClone = bottomGrid.cloneNode(true);
     exportContainer.appendChild(topGridClone);
     exportContainer.appendChild(bottomGridClone);
     
-    // 憒????閬賬??剁?銋??亙???    if(overviewSection) {
+    // 如果「本期概覽」存在，也加入導出
+    if(overviewSection) {
       const overviewClone = overviewSection.cloneNode(true);
       exportContainer.appendChild(overviewClone);
     }
     
-    // 雿輻 html2canvas ?芸????????Ｙ????    if(typeof html2canvas !== 'undefined') {
+    // 使用 html2canvas 截取包含所有四個版面的區域
+    if(typeof html2canvas !== 'undefined') {
       html2canvas(exportContainer, {
         backgroundColor: '#ffffff',
         scale: 2,
@@ -3615,36 +3669,37 @@ function initializeChart(apiData){
         link.download = 'price-trend-dashboard.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        // 皜??冽?摰孵
+        // 清理臨時容器
         document.body.removeChild(exportContainer);
         watermark.style("opacity","0");
       }).catch(e => {
-        console.error('?臬憭望?:',e); 
-        alert('?臬憭望?嚗??岫'); 
-        // 皜??冽?摰孵
+        console.error('匯出失敗:',e); 
+        alert('匯出失敗，請重試'); 
+        // 清理臨時容器
         if(exportContainer.parentNode) {
           document.body.removeChild(exportContainer);
         }
         watermark.style("opacity","0");
       });
     } else {
-      // 憒? html2canvas 銝?剁?????啣?臬 SVG
+      // 如果 html2canvas 不可用，則回退到只匯出 SVG
       saveSvgAsPng(mainSvg.node(),"price-trend-chart.png",{backgroundColor:'#FFFFFF',scale:2})
         .then(()=>{ watermark.style("opacity","0"); })
-        .catch(e=>{ console.error('?臬憭望?:',e); alert('?臬憭望?嚗??岫'); watermark.style("opacity","0"); });
-      // 皜??冽?摰孵
+        .catch(e=>{ console.error('匯出失敗:',e); alert('匯出失敗，請重試'); watermark.style("opacity","0"); });
+      // 清理臨時容器
       if(exportContainer.parentNode) {
         document.body.removeChild(exportContainer);
       }
     }
   });
 
-  // ?活皜脫?
+  // 初次渲染
   updateToggleState();
   updateTimeModeControls();
   resetAndRedraw();
 
-  // ?踵?撘矽?湛?閬?憭批??寡????啗?蝞?  let resizeTimeout;
+  // 響應式調整：視窗大小改變時重新計算
+  let resizeTimeout;
   resizeHandler = function(){
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(function(){
@@ -3653,28 +3708,29 @@ function initializeChart(apiData){
       const newWidth = responsiveDims.baseWidth - newMargin.left - newMargin.right;
       const newHeight = responsiveDims.baseHeight - newMargin.top - newMargin.bottom;
       
-      // ?湔?典?霈
+      // 更新全域變數
       margin = newMargin;
       width = newWidth;
       height = newHeight;
       
-      // ?湔 SVG 撠箏站
+      // 更新 SVG 尺寸
       if(mainSvg && mainSvg.node()){
         mainSvg
           .attr("viewBox", `0 0 ${width+margin.left+margin.right} ${height+margin.top+margin.bottom}`)
           .style("width", "100%")
           .style("height", "auto");
         
-        // ?湔摨扳?頠貊?????
+        // 更新座標軸範圍和間距
         const isMobileResize = window.innerWidth <= 768;
         x.paddingInner(isMobileResize ? 0.7 : 0.5);
         x.range([0, width]);
         y.range([height, 0]);
         
-        // ?湔 clipPath
+        // 更新 clipPath
         mainSvg.select("#clip rect").attr("width", width).attr("height", height);
         
-        // ?湔璅?雿蔭??擃之撠?        const isMobileResizeTitle = window.innerWidth <= 768;
+        // 更新標題位置和字體大小
+        const isMobileResizeTitle = window.innerWidth <= 768;
         const isTabletResizeTitle = window.innerWidth > 768 && window.innerWidth <= 992;
         const titleFontSizeResize = isMobileResizeTitle ? 16 : (isTabletResizeTitle ? 20 : 22);
         const titleYResize = isMobileResizeTitle ? 28 : (isTabletResizeTitle ? 35 : 38);
@@ -3683,45 +3739,50 @@ function initializeChart(apiData){
           .attr("y", titleYResize)
           .style("font-size", `${titleFontSizeResize}px`);
         
-        // ?湔摨扳?頠豢?蝐支?蝵桀?摮?憭批?嚗??蝵桅??矽?湛?
+        // 更新座標軸標籤位置和字體大小（根據裝置類型調整）
         const isMobileResizeLabel = window.innerWidth <= 768;
         const isTabletResizeLabel = window.innerWidth > 768 && window.innerWidth <= 992;
-        const yLabelXResize = isMobileResizeLabel ? 5 : 35; // 隤踵雿蔭隞亙捆蝝?擃?        const xLabelYResize = isMobileResizeLabel ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30;
+        const yLabelXResize = isMobileResizeLabel ? 5 : 35; // 調整位置以容納字體
+        const xLabelYResize = isMobileResizeLabel ? margin.top + height + margin.bottom - 10 : margin.top + height + margin.bottom - 30;
         const axisLabelFontSizeResize = isMobileResizeLabel ? 11 : (isTabletResizeLabel ? 14 : 16);
         
         mainSvg.select(".axis-label").each(function(){
           const el = d3.select(this);
           if(el.attr("transform") && el.attr("transform").includes("rotate")){
-            // Y頠豢?蝐?            el.attr("x", yLabelXResize)
+            // Y軸標籤
+            el.attr("x", yLabelXResize)
               .attr("y", margin.top + height/2)
               .attr("transform", `rotate(-90, ${yLabelXResize}, ${margin.top + height/2})`)
               .style("font-size", `${axisLabelFontSizeResize}px`);
           } else {
-            // X頠豢?蝐?            el.attr("x", margin.left + width/2)
+            // X軸標籤
+            el.attr("x", margin.left + width/2)
               .attr("y", xLabelYResize)
               .style("font-size", `${axisLabelFontSizeResize}px`);
           }
         });
         
-        // ?湔 focus group 雿蔭
+        // 更新 focus group 位置
         focus.attr("transform", `translate(${margin.left},${margin.top})`);
         
-        // ?湔??頠?        mainCrosshair.attr("y2", height);
+        // 更新十字軸
+        mainCrosshair.attr("y2", height);
         
-        // ?湔 watermark 雿蔭
+        // 更新 watermark 位置
         const watermarkGroup = mainSvg.select(".watermark");
         if(watermarkGroup.node()){
           watermarkGroup.attr("transform", `translate(${margin.left+20}, ${margin.top+30})`);
         }
         
-        // ?湔?餃漲摮?憭批?嚗 updateChart 銝剜??閮?嚗ㄐ蝣箔??踵?撘?擃之撠迤蝣綽?
-        // ?蝜芾ˊ嚗pdateChart ?????摨血?擃之撠??湔嚗?        updateChart();
+        // 更新刻度字體大小（在 updateChart 中會重新計算，這裡確保響應式字體大小正確）
+        // 重新繪製（updateChart 會處理所有刻度字體大小的更新）
+        updateChart();
       }
     }, 250); // 250ms debounce
   };
   window.addEventListener('resize', resizeHandler);
 
-  // splash ?嗅?
+  // splash 收合
   if(window.__splashFailSafe){ clearTimeout(window.__splashFailSafe); window.__splashFailSafe=null; }
   const splashScreen=document.getElementById('splash-screen'); const dashboard=document.querySelector('.dashboard-container');
   if(splashScreen && !splashScreen.dataset.initialized){
@@ -3730,9 +3791,10 @@ function initializeChart(apiData){
     setTimeout(()=>{ splashScreen.style.opacity='0'; setTimeout(()=>{ if(splashScreen && splashScreen.style.opacity==='0'){ splashScreen.style.display='none'; }},3000); },100);
   }
 
-  // ?脫??嚗????dashboard ??嚗?  let screenshotTimeout; const watermark=mainSvg.select(".watermark");
+  // 防截圖等（僅限制在 dashboard 區域內）
+  let screenshotTimeout; const watermark=mainSvg.select(".watermark");
   document.addEventListener('contextmenu',function(e){ 
-    // ?芸 dashboard ???餅迫?喲
+    // 只在 dashboard 區域內阻止右鍵
     if(e.target.closest('.dashboard-container')){
       e.preventDefault(); 
       watermark.style("opacity","0.8"); 
@@ -3742,10 +3804,11 @@ function initializeChart(apiData){
     }
   });
   document.addEventListener('keydown',function(e){
-    // ?芸 dashboard ???餅迫敹急??    if(e.target.closest('.dashboard-container') || document.activeElement.closest('.dashboard-container')){
+    // 只在 dashboard 區域內阻止快捷鍵
+    if(e.target.closest('.dashboard-container') || document.activeElement.closest('.dashboard-container')){
       if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'))||(e.ctrlKey&&(e.key==='u'||e.key==='s'))||e.key==='PrintScreen'){
         e.preventDefault(); 
-        if(e.key==='s'){ alert('甇斤雯???迂?脣?嚗?); } 
+        if(e.key==='s'){ alert('此網頁不允許儲存！'); } 
         watermark.style("opacity","0.8"); 
         clearTimeout(screenshotTimeout); 
         screenshotTimeout=setTimeout(()=>{ watermark.style("opacity","0"); },3000); 
@@ -3754,36 +3817,36 @@ function initializeChart(apiData){
     }
   });
   document.addEventListener('dragstart',function(e){ 
-    // ?芸 dashboard ???餅迫?
+    // 只在 dashboard 區域內阻止拖拽
     if(e.target.closest('.dashboard-container') && (e.target.tagName==='IMG'||e.target.tagName==='svg')){
       e.preventDefault(); 
       return false; 
     }
   });
   document.addEventListener('copy',function(e){ 
-    // ?芸 dashboard ???餅迫銴ˊ
+    // 只在 dashboard 區域內阻止複製
     if(e.target.closest('.dashboard-container') || window.getSelection().toString().length > 0 && window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('.dashboard-container')){
       e.preventDefault(); 
-      alert('甇斤雯???迂銴ˊ?批捆嚗?); 
+      alert('此網頁不允許複製內容！'); 
       return false; 
     }
   });
   document.addEventListener('cut',function(e){ 
-    // ?芸 dashboard ???餅迫?芯?
+    // 只在 dashboard 區域內阻止剪下
     if(e.target.closest('.dashboard-container')){
       e.preventDefault(); 
       return false; 
     }
   });
   document.addEventListener('paste',function(e){ 
-    // ?芸 dashboard ???餅迫鞎潔?
+    // 只在 dashboard 區域內阻止貼上
     if(e.target.closest('.dashboard-container')){
       e.preventDefault(); 
       return false; 
     }
   });
   document.addEventListener('selectstart',function(e){ 
-    // ?芸 dashboard ???餅迫?豢?
+    // 只在 dashboard 區域內阻止選擇
     if(e.target.closest('.dashboard-container')){
       e.preventDefault(); 
       return false; 
@@ -3796,3 +3859,5 @@ function initializeChart(apiData){
   },1000);
 }
 </script>
+</body>
+</html>
