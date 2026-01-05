@@ -1,67 +1,81 @@
-import { RawEvent } from "@/data/sourceData";
+// src/utils/eventHelper.ts
 
-// 定義組件最後想吃的乾淨格式
-export interface CleanEvent {
-  id: string;
-  year: string;
-  quarter: string;
-  title: string;
-  detail: string;
-  tags: string[];
-  city?: string; // 標記這是哪個城市的資料
-}
+// 1. 主要清洗邏輯
+export const processEvents = (data: any[]) => {
+  // 防呆：如果 data 不是陣列，直接回傳空陣列，避免 map 當機
+  if (!Array.isArray(data)) {
+    console.error("processEvents 收到錯誤的資料格式:", data);
+    return [];
+  }
 
-// 判斷並抓取正確的標題
-const getTitle = (item: RawEvent): string => {
-  return (
-    item.Label ||
-    item.NationalLabel ||
-    item.TaipeiLabel ||
-    item.NewTaipeiLabel ||
-    item.TaoyuanLabel ||
-    item.HsinchuLabel ||
-    item.TaichungLabel ||
-    item.TainanLabel ||
-    item.KaohsiungLabel ||
-    "無標題"
-  );
-};
+  // 防呆：防止資料是多層陣列 (例如 [[...], [...]])，先壓平成一層
+  const flatData = data.flat();
 
-// 處理分類 (有時候是字串，有時候是陣列，統一變成陣列)
-const getTags = (category: string | string[]): string[] => {
-  if (Array.isArray(category)) return category;
-  return [category];
-};
+  return flatData.map((item) => {
+    // 防呆：如果 item 是空的或是奇怪的東西，就跳過
+    if (!item || typeof item !== 'object') return null;
 
-// 主函式：傳入原始的大物件，回傳乾淨的陣列
-export const processEvents = (dataObj: Record<string, RawEvent[]>): CleanEvent[] => {
-  let allEvents: CleanEvent[] = [];
+    // 拆解時間，例如 "2013_Q1" -> 2013, Q1
+    const [yearStr, quarterStr] = item.Quarter ? item.Quarter.split("_") : ["0", ""];
 
-  // 1. 遍歷每一個區域 (key = taipeiData, kaohsiungData...)
-  Object.keys(dataObj).forEach((key) => {
-    const cityEvents = dataObj[key];
-    
-    // 2. 轉換每一筆資料
-    const cleanCityEvents = cityEvents.map((item, index) => {
-      const [year, q] = item.Quarter.split("_"); // 把 "2014_Q2" 切開
+    // 判斷這筆資料屬於哪個城市
+    // 邏輯：檢查物件裡有沒有特定的 Key (例如 KaohsiungLabel)
+    let city = "oldLabel"; // 預設為全國
+    let title = item.Label || "大事紀";
+
+    if (item.TaipeiLabel) {
+      city = "taipei";
+      title = item.TaipeiLabel;
+    } else if (item.NewTaipeiLabel) {
+      city = "newTaipei";
+      title = item.NewTaipeiLabel;
+    } else if (item.TaoyuanLabel) {
+      city = "taoyuan";
+      title = item.TaoyuanLabel;
+    } else if (item.HsinchuLabel) {
+      city = "hsinchu";
+      title = item.HsinchuLabel;
+    } else if (item.TaichungLabel) {
+      city = "taichung";
+      title = item.TaichungLabel;
+    } else if (item.TainanLabel) {
+      city = "tainan";
+      title = item.TainanLabel;
+    } else if (item.KaohsiungLabel) {
+      city = "kaohsiung";
+      title = item.KaohsiungLabel;
+    }
+
+    return {
+      year: parseInt(yearStr) || 0,
+      quarter: quarterStr || "",
+      city: city,
+      title: title,
+      category: item.Category,
+      isNational: city === "oldLabel",
       
-      return {
-        id: `${key}-${index}-${item.Quarter}`, // 產生唯一 ID
-        year,
-        quarter: q,
-        title: getTitle(item),
-        detail: item.Detail,
-        tags: getTags(item.Category),
-        city: key.replace("Data", ""), // 把 "taipeiData" 變成 "taipei"
-      };
-    });
+      // ⚠️ 關鍵：將原始資料的 Detail 對應到 description (給彈跳視窗用)
+      description: item.Detail || null, 
+    };
+  })
+  // 過濾掉 null 或是沒有標題的無效資料
+  .filter((item): item is NonNullable<typeof item> => item !== null && !!item.title);
+};
 
-    allEvents = [...allEvents, ...cleanCityEvents];
-  });
+// 2. 輔助：把 "2013_Q1" 轉成數字 20131 以便比較大小
+export const getQuarterValue = (quarterStr: string) => {
+  if (!quarterStr) return 0;
+  const cleanStr = quarterStr.replace("_", "").replace(" ", "").replace("Q", ""); 
+  return parseInt(cleanStr);
+};
 
-  // 3. 依照時間排序 (年份 -> 季度)
-  return allEvents.sort((a, b) => {
-    if (a.year !== b.year) return Number(b.year) - Number(a.year); // 年份降冪 (新的在上面)
-    return b.quarter.localeCompare(a.quarter); // 季度降冪
-  });
+// 3. 輔助：產生季度選單 (從 2013 開始)
+export const generateQuarterOptions = () => {
+  const options = [];
+  for (let y = 2013; y <= 2025; y++) {
+    for (let q = 1; q <= 4; q++) {
+      options.push(`${y}_Q${q}`);
+    }
+  }
+  return options;
 };
