@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Navbar from "@/components/Navbar";
+// Navbar 在新版面中已整合進側邊欄與 Header，這裡可以先移除引用，或是保留但不使用
+// import Navbar from "@/components/Navbar"; 
 import EventList from "@/components/EventList";
 import PriceChart from "@/components/PriceChart";
 import { rawData } from "@/data/sourceData";
@@ -22,6 +23,7 @@ export default function Home() {
     setMainCity(cityId);
     setCompareCities(prev => prev.filter(c => c !== cityId));
   };
+  
   const toggleCompare = (cityId: string) => {
     if (cityId === mainCity) return;
     setCompareCities(prev => {
@@ -51,170 +53,159 @@ export default function Home() {
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
-
+  // --- 畫面渲染 (新版儀表板 Layout) ---
   return (
-    <main className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <Navbar />
+    <main className="h-screen w-full flex bg-slate-50 font-sans overflow-hidden">
       
-      <div className="flex-1 flex relative overflow-hidden">
-        {/* === 側邊欄 (設定區) === */}
-        {isSettingsOpen && <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setIsSettingsOpen(false)}/>}
-        <div className={`fixed top-0 left-0 h-full w-80 bg-white z-[60] shadow-2xl transition-transform duration-300 ${isSettingsOpen ? "translate-x-0" : "-translate-x-full"}`}>
-           <div className="p-6 h-full flex flex-col overflow-y-auto custom-scrollbar">
-              <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-xl font-bold">顯示設定</h2>
-                 <button onClick={() => setIsSettingsOpen(false)} className="p-2 hover:bg-slate-100 rounded-full">✕</button>
-              </div>
-              
-              <div className="mb-6">
-                 <label className="block text-xs font-bold text-slate-400 mb-3 uppercase">時間區間</label>
-                 <div className="space-y-2">
-                   <div className="flex items-center gap-2">
-                     <span className="text-sm font-bold text-slate-500 w-6">起</span>
-                     <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-sm outline-none">
-                        {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
-                     </select>
-                   </div>
-                   <div className="flex items-center gap-2">
-                     <span className="text-sm font-bold text-slate-500 w-6">迄</span>
-                     <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-sm outline-none">
-                        {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
-                     </select>
-                   </div>
-                 </div>
-              </div>
-
-              <div className="mb-6">
-                 <label className="block text-xs font-bold text-slate-400 mb-3 uppercase">主要城市</label>
-                 <div className="grid grid-cols-2 gap-2">
-                    {CITIES_CONFIG.map(c => (
-                       <button 
-                         key={c.id} 
-                         onClick={() => handleMainCityChange(c.id)} 
-                         style={{ 
-                           backgroundColor: mainCity === c.id ? c.color : '#f8fafc',
-                           color: mainCity === c.id ? '#ffffff' : '#475569',
-                           borderColor: mainCity === c.id ? c.color : '#e2e8f0'
-                         }}
-                         className="p-2 rounded text-sm font-bold transition-colors border shadow-sm"
-                       >
-                          {c.label}
-                       </button>
-                    ))}
-                 </div>
-              </div>
-
-              <div className="mb-6">
-                 <div className="flex justify-between items-center mb-3">
-                    <label className="text-xs font-bold text-slate-400 uppercase">加入比對</label>
-                    {compareCities.length > 0 && (
-                      <button 
-                        onClick={handleCancelCompare}
-                        className="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded hover:bg-red-100 transition-colors font-bold"
-                      >
-                        清除所有
-                      </button>
-                    )}
-                 </div>
-                 
-                 <div className="space-y-2">
-                    {CITIES_CONFIG.filter(c => c.id !== mainCity).map(c => (
-                       <label key={c.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer border border-transparent hover:border-slate-100 transition-colors">
-                          <input 
-                            type="checkbox" 
-                            checked={compareCities.includes(c.id)} 
-                            onChange={() => toggleCompare(c.id)} 
-                            className="rounded focus:ring-0"
-                          />
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }}></div>
-                          <span className="text-slate-700 font-medium">{c.label}</span>
-                       </label>
-                    ))}
-                 </div>
-              </div>
-           </div>
+      {/* === 側邊欄 (改為深色系專業風格) === */}
+      {/* 遮罩層 (Mobile用) */}
+      {isSettingsOpen && <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm md:hidden" onClick={() => setIsSettingsOpen(false)}/>}
+      
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-[60] w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out
+        ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
+        {/* 側邊欄 Header */}
+        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h1 className="text-white font-bold text-lg tracking-wide">不動產大事紀</h1>
+            <p className="text-xs text-slate-500 mt-1">Market Intelligence</p>
+          </div>
+          <button onClick={() => setIsSettingsOpen(false)} className="md:hidden text-white">✕</button>
         </div>
 
-        {/* === 主要內容區 === */}
-        <div className="flex-1 bg-gray-50 flex flex-col h-full w-full relative">
+        {/* 側邊欄 捲動區 */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
           
-          {/* 頂部導覽列 */}
-          <div className="bg-white border-b border-slate-200 shadow-sm z-30 shrink-0 px-4 py-3 flex items-center justify-between sticky top-0">
-            <div className="flex items-center gap-4 overflow-x-auto">
-              <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 font-bold transition-colors shadow-sm shrink-0">
-                設定與篩選
-              </button>
-              
-              <div className="flex gap-2 text-sm items-center">
-                
-                {/* 1. 主城市 (移除 "(主)" 文字) */}
-                {(() => {
-                  const city = CITIES_CONFIG.find(c => c.id === mainCity);
-                  return city ? (
-                    <span 
-                      className="font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap shadow-sm bg-white"
-                      style={{ color: city.color, borderColor: `${city.color}40` }}
-                    >
-                      {city.label}
-                    </span>
-                  ) : null;
-                })()}
-
-                {/* 2. 比對城市 (前方加入 VS.) */}
-                {compareCities.map(id => {
-                  const city = CITIES_CONFIG.find(c => c.id === id);
-                  return city ? (
-                    <div key={id} className="flex items-center gap-2">
-                        {/* ✨ 帥氣的 VS. 字樣 */}
-                        <span className="text-slate-300 font-extrabold italic text-xs">VS.</span>
-                        
-                        <span 
-                          className="font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap shadow-sm bg-white"
-                          style={{ color: city.color, borderColor: `${city.color}40` }}
-                        >
-                           {city.label}
-                        </span>
-                    </div>
-                  ) : null;
-                })}
-
-                {/* 取消比對按鈕 */}
-                {compareCities.length > 0 && (
-                   <button 
-                     onClick={handleCancelCompare}
-                     className="ml-2 text-xs text-slate-400 hover:text-red-500 font-bold underline decoration-dotted whitespace-nowrap"
-                   >
-                     取消比對
-                   </button>
-                )}
+          {/* 1. 時間區間 */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 block">Analysis Period</label>
+            <div className="space-y-3">
+              <div className="group bg-slate-800 rounded-lg p-2 border border-slate-700 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                <span className="block text-[10px] text-slate-500 mb-0.5 ml-1">START</span>
+                <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-transparent text-white text-sm outline-none font-medium cursor-pointer">
+                  {QUARTER_OPTIONS.map(q => <option key={q} value={q} className="bg-slate-800">{q.replace("_", " ")}</option>)}
+                </select>
+              </div>
+              <div className="group bg-slate-800 rounded-lg p-2 border border-slate-700 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                <span className="block text-[10px] text-slate-500 mb-0.5 ml-1">END</span>
+                <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="w-full bg-transparent text-white text-sm outline-none font-medium cursor-pointer">
+                  {QUARTER_OPTIONS.map(q => <option key={q} value={q} className="bg-slate-800">{q.replace("_", " ")}</option>)}
+                </select>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50 relative pb-[200px]"> 
-            <EventList 
-              data={currentViewEvents} 
-              startPeriod={startPeriod} 
-              endPeriod={endPeriod} 
-              quarterWidth={0} 
-              citiesOrder={chartCities} 
-              mainCityName={getCityName(mainCity)}
-            />
+          {/* 2. 主要城市 */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 block">Focus City</label>
+            <div className="grid grid-cols-2 gap-2">
+              {CITIES_CONFIG.map(c => (
+                <button 
+                  key={c.id} 
+                  onClick={() => handleMainCityChange(c.id)} 
+                  className={`
+                    p-2 rounded-md text-xs font-bold transition-all duration-200 border
+                    ${mainCity === c.id 
+                      ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-900/20' 
+                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white'
+                    }
+                  `}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="h-[25vh] min-h-[180px] bg-white border-t border-slate-200 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-40 relative">
-             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-full px-3 py-0.5 shadow-sm text-[10px] text-slate-400 font-bold uppercase tracking-wider cursor-default">
-               Price Trend
-             </div>
-             <div className="h-full w-full p-2 pb-4">
-                <PriceChart 
-                   selectedCities={chartCities} 
-                   startPeriod={startPeriod} 
-                   endPeriod={endPeriod} 
-                />
-             </div>
+          {/* 3. 比對城市 */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Compare With</label>
+               {compareCities.length > 0 && (
+                 <button onClick={handleCancelCompare} className="text-[10px] text-red-400 hover:text-red-300 transition-colors">RESET</button>
+               )}
+            </div>
+            <div className="space-y-1">
+               {CITIES_CONFIG.filter(c => c.id !== mainCity).map(c => (
+                  <label key={c.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-800 cursor-pointer group transition-colors">
+                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${compareCities.includes(c.id) ? 'bg-blue-500 border-blue-500' : 'border-slate-600 bg-transparent'}`}>
+                       {compareCities.includes(c.id) && <span className="text-white text-[10px]">✓</span>}
+                     </div>
+                     <input type="checkbox" checked={compareCities.includes(c.id)} onChange={() => toggleCompare(c.id)} className="hidden" />
+                     <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }}></span>
+                        <span className="text-sm text-slate-400 group-hover:text-white font-medium">{c.label}</span>
+                     </div>
+                  </label>
+               ))}
+            </div>
           </div>
+
         </div>
+        
+        {/* 側邊欄 Footer */}
+        <div className="p-4 bg-slate-950 text-[10px] text-slate-600 border-t border-slate-800 text-center">
+          Data Source: Internal DB v1.2
+        </div>
+      </aside>
+
+      {/* === 右側主要內容 === */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        {/* 頂部狀態列 (Header) */}
+        <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
+           <div className="flex items-center gap-4">
+             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
+             
+             {/* 麵包屑顯示目前狀態 */}
+             <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-slate-400">VIEWING:</span>
+                <div className="flex items-center gap-2">
+                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CITIES_CONFIG.find(c => c.id === mainCity)?.color }}></span>
+                      {getCityName(mainCity)}
+                   </span>
+                   {compareCities.length > 0 && <span className="text-slate-300 font-bold text-xs">VS</span>}
+                   {compareCities.map(id => (
+                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm">
+                         {getCityName(id)}
+                      </span>
+                   ))}
+                </div>
+             </div>
+           </div>
+        </header>
+
+        {/* 中間滾動區 (Event List) */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 pb-[220px] scroll-smooth">
+           <div className="pt-8">
+              <EventList 
+                data={currentViewEvents} 
+                startPeriod={startPeriod} 
+                endPeriod={endPeriod} 
+                quarterWidth={0} 
+                citiesOrder={chartCities} 
+                mainCityName={getCityName(mainCity)}
+              />
+           </div>
+        </div>
+
+        {/* 底部浮動圖表區 (Glassmorphism + Shadow) */}
+        <div className="absolute bottom-0 left-0 right-0 h-[280px] bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40 transition-transform duration-300">
+           <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] font-bold text-slate-500 uppercase tracking-widest cursor-pointer hover:bg-slate-50 flex items-center gap-2 group">
+              <span>Price Trend</span>
+              <span className="group-hover:-translate-y-0.5 transition-transform">↑</span>
+           </div>
+           <div className="h-full w-full p-4 pb-6">
+              <PriceChart 
+                 selectedCities={chartCities} 
+                 startPeriod={startPeriod} 
+                 endPeriod={endPeriod} 
+              />
+           </div>
+        </div>
+
       </div>
     </main>
   );
