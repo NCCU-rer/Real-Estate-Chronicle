@@ -7,7 +7,6 @@ import {
 import { rawPriceData } from "@/data/priceData";
 import { getQuarterValue } from "@/utils/eventHelper";
 
-// 靜態設定
 const cityConfig = {
   taipei: { name: "台北市", color: "#247533" },
   newTaipei: { name: "新北市", color: "#297270" },
@@ -18,10 +17,10 @@ const cityConfig = {
   kaohsiung: { name: "高雄市", color: "#e66d50" },
 };
 
-// 基礎資料處理
+// 資料預處理：轉成 LineChart 易讀的格式
 const baseChartData = rawPriceData.map(item => ({
   rawQuarter: item.Quarter,
-  quarter: item.Quarter.replace("_", " "),
+  quarter: item.Quarter.replace("_", " "), // X軸顯示文字
   nation: item.Nation.all / 10000,
   taipei: item.Taipei.all / 10000,
   newTaipei: item.NewTaipei.all / 10000,
@@ -33,18 +32,20 @@ const baseChartData = rawPriceData.map(item => ({
 }));
 
 interface PriceChartProps {
-  selectedCities: string[]; // ⚠️ 修改：改成接收字串陣列
+  selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
+  // 為了相容性保留這兩個 props，但在 RWD 模式下我們不會用到它們
+  width?: number;
+  height?: number;
 }
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod }: PriceChartProps) {
   
-  // 根據時間篩選
+  // 根據使用者選的時間區間過濾資料
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
-
     return baseChartData.filter(item => {
       const currentVal = getQuarterValue(item.rawQuarter);
       return currentVal >= startVal && currentVal <= endVal;
@@ -52,41 +53,51 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
   }, [startPeriod, endPeriod]);
 
   return (
-    <div className="w-full h-full bg-white rounded-lg p-2">
+    // 使用 w-full h-full 讓它自動填滿父層容器 (也就是底部的 25vh)
+    <div className="w-full h-full select-none">
+      {/* ✨ 關鍵修正：加回 ResponsiveContainer，讓圖表自動適應寬高 */}
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={filteredData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <LineChart 
+          data={filteredData} 
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          
           <XAxis 
             dataKey="quarter" 
-            tick={{ fill: '#64748b', fontSize: 11 }} 
+            tick={{ fill: '#94a3b8', fontSize: 11 }} 
             tickLine={false}
-            interval="preserveStartEnd"
-            angle={-45}
-            textAnchor="end"
-            height={60}
+            axisLine={{ stroke: '#e2e8f0' }}
+            minTickGap={30}
           />
-          <YAxis unit="萬" tick={{ fill: '#64748b', fontSize: 12 }} domain={['auto', 'auto']} />
+          
+          <YAxis 
+            unit="萬" 
+            tick={{ fill: '#94a3b8', fontSize: 11 }} 
+            axisLine={false}
+            tickLine={false}
+            domain={['auto', 'auto']} 
+          />
           
           <Tooltip 
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value: any) => Number(value).toFixed(1) + " 萬/坪"} 
           />
-          <Legend wrapperStyle={{ paddingTop: '10px' }}/>
+          <Legend wrapperStyle={{ paddingTop: '5px' }}/>
 
-          {/* 全國 (永遠顯示，作為基準線) */}
+          {/* 全國基準線 (虛線) */}
           <Line 
             type="monotone" 
             dataKey="nation" 
-            name="全國" 
-            stroke="#334155" 
-            strokeWidth={3} 
+            name="全國均價" 
+            stroke="#cbd5e1" 
+            strokeWidth={2} 
             dot={false} 
-            strokeDasharray="5 5" 
+            strokeDasharray="4 4" 
+            activeDot={{ r: 4 }}
           />
 
-          {/* 城市線條：檢查是否在 selectedCities 陣列中 */}
+          {/* 繪製各城市線條 */}
           {Object.entries(cityConfig).map(([key, config]) => {
-            // 邏輯：如果選了 "all" 或者 該城市在選取名單中，就顯示
             if (selectedCities.includes("all") || selectedCities.includes(key)) {
               return (
                 <Line
@@ -96,8 +107,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
                   name={config.name}
                   stroke={config.color}
                   strokeWidth={2}
-                  dot={{ r: 3 }} // 顯示小圓點方便辨識
-                  activeDot={{ r: 6 }}
+                  dot={{ r: 2 }} // 小圓點
+                  activeDot={{ r: 6 }} // 滑鼠移上去變大
                 />
               );
             }

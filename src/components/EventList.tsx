@@ -1,6 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { getQuarterValue } from "@/utils/eventHelper";
+
+const CITY_STYLES: Record<string, string> = {
+  taipei: "bg-[#247533]/10 text-[#247533] border-[#247533]/20",
+  newTaipei: "bg-[#297270]/10 text-[#297270] border-[#297270]/20",
+  taoyuan: "bg-[#8ab07c]/10 text-[#6a905c] border-[#8ab07c]/20",
+  hsinchu: "bg-[#2998d8]/10 text-[#2998d8] border-[#2998d8]/20",
+  taichung: "bg-[#e7c66b]/10 text-[#b7963b] border-[#e7c66b]/20",
+  tainan: "bg-[#f3a361]/10 text-[#d38341] border-[#f3a361]/20",
+  kaohsiung: "bg-[#e66d50]/10 text-[#e66d50] border-[#e66d50]/20",
+  oldLabel: "bg-slate-100 text-slate-500 border-slate-200",
+};
 
 interface EventItem {
   year: number;
@@ -8,180 +20,202 @@ interface EventItem {
   title: string;
   description?: string;
   city?: string;
+  cityName?: string;
   category?: string;
   isNational?: boolean;
 }
 
 interface EventListProps {
   data: EventItem[];
+  startPeriod: string;
+  endPeriod: string;
+  quarterWidth: number;
+  citiesOrder: string[]; 
+  mainCityName?: string; // ✨ 新增：傳入主城市名稱
 }
 
+// ✨ 修改分組結構，分成三類
 interface GroupedQuarter {
   year: number;
   quarter: string;
   nationalEvents: EventItem[];
-  localEvents: EventItem[];
+  mainCityEvents: EventItem[];    // 主城市
+  compareEvents: EventItem[];     // 比較城市
 }
 
-export default function EventList({ data }: EventListProps) {
+export default function EventList({ data, startPeriod, endPeriod, citiesOrder, mainCityName }: EventListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // 1. 資料分組 (邏輯不變，只是排序建議從舊到新，因為橫向捲動通常是時間軸向右)
   const groupedData = useMemo(() => {
     const groups: Record<string, GroupedQuarter> = {};
-    
-    // 橫向時間軸建議：舊 -> 新 (從左到右)
-    const sortedData = [...data].sort((a, b) => {
-       if (a.year !== b.year) return a.year - b.year; 
-       return a.quarter.localeCompare(b.quarter);
+    const startVal = getQuarterValue(startPeriod);
+    const endVal = getQuarterValue(endPeriod);
+    const mainCityId = citiesOrder[0]; // 第一個是主城市
+
+    // 1. 建立骨架
+    for (let y = 2013; y <= 2025; y++) {
+      for (let q = 1; q <= 4; q++) {
+        const currentVal = y * 10 + q;
+        if (currentVal >= startVal && currentVal <= endVal) {
+           const qKey = `${y}_Q${q}`;
+           groups[qKey] = { 
+             year: y, 
+             quarter: `Q${q}`, 
+             nationalEvents: [], 
+             mainCityEvents: [],
+             compareEvents: [] 
+           };
+        }
+      }
+    }
+
+    // 2. 填入並分類資料
+    data.forEach(event => {
+      const key = `${event.year}_${event.quarter}`;
+      if (groups[key]) {
+        if (event.isNational) {
+          groups[key].nationalEvents.push(event);
+        } else if (event.city === mainCityId) {
+          // 如果是主城市
+          groups[key].mainCityEvents.push(event);
+        } else {
+          // 其他都是比較城市
+          groups[key].compareEvents.push(event);
+        }
+      }
     });
 
-    sortedData.forEach(event => {
-      const key = `${event.year}_${event.quarter}`;
-      if (!groups[key]) {
-        groups[key] = {
-          year: event.year,
-          quarter: event.quarter,
-          nationalEvents: [],
-          localEvents: []
-        };
-      }
-      if (event.isNational) {
-        groups[key].nationalEvents.push(event);
-      } else {
-        groups[key].localEvents.push(event);
-      }
+    // 3. 排序比較城市的事件 (依照 citiesOrder)
+    Object.values(groups).forEach(group => {
+      group.compareEvents.sort((a, b) => {
+        const indexA = a.city ? citiesOrder.indexOf(a.city) : 999;
+        const indexB = b.city ? citiesOrder.indexOf(b.city) : 999;
+        return indexA - indexB;
+      });
     });
 
     return Object.values(groups).sort((a, b) => {
        if (a.year !== b.year) return a.year - b.year;
        return a.quarter.localeCompare(b.quarter);
     });
-  }, [data]);
+  }, [data, startPeriod, endPeriod, citiesOrder]);
 
-  // 2. 卡片渲染元件
-  const renderEventCard = (event: EventItem, index: number, type: 'nat' | 'loc') => {
+  const renderEventCard = (event: EventItem, index: number, type: 'nat' | 'main' | 'comp') => {
     const uniqueId = `${event.year}_${event.quarter}_${type}_${index}`;
     const isOpen = expandedId === uniqueId;
     const isNational = type === 'nat';
+    const isMain = type === 'main';
+    const cityStyle = (event.city && CITY_STYLES[event.city]) ? CITY_STYLES[event.city] : CITY_STYLES['oldLabel'];
 
     return (
       <div 
         key={uniqueId}
         className={`
-          w-[280px] border rounded-lg p-3 shadow-sm transition-all duration-300 relative shrink-0 text-left
-          ${isOpen ? "bg-slate-50 border-blue-200 shadow-md ring-1 ring-blue-100 z-50" : "bg-white border-slate-100 hover:shadow-md z-10"}
-          
-          /* 箭頭：全國(上)往下指，地方(下)往上指 */
-          before:content-[''] before:absolute before:left-1/2 before:-translate-x-1/2 before:w-2.5 before:h-2.5 before:bg-inherit before:border-t before:border-r before:border-inherit before:rotate-[135deg]
-          ${isNational 
-            ? "mb-4 before:-bottom-[6px]" // 全國在上，箭頭向下
-            : "mt-4 before:-top-[6px] before:rotate-[-45deg]" // 地方在下，箭頭向上
+          border rounded-lg p-3 shadow-sm transition-all duration-300 relative mb-3 last:mb-0 w-full
+          ${isOpen 
+            ? "bg-slate-50 border-blue-200 shadow-md ring-1 ring-blue-100 z-20" 
+            : (isMain || isNational ? "bg-white" : "bg-slate-50/60") + " border-slate-100 hover:shadow-md hover:bg-white"
           }
+          /* 根據欄位不同，加上不同顏色的邊條 */
+          ${isNational ? "border-l-4 border-l-slate-400" : ""}
+          ${isMain ? "border-l-4 border-l-blue-600" : ""}
+          ${!isNational && !isMain ? "border-l-4 border-l-orange-400" : ""}
         `}
       >
         <div className="cursor-pointer" onClick={() => event.description && toggleExpand(uniqueId)}>
-          <h3 className={`text-sm font-bold mb-1 leading-snug line-clamp-2 ${isOpen ? "text-blue-700 line-clamp-none" : "text-slate-800"}`}>
-            {event.title}
-          </h3>
-          <div className="flex flex-wrap gap-1 mb-1">
-            {isNational ? (
-              <span className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded">全國</span>
-            ) : (
-              <span className="bg-blue-50 text-blue-600 text-[10px] px-1.5 py-0.5 rounded">在地</span>
-            )}
-            {event.category && (
-              <span className="bg-green-50 text-green-600 text-[10px] px-1.5 py-0.5 rounded truncate max-w-[100px]">#{event.category}</span>
-            )}
+          <div className="flex justify-between items-start gap-2 mb-1">
+             <h3 className={`text-sm font-bold leading-snug ${isOpen ? "text-blue-700" : (isMain || isNational ? "text-slate-800" : "text-slate-600")}`}>
+               {event.title}
+             </h3>
+             {/* 只有比較城市顯示標籤，主城市和全國不顯示以保持乾淨 */}
+             {!isMain && !isNational && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${cityStyle} font-bold opacity-80 whitespace-nowrap`}>
+                   {event.cityName}
+                </span>
+             )}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-1">
+             {event.category && (
+                <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded">#{event.category}</span>
+             )}
           </div>
         </div>
 
         {event.description && isOpen && (
-          <div className="mt-2 pt-2 border-t border-slate-200 animate-in fade-in zoom-in-95 duration-200">
-             <div 
-               className="prose prose-xs text-slate-600 max-w-none leading-relaxed max-h-[200px] overflow-y-auto custom-scrollbar"
-               dangerouslySetInnerHTML={{ __html: event.description }} 
-             />
-             <button onClick={(e) => { e.stopPropagation(); toggleExpand(uniqueId); }} className="w-full text-center text-[10px] text-slate-400 hover:text-blue-600 mt-2">收合內容</button>
+          <div className="mt-2 pt-2 border-t border-slate-200 animate-in slide-in-from-top-2 fade-in duration-200">
+            <div className="prose prose-sm text-slate-600 max-w-none leading-relaxed text-xs" dangerouslySetInnerHTML={{ __html: event.description }} />
+            <button onClick={(e) => { e.stopPropagation(); toggleExpand(uniqueId); }} className="text-[10px] font-medium flex items-center gap-1 transition-colors mt-2 text-slate-400 hover:text-blue-600">收合</button>
           </div>
-        )}
-        
-        {/* 展開提示按鈕 */}
-        {event.description && !isOpen && (
-           <button onClick={(e) => { e.stopPropagation(); toggleExpand(uniqueId); }} className="text-[10px] text-slate-300 hover:text-blue-600 flex items-center gap-1 mt-1">
-             <span>詳情</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-           </button>
         )}
       </div>
     );
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col">
+    <div className="relative pb-10 w-full max-w-7xl mx-auto px-2">
       
-      {/* 頂部標示列 */}
-      <div className="absolute top-4 left-6 z-20 flex gap-4 text-xs font-bold text-slate-400 bg-white/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-slate-600"></span>
-          <span>全國/歷史 (上)</span>
+      {/* 頂部標題列 (對應三欄) */}
+      <div className="hidden md:grid grid-cols-[1fr_60px_1fr_1fr] gap-6 mb-6 text-sm font-bold text-slate-500 border-b border-slate-200 pb-2 sticky top-0 bg-gray-50/95 backdrop-blur z-30 pt-4">
+        <div className="text-center bg-slate-200/50 py-1 rounded">全國事件</div>
+        <div className="text-center text-xs text-slate-300 flex items-center justify-center">時間</div>
+        <div className="text-center bg-blue-100/50 text-blue-700 py-1 rounded">
+          {mainCityName || "主要城市"}
         </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-          <span>在地建設 (下)</span>
-        </div>
+        <div className="text-center bg-orange-100/50 text-orange-700 py-1 rounded">比較城市</div>
       </div>
 
-      {/* 橫向捲動容器 */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar relative px-10">
-        
-        {/* 中央軸線 (水平) */}
-        <div className="absolute top-1/2 left-0 w-[max-content] min-w-full h-0.5 bg-slate-200 z-0 mt-[-1px]"></div>
+      <div className="relative">
+        {/* 時間軸線 (穿過第二欄中心) */}
+        {/* 計算方式：第一欄(1fr) + 一半的第二欄(30px) + gap */}
+        {/* 這裡用絕對定位比較難抓，我們直接畫在每個 row 的 grid 裡 */}
 
-        <div className="flex items-center h-full gap-8 min-w-max pt-10 pb-4">
+        <div className="space-y-4 relative z-10">
           {groupedData.map((group) => (
-            <div key={`${group.year}_${group.quarter}`} className="flex flex-col items-center h-full min-w-[280px] relative group">
+            <div key={`${group.year}_${group.quarter}`} className="relative md:grid md:grid-cols-[1fr_60px_1fr_1fr] md:gap-6 w-full group min-h-[80px]">
               
-              {/* === 上半部：全國事件 (National) === */}
-              {/* 使用 justify-end 讓卡片貼近中線 */}
-              <div className="flex-1 flex flex-col justify-end w-full items-center pb-6 space-y-2">
+              {/* === 第一欄：全國事件 === */}
+              <div className="flex flex-col gap-2">
                 {group.nationalEvents.map((event, idx) => renderEventCard(event, idx, 'nat'))}
               </div>
 
-              {/* === 中間：時間點 === */}
-              <div className="shrink-0 z-20 relative">
+              {/* === 第二欄：時間軸點 === */}
+              <div className="relative flex justify-center h-full">
+                 {/* 垂直連線 (背景) */}
+                 <div className="absolute top-0 bottom-0 w-0.5 bg-slate-200 -z-10 group-last:bottom-auto group-last:h-1/2"></div>
+                 
+                 {/* 圓點 */}
                  <div className={`
-                    w-10 h-10 rounded-full flex flex-col items-center justify-center text-[10px] font-bold shadow-md border-2 bg-white transition-transform hover:scale-110
-                    ${(group.nationalEvents.length > 0 && group.localEvents.length > 0)
-                      ? "text-slate-800 border-purple-500" 
-                      : (group.nationalEvents.length > 0)
-                        ? "text-slate-600 border-slate-400"
-                        : "text-blue-600 border-blue-400"
+                    sticky top-20 w-10 h-10 rounded-full flex flex-col items-center justify-center text-[9px] font-bold shadow-sm border-2 bg-white z-10 shrink-0
+                    ${(group.nationalEvents.length || group.mainCityEvents.length || group.compareEvents.length) 
+                        ? "border-slate-400 text-slate-700" 
+                        : "border-slate-200 text-slate-300 scale-90 opacity-60"
                     }
                  `}>
                    <span className="leading-none">{group.year}</span>
                    <span className="leading-none opacity-80">{group.quarter}</span>
                  </div>
-                 {/* 垂直輔助線 */}
-                 <div className="absolute top-[-100vh] bottom-[-100vh] left-1/2 w-[1px] border-l border-dashed border-slate-200 -z-10 group-hover:border-slate-400 transition-colors"></div>
               </div>
 
-              {/* === 下半部：地方事件 (Local) === */}
-              {/* 使用 justify-start 讓卡片貼近中線 */}
-              <div className="flex-1 flex flex-col justify-start w-full items-center pt-6 space-y-2">
-                {group.localEvents.map((event, idx) => renderEventCard(event, idx, 'loc'))}
+              {/* === 第三欄：主城市事件 === */}
+              <div className="flex flex-col gap-2">
+                {group.mainCityEvents.map((event, idx) => renderEventCard(event, idx, 'main'))}
+              </div>
+
+              {/* === 第四欄：比較城市事件 === */}
+              {/* 加上左邊框線區隔 */}
+              <div className="flex flex-col gap-2 md:border-l md:border-dashed md:border-slate-200 md:pl-6">
+                {group.compareEvents.map((event, idx) => renderEventCard(event, idx, 'comp'))}
               </div>
 
             </div>
           ))}
-          
-          {/* 結尾空白，方便閱讀最後一筆 */}
-          <div className="w-10"></div>
         </div>
       </div>
+      <div className="h-40"></div>
     </div>
   );
 }
