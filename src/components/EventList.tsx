@@ -16,8 +16,20 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // ✨ 判斷是否有比較城市 (主要城市是第0個，如果有第1個代表有比較)
+  // 判斷邏輯
   const hasCompare = citiesOrder.length > 1;
+  // ✨ 新增：判斷是否為「僅選全國」模式 (主城市是 nation 且沒有比較城市)
+  const isNationOnly = citiesOrder[0] === 'nation' && !hasCompare;
+
+  // ✨ 動態決定 Grid 的欄位設定
+  // 1. 有比較城市 -> 4欄 (全國 | 時間 | 主城市 | 比較城市)
+  // 2. 僅全國模式 -> 2欄 (全國 | 時間) -> 這裡我們讓時間軸靠右，事件靠左
+  // 3. 一般模式   -> 3欄 (全國 | 時間 | 主城市)
+  const gridClass = hasCompare 
+    ? "grid-cols-[1fr_80px_1fr_1fr]" 
+    : isNationOnly 
+      ? "grid-cols-[1fr_80px]" // 全國模式：只剩兩欄
+      : "grid-cols-[1fr_80px_1fr]";
 
   // ... useMemo 資料處理邏輯保持不變 ...
   const groupedData = useMemo(() => {
@@ -114,25 +126,26 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
       
       {/* 1. 表頭 */}
       <div className="sticky top-0 z-40 pt-4 pb-2 -mx-4 px-4 backdrop-blur-md bg-gray-50/80 border-b border-slate-200/50">
-        {/* ✨ 動態 Grid 設定：如果有比較城市，顯示4欄；如果沒有，顯示3欄 */}
         <div className={`
           hidden md:grid gap-6 text-xs font-bold uppercase tracking-wider text-slate-400
-          ${hasCompare ? "grid-cols-[1fr_80px_1fr_1fr]" : "grid-cols-[1fr_80px_1fr]"}
+          ${gridClass} {/* ✨ 使用動態 Grid */}
         `}>
           <div className="flex items-center justify-center bg-slate-200/50 py-1.5 rounded text-slate-500">
             全國/宏觀
           </div>
           <div className="flex items-center justify-center">時間軸</div>
           
-          <div 
-            className="flex items-center justify-center py-1.5 rounded text-white shadow-sm"
-            // 如果是全國模式，citiesOrder[0] 是 "nation"，這裡給個深灰
-            style={{ backgroundColor: citiesOrder[0] === 'nation' ? '#333333' : getCityColor(citiesOrder[0]) }}
-          >
-            {mainCityName} (主)
-          </div>
+          {/* ✨ 如果不是「僅全國模式」，才顯示主城市標題 */}
+          {!isNationOnly && (
+            <div 
+              className="flex items-center justify-center py-1.5 rounded text-white shadow-sm"
+              style={{ backgroundColor: citiesOrder[0] === 'nation' ? '#333333' : getCityColor(citiesOrder[0]) }}
+            >
+              {mainCityName} (主)
+            </div>
+          )}
 
-          {/* ✨ 只有在有比較城市時，才顯示這個標題 */}
+          {/* 比較城市標題 (有比較時才顯示) */}
           {hasCompare && (
             <div className="flex items-center justify-center bg-white border border-slate-200 border-dashed text-slate-500 py-1.5 rounded">
               比較城市
@@ -149,10 +162,9 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
           {groupedData.map((group) => (
             <div 
               key={`${group.year}_${group.quarter}`} 
-              // ✨ 動態 Grid 設定：內容區也同步調整
               className={`
                 relative md:grid gap-6 group/row
-                ${hasCompare ? "grid-cols-[1fr_80px_1fr_1fr]" : "grid-cols-[1fr_80px_1fr]"}
+                ${gridClass} {/* ✨ 使用動態 Grid */}
               `}
             >
               
@@ -169,12 +181,14 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
                 </div>
               </div>
 
-              {/* 右：主城市 */}
-              <div className="flex flex-col gap-3">
-                {group.mainCityEvents.map((event, idx) => renderEventCard(event, idx, 'main'))}
-              </div>
+              {/* 右：主城市 (✨ 僅在非全國模式下顯示) */}
+              {!isNationOnly && (
+                <div className="flex flex-col gap-3">
+                  {group.mainCityEvents.map((event, idx) => renderEventCard(event, idx, 'main'))}
+                </div>
+              )}
 
-              {/* ✨ 最右：比較城市 (只有 hasCompare 時才渲染) */}
+              {/* 最右：比較城市 (僅在有比較時顯示) */}
               {hasCompare && (
                 <div className="flex flex-col gap-3 relative">
                   <div className="absolute inset-y-0 -left-3 w-px border-l border-dashed border-slate-200 hidden md:block"></div>
