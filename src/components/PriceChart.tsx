@@ -6,21 +6,13 @@ import {
 } from "recharts";
 import { rawPriceData } from "@/data/priceData";
 import { getQuarterValue } from "@/utils/eventHelper";
+// ✨ 匯入統一設定
+import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 
-const cityConfig = {
-  taipei: { name: "台北市", color: "#247533" },
-  newTaipei: { name: "新北市", color: "#297270" },
-  hsinchu: { name: "新竹縣市", color: "#2998d8" },
-  taoyuan: { name: "桃園市", color: "#8ab07c" },
-  taichung: { name: "台中市", color: "#e7c66b" },
-  tainan: { name: "台南市", color: "#f3a361" },
-  kaohsiung: { name: "高雄市", color: "#e66d50" },
-};
-
-// 資料預處理：轉成 LineChart 易讀的格式
+// 資料預處理 (保持不變)
 const baseChartData = rawPriceData.map(item => ({
   rawQuarter: item.Quarter,
-  quarter: item.Quarter.replace("_", " "), // X軸顯示文字
+  quarter: item.Quarter.replace("_", " "),
   nation: item.Nation.all / 10000,
   taipei: item.Taipei.all / 10000,
   newTaipei: item.NewTaipei.all / 10000,
@@ -35,14 +27,10 @@ interface PriceChartProps {
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
-  // 為了相容性保留這兩個 props，但在 RWD 模式下我們不會用到它們
-  width?: number;
-  height?: number;
 }
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod }: PriceChartProps) {
   
-  // 根據使用者選的時間區間過濾資料
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
@@ -53,43 +41,21 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
   }, [startPeriod, endPeriod]);
 
   return (
-    // 使用 w-full h-full 讓它自動填滿父層容器 (也就是底部的 25vh)
     <div className="w-full h-full select-none">
-      {/* ✨ 關鍵修正：加回 ResponsiveContainer，讓圖表自動適應寬高 */}
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart 
-          data={filteredData} 
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
+        <LineChart data={filteredData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-          
-          <XAxis 
-            dataKey="quarter" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }} 
-            tickLine={false}
-            axisLine={{ stroke: '#e2e8f0' }}
-            minTickGap={30}
-          />
-          
-          <YAxis 
-            unit="萬" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }} 
-            axisLine={false}
-            tickLine={false}
-            domain={['auto', 'auto']} 
-          />
-          
-          <Tooltip 
-            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-          />
+          <XAxis dataKey="quarter" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} minTickGap={30} />
+          <YAxis unit="萬" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+          <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
           <Legend wrapperStyle={{ paddingTop: '5px' }}/>
 
-          {/* 全國基準線 (虛線) */}
+          {/* 全國基準線 */}
           <Line 
             type="monotone" 
             dataKey="nation" 
             name="全國均價" 
-            stroke="#cbd5e1" 
+            stroke={NATIONAL_CONFIG.color} // ✨ 使用統一顏色
             strokeWidth={2} 
             dot={false} 
             strokeDasharray="4 4" 
@@ -97,24 +63,23 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
           />
 
           {/* 繪製各城市線條 */}
-          {Object.entries(cityConfig).map(([key, config]) => {
-            if (selectedCities.includes("all") || selectedCities.includes(key)) {
+          {CITIES_CONFIG.map((city) => {
+            if (selectedCities.includes("all") || selectedCities.includes(city.id)) {
               return (
                 <Line
-                  key={key}
+                  key={city.id}
                   type="monotone"
-                  dataKey={key}
-                  name={config.name}
-                  stroke={config.color}
+                  dataKey={city.id}
+                  name={city.label}
+                  stroke={city.color} // ✨ 使用統一顏色
                   strokeWidth={2}
-                  dot={{ r: 2 }} // 小圓點
-                  activeDot={{ r: 6 }} // 滑鼠移上去變大
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 6 }}
                 />
               );
             }
             return null;
           })}
-          
         </LineChart>
       </ResponsiveContainer>
     </div>
