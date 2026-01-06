@@ -87,7 +87,7 @@ export default function Home() {
         <div className="p-6 bg-slate-900 text-white flex justify-between items-center shrink-0">
           <div>
             <h1 className="font-bold text-lg tracking-wide">不動產大事紀</h1>
-            <p className="text-xs text-slate-400 mt-1">Market Intelligence</p>
+            <p className="text-xs text-slate-400 mt-1">Real Estate Chronicle</p>
           </div>
           <button onClick={() => setIsSettingsOpen(false)} className="md:hidden text-white">✕</button>
         </div>
@@ -216,8 +216,9 @@ export default function Home() {
                       {getDisplayName(mainCity)}
                    </span>
                    {compareCities.map(id => (
-                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-1">
-                         <span className="text-[10px] text-slate-300 mr-1">VS</span>
+                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2">
+                         <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
+                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></span>
                          {getCityName(id)}
                       </span>
                    ))}
@@ -242,7 +243,7 @@ export default function Home() {
 
         <div className="absolute bottom-0 left-0 right-0 h-70 bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40">
            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-full px-4 py-1.5 shadow-sm text-[10px] font-bold text-slate-500 uppercase tracking-widest cursor-default flex items-center gap-2">
-              <span>房價走勢圖</span>
+              <span>房價中位數走勢圖</span>
            </div>
            <div className="h-full w-full p-4 pb-6">
               <PriceChart 
