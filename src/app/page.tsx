@@ -6,7 +6,6 @@ import EventList from "@/components/EventList";
 import PriceChart from "@/components/PriceChart";
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue, generateQuarterOptions } from "@/utils/eventHelper";
-// ✨ 匯入統一設定
 import { CITIES_CONFIG, getCityName } from "@/config/cityColors";
 
 const QUARTER_OPTIONS = generateQuarterOptions();
@@ -30,6 +29,10 @@ export default function Home() {
       if (prev.length >= 3) return prev;
       return [...prev, cityId];
     });
+  };
+
+  const handleCancelCompare = () => {
+    setCompareCities([]);
   };
 
   // --- 資料處理 ---
@@ -57,12 +60,12 @@ export default function Home() {
         {/* === 側邊欄 (設定區) === */}
         {isSettingsOpen && <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setIsSettingsOpen(false)}/>}
         <div className={`fixed top-0 left-0 h-full w-80 bg-white z-[60] shadow-2xl transition-transform duration-300 ${isSettingsOpen ? "translate-x-0" : "-translate-x-full"}`}>
-           <div className="p-6 h-full flex flex-col overflow-y-auto">
-              {/* ... (標題與時間選擇區保持不變) ... */}
+           <div className="p-6 h-full flex flex-col overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-center mb-6">
                  <h2 className="text-xl font-bold">顯示設定</h2>
                  <button onClick={() => setIsSettingsOpen(false)} className="p-2 hover:bg-slate-100 rounded-full">✕</button>
               </div>
+              
               <div className="mb-6">
                  <label className="block text-xs font-bold text-slate-400 mb-3 uppercase">時間區間</label>
                  <div className="space-y-2">
@@ -81,16 +84,13 @@ export default function Home() {
                  </div>
               </div>
 
-              {/* 主要城市選單 */}
               <div className="mb-6">
                  <label className="block text-xs font-bold text-slate-400 mb-3 uppercase">主要城市</label>
                  <div className="grid grid-cols-2 gap-2">
-                    {/* ✨ 改用 CITIES_CONFIG */}
                     {CITIES_CONFIG.map(c => (
                        <button 
                          key={c.id} 
                          onClick={() => handleMainCityChange(c.id)} 
-                         // ✨ 動態設定按鈕顏色
                          style={{ 
                            backgroundColor: mainCity === c.id ? c.color : '#f8fafc',
                            color: mainCity === c.id ? '#ffffff' : '#475569',
@@ -104,9 +104,19 @@ export default function Home() {
                  </div>
               </div>
 
-              {/* 比對城市選單 */}
               <div className="mb-6">
-                 <label className="block text-xs font-bold text-slate-400 mb-3 uppercase">加入比對</label>
+                 <div className="flex justify-between items-center mb-3">
+                    <label className="text-xs font-bold text-slate-400 uppercase">加入比對</label>
+                    {compareCities.length > 0 && (
+                      <button 
+                        onClick={handleCancelCompare}
+                        className="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded hover:bg-red-100 transition-colors font-bold"
+                      >
+                        清除所有
+                      </button>
+                    )}
+                 </div>
+                 
                  <div className="space-y-2">
                     {CITIES_CONFIG.filter(c => c.id !== mainCity).map(c => (
                        <label key={c.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer border border-transparent hover:border-slate-100 transition-colors">
@@ -115,9 +125,7 @@ export default function Home() {
                             checked={compareCities.includes(c.id)} 
                             onChange={() => toggleCompare(c.id)} 
                             className="rounded focus:ring-0"
-                            // 注意：checkbox 顏色比較難改，這裡可以先用預設的
                           />
-                          {/* 顯示顏色小圓點 */}
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }}></div>
                           <span className="text-slate-700 font-medium">{c.label}</span>
                        </label>
@@ -132,37 +140,53 @@ export default function Home() {
           
           {/* 頂部導覽列 */}
           <div className="bg-white border-b border-slate-200 shadow-sm z-30 shrink-0 px-4 py-3 flex items-center justify-between sticky top-0">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 font-bold transition-colors shadow-sm">
+            <div className="flex items-center gap-4 overflow-x-auto">
+              <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 font-bold transition-colors shadow-sm shrink-0">
                 設定與篩選
               </button>
               
               <div className="flex gap-2 text-sm items-center">
-                {/* ✨ 主城市標籤：顏色跟著設定走 */}
+                
+                {/* 1. 主城市 (移除 "(主)" 文字) */}
                 {(() => {
                   const city = CITIES_CONFIG.find(c => c.id === mainCity);
                   return city ? (
                     <span 
-                      className="font-bold px-2 py-1 rounded border"
-                      style={{ backgroundColor: `${city.color}15`, color: city.color, borderColor: `${city.color}40` }}
+                      className="font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap shadow-sm bg-white"
+                      style={{ color: city.color, borderColor: `${city.color}40` }}
                     >
-                      {city.label} (主)
+                      {city.label}
                     </span>
                   ) : null;
                 })()}
 
+                {/* 2. 比對城市 (前方加入 VS.) */}
                 {compareCities.map(id => {
                   const city = CITIES_CONFIG.find(c => c.id === id);
                   return city ? (
-                    <span 
-                      key={id} 
-                      className="font-bold px-2 py-1 rounded border"
-                      style={{ backgroundColor: `${city.color}15`, color: city.color, borderColor: `${city.color}40` }}
-                    >
-                       {city.label}
-                    </span>
+                    <div key={id} className="flex items-center gap-2">
+                        {/* ✨ 帥氣的 VS. 字樣 */}
+                        <span className="text-slate-300 font-extrabold italic text-xs">VS.</span>
+                        
+                        <span 
+                          className="font-bold px-3 py-1.5 rounded-lg border whitespace-nowrap shadow-sm bg-white"
+                          style={{ color: city.color, borderColor: `${city.color}40` }}
+                        >
+                           {city.label}
+                        </span>
+                    </div>
                   ) : null;
                 })}
+
+                {/* 取消比對按鈕 */}
+                {compareCities.length > 0 && (
+                   <button 
+                     onClick={handleCancelCompare}
+                     className="ml-2 text-xs text-slate-400 hover:text-red-500 font-bold underline decoration-dotted whitespace-nowrap"
+                   >
+                     取消比對
+                   </button>
+                )}
               </div>
             </div>
           </div>
