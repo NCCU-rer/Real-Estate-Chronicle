@@ -104,9 +104,10 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
           {/* 展開後的內容 */}
           <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-3 pt-3 border-t border-slate-100' : 'grid-rows-[0fr] opacity-0'}`}>
              <div className="overflow-hidden">
-                <div className="text-xs text-slate-600 leading-relaxed font-medium">
-                  {event.description}
-                </div>
+                <div 
+  className="text-xs text-slate-600 leading-relaxed font-medium"
+  dangerouslySetInnerHTML={{ __html: event.description || "" }}
+/>
              </div>
           </div>
         </div>
