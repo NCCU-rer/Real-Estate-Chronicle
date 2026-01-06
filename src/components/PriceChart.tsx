@@ -8,14 +8,11 @@ import { rawPriceData } from "@/data/priceData";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 
-// 確保有資料，否則圖表會掛掉
 const safePriceData = rawPriceData || [];
 
-// 預先處理資料格式
 const baseChartData = safePriceData.map(item => ({
   rawQuarter: item.Quarter,
   quarter: item.Quarter.replace("_", " "),
-  // 為了安全，加上 ?. 檢查
   nation: item.Nation?.all ? item.Nation.all / 10000 : 0,
   taipei: item.Taipei?.all ? item.Taipei.all / 10000 : 0,
   newTaipei: item.NewTaipei?.all ? item.NewTaipei.all / 10000 : 0,
@@ -27,14 +24,40 @@ const baseChartData = safePriceData.map(item => ({
 }));
 
 interface PriceChartProps {
-  selectedCities: string[]; // 接收選中的城市 ID 陣列
-  startPeriod: string;      // 開始時間
-  endPeriod: string;        // 結束時間
+  selectedCities: string[];
+  startPeriod: string;
+  endPeriod: string;
 }
+
+// ✨ 修正：使用 any 繞過 TypeScript 對 Recharts Tooltip 的嚴格檢查
+// 這樣可以確保 active, payload, label 都能正常讀取而不報錯
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 p-3 rounded-lg shadow-xl text-xs text-white">
+        <p className="font-bold mb-2 text-slate-300 border-b border-slate-700 pb-1">{label}</p>
+        <div className="space-y-1">
+          {payload.map((entry: any) => (
+            <div key={entry.name} className="flex items-center gap-2 min-w-120px">
+              <div 
+                className="w-2 h-2 rounded-full shadow-sm" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-slate-200 flex-1">{entry.name}</span>
+              <span className="font-mono font-bold text-white">
+                {Number(entry.value).toFixed(1)} <span className="text-[10px] text-slate-400 font-normal">萬</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod }: PriceChartProps) {
   
-  // 根據時間篩選資料
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
@@ -44,9 +67,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
     });
   }, [startPeriod, endPeriod]);
 
-  // 如果沒有資料，顯示提示
   if (filteredData.length === 0) {
-    return <div className="flex items-center justify-center h-full text-slate-400">尚無此區間數據</div>;
+    return <div className="flex items-center justify-center h-full text-slate-400 text-sm">此區間尚無數據</div>;
   }
 
   return (
@@ -56,24 +78,23 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
           <XAxis 
             dataKey="quarter" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }} 
+            tick={{ fill: '#94a3b8', fontSize: 10 }} 
             tickLine={false} 
             axisLine={{ stroke: '#e2e8f0' }} 
             minTickGap={30} 
           />
           <YAxis 
             unit="萬" 
-            tick={{ fill: '#94a3b8', fontSize: 11 }} 
+            tick={{ fill: '#94a3b8', fontSize: 10 }} 
             axisLine={false} 
             tickLine={false} 
             domain={['auto', 'auto']} 
+            width={35}
           />
-          <Tooltip 
-            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-          />
-          <Legend wrapperStyle={{ paddingTop: '10px' }}/>
+          {/* ✨ 使用修正後的 CustomTooltip */}
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
+          <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}/>
 
-          {/* 全國基準線 (永遠顯示) */}
           <Line 
             type="monotone" 
             dataKey="nation" 
@@ -82,12 +103,10 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
             strokeWidth={2} 
             dot={false} 
             strokeDasharray="4 4" 
-            activeDot={{ r: 4 }}
+            activeDot={{ r: 4, strokeWidth: 0 }}
           />
 
-          {/* 根據勾選的城市動態繪製線條 */}
           {CITIES_CONFIG.map((city) => {
-            // 只有當這個城市在 selectedCities 裡面時才畫出來
             if (selectedCities.includes(city.id)) {
               return (
                 <Line
@@ -97,8 +116,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
                   name={city.label}
                   stroke={city.color}
                   strokeWidth={2}
-                  dot={{ r: 2 }}
-                  activeDot={{ r: 6 }}
+                  dot={{ r: 0 }} 
+                  activeDot={{ r: 5, strokeWidth: 0 }}
                   animationDuration={1000}
                 />
               );
