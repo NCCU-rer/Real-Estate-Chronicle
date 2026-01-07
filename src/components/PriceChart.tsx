@@ -29,7 +29,6 @@ const CustomTooltip = ({ active, payload, label, unit }: any) => {
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">{label}</p>
         <div className="space-y-1">
           {payload.map((entry: any) => (
-            // ✨ 修正 Tailwind 警告：min-w-[120px] -> min-w-30
             <div key={entry.name} className="flex items-center gap-2 min-w-30">
               <div 
                 className="w-2 h-2 rounded-full" 
@@ -82,19 +81,20 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={filteredData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+          margin={{ top: 10, right: 10, left: 10, bottom: 5 }} // left 稍微加一點以免字切到
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
           
           <XAxis 
             dataKey="quarter" 
-            // ✨ 修正 TypeScript 錯誤：加上 "as any" 讓 TS 忽略 angle 屬性的檢查
             tick={{ 
               fontSize: 10, 
               fill: '#94a3b8',
-              angle: -90,      
+              // ✨ 修正：改為 -45 度，閱讀起來更順眼
+              angle: -45,      
               textAnchor: 'end', 
-              dy: 5 
+              dy: 10, // 往下推一點
+              dx: -5  // 往左一點，對齊刻度
             } as any} 
             tickLine={false}
             axisLine={{ stroke: '#cbd5e1' }}
