@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import DashboardSidebar from "@/components/DashboardSidebar"; // 剛建立的側邊欄組件
-import DashboardChart from "@/components/DashboardChart";     // ✨ 剛建立的圖表容器組件
+import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
@@ -16,6 +16,9 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChartOpen, setIsChartOpen] = useState(true);
+  
+  // ✨ 新增：側邊欄收合狀態 (預設 false = 展開)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -66,10 +69,12 @@ export default function Home() {
   return (
     <main className="h-screen w-full flex bg-slate-50 font-sans overflow-hidden">
       
-      {/* 1. 側邊欄組件 */}
+      {/* 1. 側邊欄組件 (傳入新的收合狀態) */}
       <DashboardSidebar 
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
+        isSidebarCollapsed={isSidebarCollapsed}     // ✨ 傳入狀態
+        setIsSidebarCollapsed={setIsSidebarCollapsed} // ✨ 傳入控制函式
         startPeriod={startPeriod}
         setStartPeriod={setStartPeriod}
         endPeriod={endPeriod}
@@ -107,8 +112,7 @@ export default function Home() {
            </div>
         </header>
 
-        {/* List Content (Middle) */}
-        {/* 注意：這裡的 padding-bottom 依然依賴 isChartOpen 來動態調整 */}
+        {/* List Content */}
         <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${isChartOpen ? 'pb-75' : 'pb-20'}`}>
            <div className="pt-8">
               <EventList 
@@ -122,7 +126,7 @@ export default function Home() {
            </div>
         </div>
 
-        {/* 3. 底部圖表組件 */}
+        {/* Bottom Chart */}
         <DashboardChart 
           isChartOpen={isChartOpen}
           setIsChartOpen={setIsChartOpen}
