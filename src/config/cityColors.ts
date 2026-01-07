@@ -18,8 +18,8 @@ export const CITIES_CONFIG: CityConfig[] = [
   // 3. 桃園市：強烈藍 (空港、交通) -> 取自色票 #0068ad
   { id: "taoyuan", label: "桃園市", color: "#0068ad" },
 
-  // 4. 新竹縣市：湖水綠/青色 (科技、永續) -> 取自色票 #0fa179
-  { id: "hsinchu", label: "新竹縣市", color: "#0fa179" },
+  // 4. 新竹縣/市：湖水綠/青色 (科技、永續) -> 取自色票 #0fa179
+  { id: "hsinchu", label: "新竹縣/市", color: "#0fa179" },
 
   // 5. 台中市：金黃/琥珀色 (核心、陽光) -> 取自色票 #e59c00
   { id: "taichung", label: "台中市", color: "#e59c00" },

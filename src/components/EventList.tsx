@@ -131,7 +131,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
           ${gridClass} {/* ✨ 使用動態 Grid */}
         `}>
           <div className="flex items-center justify-center bg-slate-200/50 py-1.5 rounded text-slate-500">
-            全國/宏觀
+            全國
           </div>
           <div className="flex items-center justify-center">時間軸</div>
           

@@ -14,8 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  DollarSign,
-  TrendingUp,
+  DollarSign, // ✨ 新增
+  TrendingUp, // ✨ 新增
 } from "lucide-react";
 
 const QUARTER_OPTIONS = generateQuarterOptions();
@@ -34,6 +34,7 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
+  // ✨ 新增 props
   dataType: 'price' | 'index';
   setDataType: (v: 'price' | 'index') => void;
 }
@@ -128,23 +129,25 @@ export default function DashboardSidebar({
           ${isSidebarCollapsed ? "px-2 py-6 flex flex-col items-center" : "p-6"}
         `}>
           
-          {/* 資料模式切換 */}
+          {/* ✨ 0. 資料模式切換 */}
           <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
               <div 
                 onClick={() => setDataType(dataType === 'price' ? 'index' : 'price')}
                 className={`
                   flex justify-center items-center w-12 h-12 mx-auto rounded-xl cursor-pointer transition-all shadow-sm mb-2
-                  ${dataType === 'price' ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-violet-600'}
+                  ${/* ✨ 修改：將 violet 改為 amber */ ''}
+                  ${dataType === 'price' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}
                 `}
-                title={dataType === 'price' ? "目前：房價中位數" : "目前：房價指數"}
+                title={dataType === 'price' ? "目前：房價中位數" : "目前：永慶房價指數"}
               >
                 {dataType === 'price' ? <DollarSign className="w-6 h-6" /> : <TrendingUp className="w-6 h-6" />}
               </div>
             ) : (
               <>
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 whitespace-nowrap">
-                   {dataType === 'price' ? <DollarSign className="w-4 h-4 text-emerald-600" /> : <TrendingUp className="w-4 h-4 text-violet-600" />}
+                   {/* ✨ 修改：Icon 顏色改為 amber */}
+                   {dataType === 'price' ? <DollarSign className="w-4 h-4 text-emerald-600" /> : <TrendingUp className="w-4 h-4 text-amber-600" />}
                    資料模式
                 </label>
                 <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200">
@@ -163,12 +166,13 @@ export default function DashboardSidebar({
                     onClick={() => setDataType('index')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${
                       dataType === 'index' 
-                        ? 'bg-white text-violet-600 shadow-sm ring-1 ring-black/5' 
+                        /* ✨ 修改：按鈕激活樣式改為 amber */
+                        ? 'bg-white text-amber-600 shadow-sm ring-1 ring-black/5' 
                         : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
                     <TrendingUp className="w-3.5 h-3.5" />
-                    房價指數
+                    永慶房價指數
                   </button>
                 </div>
               </>
