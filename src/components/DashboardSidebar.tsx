@@ -14,8 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  DollarSign, // ✨ 新增
-  TrendingUp, // ✨ 新增
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
 
 const QUARTER_OPTIONS = generateQuarterOptions();
@@ -34,7 +34,6 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
-  // ✨ 新增 props
   dataType: 'price' | 'index';
   setDataType: (v: 'price' | 'index') => void;
 }
@@ -79,12 +78,13 @@ export default function DashboardSidebar({
       )}
 
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-[60]
+        fixed md:static inset-y-0 left-0 z-60
         bg-white border-r border-slate-200 
         flex flex-col shadow-2xl transition-all duration-300 ease-in-out
         ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         ${isSidebarCollapsed ? "w-20" : "w-72"} 
       `}>
+        {/* 👆 上面 z-[60] 已改為 z-60 */}
         
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -128,7 +128,7 @@ export default function DashboardSidebar({
           ${isSidebarCollapsed ? "px-2 py-6 flex flex-col items-center" : "p-6"}
         `}>
           
-          {/* ✨ 0. 資料模式切換 */}
+          {/* 資料模式切換 */}
           <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
               <div 
@@ -320,7 +320,8 @@ export default function DashboardSidebar({
                   </select>
                 </div>
 
-                <div className="flex flex-wrap gap-2 min-h-[30px]">
+                <div className="flex flex-wrap gap-2 min-h-7.5">
+                {/* 👆 上面 min-h-[30px] 已改為 min-h-7.5 */}
                    {compareCities.length === 0 && (
                      <span className="text-[10px] text-slate-400 italic pl-1">尚無比對項目</span>
                    )}
@@ -353,7 +354,7 @@ export default function DashboardSidebar({
           bg-slate-50 text-[10px] text-slate-400 border-t border-slate-200 text-center transition-all duration-300
           ${isSidebarCollapsed ? "p-2" : "p-4"}
         `}>
-          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心"}
+          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心、永慶房產集團"}
         </div>
       </aside>
     </>
