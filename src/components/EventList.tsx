@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
-import { CITIES_CONFIG, NATIONAL_CONFIG, getCityColor } from "@/config/cityColors";
+import { CITIES_CONFIG, NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
 
 // ... 介面定義保持不變 ...
 interface EventItem { year: number; quarter: string; title: string; description?: string; city?: string; cityName?: string; category?: string; isNational?: boolean; }
@@ -141,16 +141,15 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
               className="flex items-center justify-center py-1.5 rounded text-white shadow-sm"
               style={{ backgroundColor: citiesOrder[0] === 'nation' ? '#333333' : getCityColor(citiesOrder[0]) }}
             >
-              {mainCityName} (主)
+              {mainCityName} 
             </div>
           )}
 
           {/* 比較城市標題 (有比較時才顯示) */}
-          {hasCompare && (
-            <div className="flex items-center justify-center bg-white border border-slate-200 border-dashed text-slate-500 py-1.5 rounded">
-              比較城市
+          <div className="flex items-center justify-center bg-white border border-slate-200 border-dashed text-slate-500 py-1.5 rounded px-2 text-center overflow-hidden text-ellipsis whitespace-nowrap">
+              {/* 取出 citiesOrder 中第 2 個以後的 ID (就是比較城市)，轉成名稱並用 " / " 連接 */}
+              {citiesOrder.slice(1).map(id => getCityName(id)).join(" / ")}
             </div>
-          )}
         </div>
       </div>
 
