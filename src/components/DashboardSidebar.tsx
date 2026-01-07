@@ -13,7 +13,9 @@ import {
   Circle,
   ChevronLeft,
   ChevronRight,
-  Plus
+  Plus,
+  DollarSign, // ✨ 新增
+  TrendingUp, // ✨ 新增
 } from "lucide-react";
 
 const QUARTER_OPTIONS = generateQuarterOptions();
@@ -32,6 +34,9 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
+  // ✨ 新增 props
+  dataType: 'price' | 'index';
+  setDataType: (v: 'price' | 'index') => void;
 }
 
 export default function DashboardSidebar({
@@ -48,6 +53,8 @@ export default function DashboardSidebar({
   compareCities,
   toggleCompare,
   handleCancelCompare,
+  dataType,
+  setDataType,
 }: SidebarProps) {
 
   const handleCompareSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -58,14 +65,12 @@ export default function DashboardSidebar({
     }
   };
 
-  // ✨ Helper: 處理展開邏輯
   const expandSidebar = () => {
     if (isSidebarCollapsed) setIsSidebarCollapsed(false);
   };
 
   return (
     <>
-       {/* 遮罩層 (Mobile用) */}
       {isSettingsOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm md:hidden" 
@@ -74,14 +79,13 @@ export default function DashboardSidebar({
       )}
 
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-60
+        fixed md:static inset-y-0 left-0 z-[60]
         bg-white border-r border-slate-200 
         flex flex-col shadow-2xl transition-all duration-300 ease-in-out
         ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         ${isSidebarCollapsed ? "w-20" : "w-72"} 
       `}>
         
-        {/* ✨ 修改 1: 收合切換按鈕 - 垂直置中 + 加大 + 往右微調 */}
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all hover:shadow-xl"
@@ -89,7 +93,6 @@ export default function DashboardSidebar({
           {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
 
-        {/* Header - ✨ 讓 Logo 區域也可以點擊展開 */}
         <div 
           onClick={expandSidebar}
           className={`
@@ -111,7 +114,7 @@ export default function DashboardSidebar({
             
             <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
               <h1 className="font-bold text-lg tracking-wide whitespace-nowrap">不動產大事紀</h1>
-              <p className="text-[10px] text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap">Real Estate Chronicle</p>
+              <p className="text-[10px] text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap">Market Intelligence</p>
             </div>
           </div>
           
@@ -120,17 +123,63 @@ export default function DashboardSidebar({
           </button>
         </div>
 
-        {/* 捲動內容區 */}
-        {/* ✨ 修改 2: 動態 Padding - 收合時使用 flex-col + items-center 強制水平置中 */}
         <div className={`
           flex-1 overflow-y-auto custom-scrollbar space-y-8 overflow-x-hidden
           ${isSidebarCollapsed ? "px-2 py-6 flex flex-col items-center" : "p-6"}
         `}>
           
+          {/* ✨ 0. 資料模式切換 */}
+          <div className="relative group/section w-full">
+            {isSidebarCollapsed ? (
+              <div 
+                onClick={() => setDataType(dataType === 'price' ? 'index' : 'price')}
+                className={`
+                  flex justify-center items-center w-12 h-12 mx-auto rounded-xl cursor-pointer transition-all shadow-sm mb-2
+                  ${dataType === 'price' ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-violet-600'}
+                `}
+                title={dataType === 'price' ? "目前：房價中位數" : "目前：房價指數"}
+              >
+                {dataType === 'price' ? <DollarSign className="w-6 h-6" /> : <TrendingUp className="w-6 h-6" />}
+              </div>
+            ) : (
+              <>
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 whitespace-nowrap">
+                   {dataType === 'price' ? <DollarSign className="w-4 h-4 text-emerald-600" /> : <TrendingUp className="w-4 h-4 text-violet-600" />}
+                   資料模式
+                </label>
+                <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200">
+                  <button
+                    onClick={() => setDataType('price')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${
+                      dataType === 'price' 
+                        ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-black/5' 
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    房價中位數
+                  </button>
+                  <button
+                    onClick={() => setDataType('index')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${
+                      dataType === 'index' 
+                        ? 'bg-white text-violet-600 shadow-sm ring-1 ring-black/5' 
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    房價指數
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
+
           {/* 1. 時間區間 */}
           <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
-              // ✨ 收合模式：設定固定寬高 w-12 h-12 並置中
               <div 
                 onClick={expandSidebar}
                 className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
@@ -139,7 +188,6 @@ export default function DashboardSidebar({
                 <Calendar className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
               </div>
             ) : (
-              // 展開模式
               <>
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 whitespace-nowrap">
                   <Calendar className="w-4 h-4 text-blue-600" />
@@ -272,7 +320,7 @@ export default function DashboardSidebar({
                   </select>
                 </div>
 
-                <div className="flex flex-wrap gap-2 min-h-30px">
+                <div className="flex flex-wrap gap-2 min-h-[30px]">
                    {compareCities.length === 0 && (
                      <span className="text-[10px] text-slate-400 italic pl-1">尚無比對項目</span>
                    )}

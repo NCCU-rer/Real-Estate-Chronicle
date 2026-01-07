@@ -1,7 +1,6 @@
 "use client";
 
 import PriceChart from "@/components/PriceChart";
-// ✨ 引入趨勢圖標
 import { TrendingUp, ChevronUp } from "lucide-react";
 
 interface DashboardChartProps {
@@ -10,6 +9,8 @@ interface DashboardChartProps {
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
+  // ✨ 新增
+  dataType?: 'price' | 'index';
 }
 
 export default function DashboardChart({
@@ -18,7 +19,12 @@ export default function DashboardChart({
   selectedCities,
   startPeriod,
   endPeriod,
+  dataType = 'price',
 }: DashboardChartProps) {
+  
+  // ✨ 根據模式決定標題
+  const chartTitle = dataType === 'price' ? '房價中位數走勢圖' : '政大永慶房價指數';
+
   return (
     <div 
       className={`
@@ -27,21 +33,20 @@ export default function DashboardChart({
         ${isChartOpen ? 'h-70' : 'h-12'}
       `}
     >
-      {/* 開關按鈕 (標題列) */}
       <div 
         onClick={() => setIsChartOpen(!isChartOpen)}
         className="absolute -top-5 left-1/2 -translate-x-1/2"
       >
         <div className="bg-white border border-slate-200 rounded-full pl-4 pr-3 py-1.5 shadow-md hover:shadow-lg text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 group transition-all hover:-translate-y-0.5">
           <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-          <span>房價中位數走勢</span>
+          {/* ✨ 使用動態標題 */}
+          <span>{chartTitle}</span>
           <div className={`bg-slate-100 rounded-full p-0.5 transition-transform duration-300 ${isChartOpen ? 'rotate-180' : 'rotate-0'}`}>
             <ChevronUp className="w-3 h-3 text-slate-500" />
           </div>
         </div>
       </div>
 
-      {/* 圖表內容區 */}
       <div className={`
         h-full w-full p-4 pb-6 transition-all duration-300 delay-100
         ${isChartOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
@@ -50,6 +55,8 @@ export default function DashboardChart({
           selectedCities={selectedCities} 
           startPeriod={startPeriod} 
           endPeriod={endPeriod} 
+          // ✨ 傳入模式
+          dataType={dataType}
         />
       </div>
     </div>

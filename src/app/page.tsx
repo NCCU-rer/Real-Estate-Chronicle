@@ -16,9 +16,10 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChartOpen, setIsChartOpen] = useState(true);
-  
-  // ✨ 新增：側邊欄收合狀態 (預設 false = 展開)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
+  const [dataType, setDataType] = useState<'price' | 'index'>('price');
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -69,12 +70,12 @@ export default function Home() {
   return (
     <main className="h-screen w-full flex bg-slate-50 font-sans overflow-hidden">
       
-      {/* 1. 側邊欄組件 (傳入新的收合狀態) */}
+      {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
-        isSidebarCollapsed={isSidebarCollapsed}     // ✨ 傳入狀態
-        setIsSidebarCollapsed={setIsSidebarCollapsed} // ✨ 傳入控制函式
+        isSidebarCollapsed={isSidebarCollapsed}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
         startPeriod={startPeriod}
         setStartPeriod={setStartPeriod}
         endPeriod={endPeriod}
@@ -84,6 +85,9 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
+        // ✨ 傳遞切換功能
+        dataType={dataType}
+        setDataType={setDataType}
       />
 
       {/* 2. 右側主要內容區 */}
@@ -126,13 +130,15 @@ export default function Home() {
            </div>
         </div>
 
-        {/* Bottom Chart */}
+        {/* 3. 底部圖表組件 */}
         <DashboardChart 
           isChartOpen={isChartOpen}
           setIsChartOpen={setIsChartOpen}
           selectedCities={chartCities}
           startPeriod={startPeriod}
           endPeriod={endPeriod}
+          // ✨ 傳遞資料模式
+          dataType={dataType}
         />
         
       </div>

@@ -2,50 +2,43 @@
 
 import { useMemo } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
-import { rawPriceData } from "@/data/priceData";
+import { CITIES_CONFIG } from "@/config/cityColors";
 import { getQuarterValue } from "@/utils/eventHelper";
-import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
-
-const safePriceData = rawPriceData || [];
-
-const baseChartData = safePriceData.map(item => ({
-  rawQuarter: item.Quarter,
-  quarter: item.Quarter.replace("_", " "),
-  nation: item.Nation?.all ? item.Nation.all / 10000 : 0,
-  taipei: item.Taipei?.all ? item.Taipei.all / 10000 : 0,
-  newTaipei: item.NewTaipei?.all ? item.NewTaipei.all / 10000 : 0,
-  taoyuan: item.Taoyuan?.all ? item.Taoyuan.all / 10000 : 0,
-  taichung: item.Taichung?.all ? item.Taichung.all / 10000 : 0,
-  tainan: item.Tainan?.all ? item.Tainan.all / 10000 : 0,
-  kaohsiung: item.Kaohsiung?.all ? item.Kaohsiung.all / 10000 : 0,
-  hsinchu: item.Hsinchu?.all ? item.Hsinchu.all / 10000 : 0,
-}));
+import { rawPriceData } from "@/data/priceData";
+import { rawIndexData } from "@/data/indexData";
 
 interface PriceChartProps {
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
+  dataType?: 'price' | 'index';
 }
 
-// ✨ 修正：使用 any 繞過 TypeScript 對 Recharts Tooltip 的嚴格檢查
-// 這樣可以確保 active, payload, label 都能正常讀取而不報錯
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, unit }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 p-3 rounded-lg shadow-xl text-xs text-white">
-        <p className="font-bold mb-2 text-slate-300 border-b border-slate-700 pb-1">{label}</p>
+      <div className="bg-white/90 backdrop-blur-sm p-3 border border-slate-200 rounded-lg shadow-xl text-xs z-50">
+        <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">{label}</p>
         <div className="space-y-1">
           {payload.map((entry: any) => (
-            <div key={entry.name} className="flex items-center gap-2 min-w-120px">
+            // ✨ 修正 Tailwind 警告：min-w-[120px] -> min-w-30
+            <div key={entry.name} className="flex items-center gap-2 min-w-30">
               <div 
-                className="w-2 h-2 rounded-full shadow-sm" 
-                style={{ backgroundColor: entry.color }}
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: entry.stroke }}
               />
-              <span className="text-slate-200 flex-1">{entry.name}</span>
-              <span className="font-mono font-bold text-white">
-                {Number(entry.value).toFixed(1)} <span className="text-[10px] text-slate-400 font-normal">萬</span>
+              <span className="text-slate-500 flex-1">{entry.name}</span>
+              <span className="font-mono font-bold text-slate-700">
+                {Number(entry.value).toFixed(1)} 
+                <span className="text-[10px] text-slate-400 font-normal ml-1">{unit}</span>
               </span>
             </div>
           ))}
@@ -56,73 +49,100 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function PriceChart({ selectedCities, startPeriod, endPeriod }: PriceChartProps) {
+export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
   
+  const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
+  const unitLabel = dataType === 'price' ? "萬" : ""; 
+
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
-    return baseChartData.filter(item => {
+    
+    const safeData = sourceData || [];
+
+    return safeData.map(item => ({
+      rawQuarter: item.Quarter,
+      quarter: item.Quarter.replace("_", " "),
+      nation: item.Nation?.all ? (dataType === 'price' ? item.Nation.all / 10000 : item.Nation.all) : 0,
+      taipei: item.Taipei?.all ? (dataType === 'price' ? item.Taipei.all / 10000 : item.Taipei.all) : 0,
+      newTaipei: item.NewTaipei?.all ? (dataType === 'price' ? item.NewTaipei.all / 10000 : item.NewTaipei.all) : 0,
+      taoyuan: item.Taoyuan?.all ? (dataType === 'price' ? item.Taoyuan.all / 10000 : item.Taoyuan.all) : 0,
+      taichung: item.Taichung?.all ? (dataType === 'price' ? item.Taichung.all / 10000 : item.Taichung.all) : 0,
+      tainan: item.Tainan?.all ? (dataType === 'price' ? item.Tainan.all / 10000 : item.Tainan.all) : 0,
+      kaohsiung: item.Kaohsiung?.all ? (dataType === 'price' ? item.Kaohsiung.all / 10000 : item.Kaohsiung.all) : 0,
+      hsinchu: item.Hsinchu?.all ? (dataType === 'price' ? item.Hsinchu.all / 10000 : item.Hsinchu.all) : 0,
+    })).filter(item => {
       const currentVal = getQuarterValue(item.rawQuarter);
       return currentVal >= startVal && currentVal <= endVal;
     });
-  }, [startPeriod, endPeriod]);
-
-  if (filteredData.length === 0) {
-    return <div className="flex items-center justify-center h-full text-slate-400 text-sm">此區間尚無數據</div>;
-  }
+  }, [startPeriod, endPeriod, dataType, sourceData]);
 
   return (
     <div className="w-full h-full select-none">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={filteredData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+        <LineChart
+          data={filteredData}
+          margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+          
           <XAxis 
             dataKey="quarter" 
-            tick={{ fill: '#94a3b8', fontSize: 10 }} 
-            tickLine={false} 
-            axisLine={{ stroke: '#e2e8f0' }} 
-            minTickGap={30} 
+            // ✨ 修正 TypeScript 錯誤：加上 "as any" 讓 TS 忽略 angle 屬性的檢查
+            tick={{ 
+              fontSize: 10, 
+              fill: '#94a3b8',
+              angle: -90,      
+              textAnchor: 'end', 
+              dy: 5 
+            } as any} 
+            tickLine={false}
+            axisLine={{ stroke: '#cbd5e1' }}
+            height={60}
+            interval={0} 
           />
+
           <YAxis 
-            unit="萬" 
-            tick={{ fill: '#94a3b8', fontSize: 10 }} 
-            axisLine={false} 
-            tickLine={false} 
-            domain={['auto', 'auto']} 
+            tick={{ fontSize: 10, fill: '#94a3b8' }} 
+            tickLine={false}
+            axisLine={false}
             width={35}
+            unit={unitLabel}
+            domain={['auto', 'auto']}
           />
-          {/* ✨ 使用修正後的 CustomTooltip */}
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
-          <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}/>
-
-          <Line 
-            type="monotone" 
-            dataKey="nation" 
-            name="全國均價" 
-            stroke={NATIONAL_CONFIG.color} 
-            strokeWidth={2} 
-            dot={false} 
-            strokeDasharray="4 4" 
+          
+          <Tooltip content={<CustomTooltip unit={unitLabel} />} />
+          
+          {/* 全國虛線 */}
+          <Line
+            type="monotone"
+            dataKey="nation"
+            name="全國"
+            stroke="#94a3b8" 
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={false}
             activeDot={{ r: 4, strokeWidth: 0 }}
+            animationDuration={1000}
           />
 
+          {/* 其他選中的城市 */}
           {CITIES_CONFIG.map((city) => {
-            if (selectedCities.includes(city.id)) {
-              return (
-                <Line
-                  key={city.id}
-                  type="monotone"
-                  dataKey={city.id}
-                  name={city.label}
-                  stroke={city.color}
-                  strokeWidth={2}
-                  dot={{ r: 0 }} 
-                  activeDot={{ r: 5, strokeWidth: 0 }}
-                  animationDuration={1000}
-                />
-              );
-            }
-            return null;
+            if (!selectedCities.includes(city.id)) return null;
+
+            return (
+              <Line
+                key={city.id}
+                type="monotone"
+                dataKey={city.id}
+                name={city.label}
+                stroke={city.color}
+                strokeWidth={city.id === selectedCities[0] ? 3 : 2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                animationDuration={1000}
+              />
+            );
           })}
         </LineChart>
       </ResponsiveContainer>
