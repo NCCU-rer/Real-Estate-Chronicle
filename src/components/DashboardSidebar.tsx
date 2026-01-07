@@ -74,19 +74,19 @@ export default function DashboardSidebar({
       )}
 
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-[60
+        fixed md:static inset-y-0 left-0 z-60
         bg-white border-r border-slate-200 
         flex flex-col shadow-2xl transition-all duration-300 ease-in-out
         ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         ${isSidebarCollapsed ? "w-20" : "w-72"} 
       `}>
         
-        {/* 收合切換按鈕 */}
+        {/* ✨ 修改 1: 收合切換按鈕 - 垂直置中 + 加大 + 往右微調 */}
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="hidden md:flex absolute -right-3 top-9 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center shadow-md text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all"
+          className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all hover:shadow-xl"
         >
-          {isSidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
 
         {/* Header - ✨ 讓 Logo 區域也可以點擊展開 */}
@@ -102,13 +102,16 @@ export default function DashboardSidebar({
           )}
           
           <div className="relative z-10 flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/50 shrink-0">
+            <div className={`
+              p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/50 shrink-0 flex items-center justify-center
+              ${isSidebarCollapsed ? "mx-auto" : ""}
+            `}>
               <Building2 className="w-5 h-5 text-white" />
             </div>
             
             <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
               <h1 className="font-bold text-lg tracking-wide whitespace-nowrap">不動產大事紀</h1>
-              <p className="text-[10px] text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap">Market Intelligence</p>
+              <p className="text-[10px] text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap">Real Estate Chronicle</p>
             </div>
           </div>
           
@@ -118,15 +121,19 @@ export default function DashboardSidebar({
         </div>
 
         {/* 捲動內容區 */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 overflow-x-hidden">
+        {/* ✨ 修改 2: 動態 Padding - 收合時使用 flex-col + items-center 強制水平置中 */}
+        <div className={`
+          flex-1 overflow-y-auto custom-scrollbar space-y-8 overflow-x-hidden
+          ${isSidebarCollapsed ? "px-2 py-6 flex flex-col items-center" : "p-6"}
+        `}>
           
           {/* 1. 時間區間 */}
-          <div className="relative group/section">
+          <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
-              // ✨ 收合模式：點擊 Icon 展開
+              // ✨ 收合模式：設定固定寬高 w-12 h-12 並置中
               <div 
                 onClick={expandSidebar}
-                className="flex justify-center p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
+                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
                 title="點擊展開設定時間"
               >
                 <Calendar className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
@@ -169,12 +176,11 @@ export default function DashboardSidebar({
           <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
 
           {/* 2. 主要城市 */}
-          <div className="relative group/section">
+          <div className="relative group/section w-full">
              {isSidebarCollapsed ? (
-              // ✨ 收合模式：點擊 Icon 展開
               <div 
                 onClick={expandSidebar}
-                className="flex justify-center p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
+                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
                 title="點擊展開設定城市"
               >
                 <MapPin className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
@@ -222,12 +228,11 @@ export default function DashboardSidebar({
           <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
 
           {/* 3. 加入比對 */}
-          <div className="relative group/section">
+          <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
-              // ✨ 收合模式：點擊 Icon 展開
               <div 
                 onClick={expandSidebar}
-                className="flex justify-center p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
+                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
                 title="點擊展開設定比對"
               >
                 <GitCompare className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
@@ -300,7 +305,7 @@ export default function DashboardSidebar({
           bg-slate-50 text-[10px] text-slate-400 border-t border-slate-200 text-center transition-all duration-300
           ${isSidebarCollapsed ? "p-2" : "p-4"}
         `}>
-          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心 v1.2"}
+          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心"}
         </div>
       </aside>
     </>
