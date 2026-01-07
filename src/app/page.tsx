@@ -4,9 +4,11 @@ import { useState, useMemo } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
+import InfoModal from "@/components/InfoModal"; // ✨ 1. 引入彈窗組件
 import { rawData } from "@/data/sourceData";
-import { processEvents, getQuarterValue } from "@/utils/eventHelper";
+import { processEvents, getQuarterValue, RawEvent } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName } from "@/config/cityColors";
+import { Info } from "lucide-react"; // ✨ 2. 引入 Info 圖示
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -17,9 +19,12 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChartOpen, setIsChartOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
+  
+  // 資料模式狀態
   const [dataType, setDataType] = useState<'price' | 'index'>('price');
+
+  // ✨ 3. 新增彈窗開關狀態
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -52,16 +57,33 @@ export default function Home() {
   };
 
   // === 3. 資料計算 (Computation) ===
-  const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
+  // 使用雙重轉型解決型別問題
+  const allEvents = useMemo(() => {
+    const flatData = Object.values(rawData).flat();
+    return processEvents(flatData as unknown as RawEvent[]);
+  }, []);
+
   const chartCities = [mainCity, ...compareCities]; 
   
   const currentViewEvents = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
+    
     return allEvents.filter(event => {
+      // 防呆：確保 event.year 和 event.quarter 存在
+      if (!event.year || !event.quarter) return false;
+
       const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
       const isTimeMatch = eventTimeVal >= startVal && eventTimeVal <= endVal;
-      const isCityMatch = event.city === "oldLabel" || chartCities.includes(event.city);
+      
+      // 寬鬆的城市篩選邏輯
+      const isCityMatch = 
+        event.isNational ||          
+        !event.city ||               
+        event.city === 'nation' ||   
+        event.city === 'oldLabel' || 
+        chartCities.includes(event.city); 
+
       return isTimeMatch && isCityMatch;
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
@@ -85,7 +107,6 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
-        // ✨ 傳遞切換功能
         dataType={dataType}
         setDataType={setDataType}
       />
@@ -114,6 +135,15 @@ export default function Home() {
                 </div>
              </div>
            </div>
+
+           {/* ✨ 4. 右側說明按鈕 */}
+           <button 
+             onClick={() => setIsInfoOpen(true)}
+             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-full transition-all duration-200"
+             title="網站說明"
+           >
+             <Info className="w-5 h-5" />
+           </button>
         </header>
 
         {/* List Content */}
@@ -137,9 +167,11 @@ export default function Home() {
           selectedCities={chartCities}
           startPeriod={startPeriod}
           endPeriod={endPeriod}
-          // ✨ 傳遞資料模式
           dataType={dataType}
         />
+
+        {/* ✨ 5. 渲染彈窗組件 */}
+        <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
         
       </div>
     </main>
