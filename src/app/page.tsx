@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
+import InfoTooltip from '@/components/InfoTooltip'; // 匯入組件
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName } from "@/config/cityColors";
@@ -68,7 +69,7 @@ export default function Home() {
 
   // === 4. 畫面渲染 (Render) ===
   return (
-    <main className="h-screen w-full flex bg-slate-50 font-sans overflow-hidden">
+    <main className="h-screen w-full flex bg-slate-50 font-sans">
       
       {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
@@ -91,7 +92,7 @@ export default function Home() {
       />
 
       {/* 2. 右側主要內容區 */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 flex flex-col h-full relative">
         
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
@@ -142,6 +143,8 @@ export default function Home() {
         />
         
       </div>
+
+      <InfoTooltip />
     </main>
   );
 }
