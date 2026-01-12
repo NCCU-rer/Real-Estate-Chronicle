@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 import { CITIES_CONFIG } from "@/config/cityColors";
 import { getQuarterValue } from "@/utils/eventHelper";
@@ -89,35 +90,13 @@ TooltipSpy.displayName = 'TooltipSpy';
 
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
-  // Since this component will be client-only, we can safely use window-dependent hooks.
+  // === 狀態宣告 (確保基礎狀態最先初始化) ===
   const [isMobile, setIsMobile] = useState(false);
   const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
 
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
-
-  const formatXAxis = (tickItem: string) => {
-    if (isMobile) {
-      return tickItem.substring(0, 4);
-    }
-    return tickItem;
-  };
-  
+  // === 衍生數據 (確保在被依賴前計算) ===
   const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
   const unitLabel = dataType === 'price' ? "萬" : ""; 
-
-  const renderTooltipContent = useCallback((props: any) => {
-    if (isMobile) {
-      return <TooltipSpy {...props} setActiveDataPoint={setActiveDataPoint} />;
-    }
-    return <CustomTooltip {...props} unit={unitLabel} />;
-  }, [isMobile, unitLabel, setActiveDataPoint]);
 
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
@@ -142,15 +121,61 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
     });
   }, [startPeriod, endPeriod, dataType, sourceData]);
 
+  // === Brush & Zoomed Data State ===
+  const [brushedData, setBrushedData] = useState(filteredData);
+
+  // === Effect Hooks (依賴狀態) ===
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+  
+  useEffect(() => {
+    // When the underlying data changes, reset the brushed data to show everything.
+    setBrushedData(filteredData);
+  }, [filteredData]);
+
+  // === 回呼函式 (依賴狀態和函式) ===
+  const handleBrushChange = useCallback((range: any) => {
+    if (range && filteredData.length > 0) {
+      const { startIndex, endIndex } = range;
+      // Slice the data to "zoom in"
+      setBrushedData(filteredData.slice(startIndex, endIndex + 1));
+    }
+  }, [filteredData]);
+
+  const formatXAxis = useCallback((tickItem: string) => {
+    if (isMobile) {
+      return tickItem.substring(0, 4);
+    }
+    return tickItem;
+  }, [isMobile]);
+
+  const renderTooltipContent = useCallback((props: any) => {
+    if (isMobile) {
+      return <TooltipSpy {...props} setActiveDataPoint={setActiveDataPoint} />;
+    }
+    return <CustomTooltip {...props} unit={unitLabel} />;
+  }, [isMobile, unitLabel, setActiveDataPoint]);
+
+  const mainCityId = selectedCities.length > 0 ? selectedCities[0] : 'nation';
+  const mainCityConfig = CITIES_CONFIG.find(c => c.id === mainCityId);
+  const mainCityColor = mainCityConfig ? mainCityConfig.color : '#94a3b8';
+
   return (
-    <div className="w-full h-full select-none flex flex-col">
+    <div className="w-full h-full select-none flex flex-col" onClick={(e) => e.stopPropagation()}>
       {isMobile && <MobileTooltipDisplay payload={activeDataPoint} unit={unitLabel} />}
       
       <div className="w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={filteredData}
-            margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+            data={brushedData} // Main chart uses the "zoomed" data
+            margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+            syncId="anyId"
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             
@@ -168,7 +193,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               tickLine={false}
               axisLine={{ stroke: '#cbd5e1' }}
               height={60}
-              interval={isMobile ? 3 : 0} 
+              interval="preserveStartEnd"
+              domain={['dataMin', 'dataMax']}
             />
 
             <YAxis 
@@ -215,6 +241,18 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                 />
               );
             })}
+
+            <Brush 
+              dataKey="quarter" 
+              height={30} 
+              stroke={mainCityColor} 
+              travellerWidth={15} 
+              fill="#f1f5f9"
+              onChange={handleBrushChange}
+              data={filteredData} // Brush always uses the full dataset
+            >
+              <Line type="monotone" dataKey={mainCityId} stroke={mainCityColor} dot={false} activeDot={false} />
+            </Brush>
           </LineChart>
         </ResponsiveContainer>
       </div>
