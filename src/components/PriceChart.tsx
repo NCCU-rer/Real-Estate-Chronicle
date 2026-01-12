@@ -89,13 +89,11 @@ TooltipSpy.displayName = 'TooltipSpy';
 
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
-  const [hasMounted, setHasMounted] = useState(false);
+  // Since this component will be client-only, we can safely use window-dependent hooks.
   const [isMobile, setIsMobile] = useState(false);
   const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
 
   useEffect(() => {
-    setHasMounted(true);
-    
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -105,7 +103,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
   }, []);
 
   const formatXAxis = (tickItem: string) => {
-    if (hasMounted && isMobile) {
+    if (isMobile) {
       return tickItem.substring(0, 4);
     }
     return tickItem;
@@ -115,11 +113,11 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
   const unitLabel = dataType === 'price' ? "萬" : ""; 
 
   const renderTooltipContent = useCallback((props: any) => {
-    if (hasMounted && isMobile) {
+    if (isMobile) {
       return <TooltipSpy {...props} setActiveDataPoint={setActiveDataPoint} />;
     }
     return <CustomTooltip {...props} unit={unitLabel} />;
-  }, [hasMounted, isMobile, unitLabel, setActiveDataPoint]);
+  }, [isMobile, unitLabel, setActiveDataPoint]);
 
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
@@ -146,7 +144,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
 
   return (
     <div className="w-full h-full select-none flex flex-col">
-      {hasMounted && isMobile && <MobileTooltipDisplay payload={activeDataPoint} unit={unitLabel} />}
+      {isMobile && <MobileTooltipDisplay payload={activeDataPoint} unit={unitLabel} />}
       
       <div className="w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
@@ -162,15 +160,15 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               tick={{ 
                 fontSize: 10, 
                 fill: '#94a3b8',
-                angle: hasMounted && isMobile ? 0 : -45,
-                textAnchor: hasMounted && isMobile ? 'middle' : 'end',
-                dy: hasMounted && isMobile ? 10 : 10,
-                dx: hasMounted && isMobile ? 0 : -5,
+                angle: isMobile ? 0 : -45,
+                textAnchor: isMobile ? 'middle' : 'end',
+                dy: isMobile ? 10 : 10,
+                dx: isMobile ? 0 : -5,
               } as any} 
               tickLine={false}
               axisLine={{ stroke: '#cbd5e1' }}
               height={60}
-              interval={hasMounted && isMobile ? 3 : 0} 
+              interval={isMobile ? 3 : 0} 
             />
 
             <YAxis 
@@ -183,8 +181,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
             />
             
             <Tooltip
-              wrapperStyle={hasMounted && isMobile ? { display: 'none' } : {}}
-              cursor={hasMounted && isMobile ? false : { stroke: '#cbd5e1', strokeWidth: 1 }}
+              wrapperStyle={isMobile ? { display: 'none' } : {}}
+              cursor={isMobile ? false : { stroke: '#cbd5e1', strokeWidth: 1 }}
               content={renderTooltipContent}
             />
             
