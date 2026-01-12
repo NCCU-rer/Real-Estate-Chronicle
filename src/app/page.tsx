@@ -69,7 +69,7 @@ export default function Home() {
 
   // === 4. 畫面渲染 (Render) ===
   return (
-    <main className="h-screen w-full flex bg-slate-50 font-sans">
+    <main className="h-full w-full flex bg-slate-50 font-sans">
       
       {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
@@ -118,7 +118,7 @@ export default function Home() {
         </header>
 
         {/* List Content */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${isChartOpen ? 'pb-75' : 'pb-20'}`}>
+        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${isChartOpen ? 'pb-75' : 'pb-20'} relative z-10`}>
            <div className="pt-8">
               <EventList 
                 data={currentViewEvents} 

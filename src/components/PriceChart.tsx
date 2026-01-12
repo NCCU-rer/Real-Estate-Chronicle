@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
   LineChart,
   Line,
@@ -48,10 +48,78 @@ const CustomTooltip = ({ active, payload, label, unit }: any) => {
   return null;
 };
 
+const MobileTooltipDisplay = ({ payload, unit }: { payload: any[] | null, unit: string }) => {
+  const label = payload?.[0]?.payload?.quarter;
+
+  return (
+    <div className="bg-white p-3 text-xs h-16 border-b border-slate-100">
+      <p className="font-bold text-slate-700 mb-2 h-5 truncate">
+        {label || <span className="text-slate-400 font-normal">在圖表上按住並滑動來查看數據</span>}
+      </p>
+      <div className="flex items-center gap-x-4 gap-y-1 flex-wrap h-8 overflow-hidden">
+        {payload && payload.map((entry: any) => (
+          <div key={entry.name} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.stroke }} />
+            <span className="text-slate-500">{entry.name}:</span>
+            <span className="font-mono font-bold text-slate-700">
+              {Number(entry.value).toFixed(1)}
+              <span className="text-[10px] text-slate-400 font-normal ml-1">{unit}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: any) => {
+  const quarter = payload?.[0]?.payload?.quarter;
+
+  useEffect(() => {
+    if (active && payload && payload.length) {
+      setActiveDataPoint(payload);
+    } else {
+      setActiveDataPoint(null);
+    }
+  }, [active, quarter, setActiveDataPoint]);
+
+  return null;
+});
+TooltipSpy.displayName = 'TooltipSpy';
+
+
 export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
+  const [hasMounted, setHasMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    setHasMounted(true);
+    
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+
+  const formatXAxis = (tickItem: string) => {
+    if (hasMounted && isMobile) {
+      return tickItem.substring(0, 4);
+    }
+    return tickItem;
+  };
   
   const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
   const unitLabel = dataType === 'price' ? "萬" : ""; 
+
+  const renderTooltipContent = useCallback((props: any) => {
+    if (hasMounted && isMobile) {
+      return <TooltipSpy {...props} setActiveDataPoint={setActiveDataPoint} />;
+    }
+    return <CustomTooltip {...props} unit={unitLabel} />;
+  }, [hasMounted, isMobile, unitLabel, setActiveDataPoint]);
 
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
@@ -77,75 +145,81 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
   }, [startPeriod, endPeriod, dataType, sourceData]);
 
   return (
-    <div className="w-full h-full select-none">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={filteredData}
-          margin={{ top: 10, right: 10, left: 10, bottom: 5 }} // left 稍微加一點以免字切到
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-          
-          <XAxis 
-            dataKey="quarter" 
-            tick={{ 
-              fontSize: 10, 
-              fill: '#94a3b8',
-              // ✨ 修正：改為 -45 度，閱讀起來更順眼
-              angle: -45,      
-              textAnchor: 'end', 
-              dy: 10, // 往下推一點
-              dx: -5  // 往左一點，對齊刻度
-            } as any} 
-            tickLine={false}
-            axisLine={{ stroke: '#cbd5e1' }}
-            height={60}
-            interval={0} 
-          />
+    <div className="w-full h-full select-none flex flex-col">
+      {hasMounted && isMobile && <MobileTooltipDisplay payload={activeDataPoint} unit={unitLabel} />}
+      
+      <div className="w-full flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={filteredData}
+            margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            
+            <XAxis 
+              dataKey="quarter"
+              tickFormatter={formatXAxis}
+              tick={{ 
+                fontSize: 10, 
+                fill: '#94a3b8',
+                angle: hasMounted && isMobile ? 0 : -45,
+                textAnchor: hasMounted && isMobile ? 'middle' : 'end',
+                dy: hasMounted && isMobile ? 10 : 10,
+                dx: hasMounted && isMobile ? 0 : -5,
+              } as any} 
+              tickLine={false}
+              axisLine={{ stroke: '#cbd5e1' }}
+              height={60}
+              interval={hasMounted && isMobile ? 3 : 0} 
+            />
 
-          <YAxis 
-            tick={{ fontSize: 10, fill: '#94a3b8' }} 
-            tickLine={false}
-            axisLine={false}
-            width={35}
-            unit={unitLabel}
-            domain={['auto', 'auto']}
-          />
-          
-          <Tooltip content={<CustomTooltip unit={unitLabel} />} />
-          
-          {/* 全國虛線 */}
-          <Line
-            type="monotone"
-            dataKey="nation"
-            name="全國"
-            stroke="#94a3b8" 
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            dot={false}
-            activeDot={{ r: 4, strokeWidth: 0 }}
-            animationDuration={1000}
-          />
+            <YAxis 
+              tick={{ fontSize: 10, fill: '#94a3b8' }} 
+              tickLine={false}
+              axisLine={false}
+              width={35}
+              unit={unitLabel}
+              domain={['auto', 'auto']}
+            />
+            
+            <Tooltip
+              wrapperStyle={hasMounted && isMobile ? { display: 'none' } : {}}
+              cursor={hasMounted && isMobile ? false : { stroke: '#cbd5e1', strokeWidth: 1 }}
+              content={renderTooltipContent}
+            />
+            
+            <Line
+              type="monotone"
+              dataKey="nation"
+              name="全國"
+              stroke="#94a3b8" 
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+              animationDuration={300}
+            />
 
-          {/* 其他選中的城市 */}
-          {CITIES_CONFIG.map((city) => {
-            if (!selectedCities.includes(city.id)) return null;
+            {CITIES_CONFIG.map((city) => {
+              if (!selectedCities.includes(city.id)) return null;
 
-            return (
-              <Line
-                key={city.id}
-                type="monotone"
-                dataKey={city.id}
-                name={city.label}
-                stroke={city.color}
-                strokeWidth={city.id === selectedCities[0] ? 3 : 2}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-                animationDuration={1000}
-              />
-            );
-          })}
-        </LineChart>
-      </ResponsiveContainer>
+              return (
+                <Line
+                  key={city.id}
+                  type="monotone"
+                  dataKey={city.id}
+                  name={city.label}
+                  stroke={city.color}
+                  strokeWidth={city.id === selectedCities[0] ? 3 : 2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
+                  animationDuration={300}
+                />
+              );
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

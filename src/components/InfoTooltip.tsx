@@ -5,7 +5,7 @@ const InfoTooltip = () => {
   return (
     // This container is now absolutely positioned at the top-right of the viewport
     // It acts as the anchor for the icon and the tooltip popup.
-    <div className="absolute top-4 right-6 group z-[999] font-sans">
+    <div className="absolute top-4 right-6 group z-999 font-sans">
       {/* 資訊圖示 */}
       <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center cursor-pointer">
         <span className="text-sm font-bold text-slate-600">i</span>
