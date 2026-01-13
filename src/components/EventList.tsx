@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
-import { CITIES_CONFIG, NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
+import { NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
 
 // ... 介面定義保持不變 ...
 interface EventItem { year: number; quarter: string; title: string; description?: string; city?: string; cityName?: string; category?: string; isNational?: boolean; }

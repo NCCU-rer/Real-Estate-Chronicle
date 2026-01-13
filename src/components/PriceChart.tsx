@@ -24,12 +24,32 @@ interface PriceChartProps {
   isSmallMode?: boolean;
 }
 
-const CustomTooltip = ({ active, payload, label, unit }: any) => {
+interface TooltipPayloadItem {
+  name: string;
+  value: number | string;
+  stroke: string;
+  payload: {
+    quarter: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  };
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  label?: string;
+  unit?: string;
+}
+
+const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/90 backdrop-blur-sm p-3 border border-slate-200 rounded-lg shadow-xl text-xs z-50">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">{label}</p>
         <div className="space-y-1">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {payload.map((entry: any) => (
             <div key={entry.name} className="flex items-center gap-2 min-w-30">
               <div 
@@ -50,7 +70,7 @@ const CustomTooltip = ({ active, payload, label, unit }: any) => {
   return null;
 };
 
-const MobileTooltipDisplay = ({ payload, unit }: { payload: any[] | null, unit: string }) => {
+const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[] | null, unit: string }) => {
   const label = payload?.[0]?.payload?.quarter;
 
   return (
@@ -59,7 +79,7 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: any[] | null, unit: 
         {label || <span className="text-slate-400 font-normal">在圖表上按住並滑動來查看數據</span>}
       </p>
       <div className="flex items-center gap-x-4 gap-y-1 flex-wrap h-8 overflow-hidden">
-        {payload && payload.map((entry: any) => (
+        {payload && payload.map((entry) => (
           <div key={entry.name} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.stroke }} />
             <span className="text-slate-500">{entry.name}:</span>
@@ -74,7 +94,7 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: any[] | null, unit: 
   );
 };
 
-const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: any) => {
+const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: { active?: boolean; payload?: TooltipPayloadItem[]; setActiveDataPoint: (p: TooltipPayloadItem[] | null) => void }) => {
   const quarter = payload?.[0]?.payload?.quarter;
 
   useEffect(() => {
@@ -83,6 +103,7 @@ const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: any) => 
     } else {
       setActiveDataPoint(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, quarter, setActiveDataPoint]);
 
   return null;
@@ -90,9 +111,9 @@ const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: any) => 
 TooltipSpy.displayName = 'TooltipSpy';
 
 
-export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price', isSmallMode = false }: PriceChartProps) {
+export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
   const [isMobile, setIsMobile] = useState(false);
-  const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
+  const [activeDataPoint, setActiveDataPoint] = useState<TooltipPayloadItem[] | null>(null);
 
   const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
   const unitLabel = dataType === 'price' ? "萬" : ""; 
@@ -135,6 +156,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
     setBrushedData(filteredData);
   }, [filteredData]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBrushChange = useCallback((range: any) => {
     if (range && filteredData.length > 0) {
       const { startIndex, endIndex } = range;
@@ -149,6 +171,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
     return tickItem;
   }, [isMobile]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderTooltipContent = useCallback((props: any) => {
     if (isMobile) {
       return <TooltipSpy {...props} setActiveDataPoint={setActiveDataPoint} />;
@@ -182,6 +205,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                 textAnchor: isMobile ? 'middle' : 'end',
                 dy: isMobile ? 10 : 10,
                 dx: isMobile ? 0 : -5,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any} 
               tickLine={false}
               axisLine={{ stroke: '#cbd5e1' }}

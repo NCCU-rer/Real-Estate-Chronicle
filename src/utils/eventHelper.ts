@@ -1,6 +1,7 @@
 // src/utils/eventHelper.ts
 
 // 1. 主要清洗邏輯
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processEvents = (data: any[]) => {
   // 防呆：如果 data 不是陣列，直接回傳空陣列，避免 map 當機
   if (!Array.isArray(data)) {

@@ -15,6 +15,7 @@ export interface RawEvent {
   TaichungLabel?: string;
   TainanLabel?: string;
   KaohsiungLabel?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; // 允許其他欄位
 }
 // 這裡放入您完整的資料
