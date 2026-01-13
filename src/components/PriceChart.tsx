@@ -21,6 +21,7 @@ interface PriceChartProps {
   startPeriod: string;
   endPeriod: string;
   dataType?: 'price' | 'index';
+  isSmallMode?: boolean;
 }
 
 const CustomTooltip = ({ active, payload, label, unit }: any) => {
@@ -89,7 +90,7 @@ const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: any) => 
 TooltipSpy.displayName = 'TooltipSpy';
 
 
-export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
+export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price', isSmallMode = false }: PriceChartProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
 

@@ -54,7 +54,7 @@ export default function Home() {
 
   // === 3. 資料計算 (Computation) ===
   const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
-  const chartCities: string[] = [mainCity, ...compareCities]; 
+  const chartCities = useMemo(() => [mainCity, ...compareCities], [mainCity, compareCities]);
   
   const currentViewEvents = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
