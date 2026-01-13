@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, ChevronUp, ChevronsUp, ChevronsDown } from "lucide-react";
 
 // Dynamically import PriceChart with SSR turned off
@@ -19,6 +19,7 @@ interface DashboardChartProps {
   startPeriod: string;
   endPeriod: string;
   dataType?: 'price' | 'index';
+  onVisibilityChange: (isVisible: boolean) => void;
 }
 
 type DrawerSize = 'closed' | 'small' | 'large';
@@ -28,10 +29,11 @@ export default function DashboardChart({
   startPeriod,
   endPeriod,
   dataType = 'price',
+  onVisibilityChange,
 }: DashboardChartProps) {
   
   const chartTitle = dataType === 'price' ? '房價中位數走勢圖' : '政大永慶房價指數';
-  const [drawerSize, setDrawerSize] = useState<DrawerSize>('large'); // Default to large (the new 'normal')
+  const [drawerSize, setDrawerSize] = useState<DrawerSize>('large');
   const [lastOpenSize, setLastOpenSize] = useState<DrawerSize>('large');
 
   const handleToggle = () => {
@@ -56,6 +58,10 @@ export default function DashboardChart({
   };
 
   const isChartVisible = drawerSize !== 'closed';
+  
+  useEffect(() => {
+    onVisibilityChange(isChartVisible);
+  }, [isChartVisible, onVisibilityChange]);
 
   return (
     <div 

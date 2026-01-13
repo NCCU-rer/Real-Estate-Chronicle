@@ -133,13 +133,11 @@ export default function Home() {
 
         {/* 3. 底部圖表組件 */}
         <DashboardChart 
-          isChartOpen={isChartOpen}
-          setIsChartOpen={setIsChartOpen}
           selectedCities={chartCities}
           startPeriod={startPeriod}
           endPeriod={endPeriod}
-          // ✨ 傳遞資料模式
           dataType={dataType}
+          onVisibilityChange={setIsChartOpen}
         />
         
       </div>
