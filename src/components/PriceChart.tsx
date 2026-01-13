@@ -121,7 +121,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
     });
   }, [startPeriod, endPeriod, dataType, sourceData]);
 
-  // === Brush & Zoomed Data State ===
   const [brushedData, setBrushedData] = useState(filteredData);
 
   // === Effect Hooks (依賴狀態) ===
@@ -135,7 +134,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
   }, []);
   
   useEffect(() => {
-    // When the underlying data changes, reset the brushed data to show everything.
     setBrushedData(filteredData);
   }, [filteredData]);
 
@@ -143,7 +141,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
   const handleBrushChange = useCallback((range: any) => {
     if (range && filteredData.length > 0) {
       const { startIndex, endIndex } = range;
-      // Slice the data to "zoom in"
       setBrushedData(filteredData.slice(startIndex, endIndex + 1));
     }
   }, [filteredData]);
@@ -171,11 +168,10 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
       {isMobile && <MobileTooltipDisplay payload={activeDataPoint} unit={unitLabel} />}
       
       <div className="w-full flex-1">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="90%">
           <LineChart
-            data={brushedData} // Main chart uses the "zoomed" data
-            margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
-            syncId="anyId"
+            data={brushedData}
+            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             
@@ -241,7 +237,13 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                 />
               );
             })}
-
+          </LineChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height="10%">
+          <LineChart
+            data={filteredData}
+            margin={{ top: 0, right: 10, left: 10, bottom: 0 }}
+          >
             <Brush 
               dataKey="quarter" 
               height={30} 
@@ -249,7 +251,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               travellerWidth={15} 
               fill="#f1f5f9"
               onChange={handleBrushChange}
-              data={filteredData} // Brush always uses the full dataset
             >
               <Line type="monotone" dataKey={mainCityId} stroke={mainCityColor} dot={false} activeDot={false} />
             </Brush>
