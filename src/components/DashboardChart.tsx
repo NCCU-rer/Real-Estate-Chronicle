@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { TrendingUp, ChevronUp } from "lucide-react";
+import React, { useState } from 'react';
+import { TrendingUp, ChevronUp, ChevronsUp, ChevronsDown } from "lucide-react";
 
 // Dynamically import PriceChart with SSR turned off
 const PriceChart = dynamic(() => import('@/components/PriceChart'), {
@@ -14,17 +15,15 @@ const PriceChart = dynamic(() => import('@/components/PriceChart'), {
 });
 
 interface DashboardChartProps {
-  isChartOpen: boolean;
-  setIsChartOpen: (isOpen: boolean) => void;
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
   dataType?: 'price' | 'index';
 }
 
+type DrawerSize = 'closed' | 'small' | 'large';
+
 export default function DashboardChart({
-  isChartOpen,
-  setIsChartOpen,
   selectedCities,
   startPeriod,
   endPeriod,
@@ -32,32 +31,81 @@ export default function DashboardChart({
 }: DashboardChartProps) {
   
   const chartTitle = dataType === 'price' ? '房價中位數走勢圖' : '政大永慶房價指數';
+  const [drawerSize, setDrawerSize] = useState<DrawerSize>('large'); // Default to large (the new 'normal')
+  const [lastOpenSize, setLastOpenSize] = useState<DrawerSize>('large');
+
+  const handleToggle = () => {
+    setDrawerSize(prevSize => {
+      if (prevSize === 'closed') {
+        return lastOpenSize;
+      } else {
+        setLastOpenSize(prevSize);
+        return 'closed';
+      }
+    });
+  };
+
+  const getHeightClass = () => {
+    switch (drawerSize) {
+      case 'small': return 'h-[150px] md:h-[200px]';
+      case 'large': return 'h-[250px] md:h-[300px]';
+      case 'closed':
+      default:
+        return 'h-12';
+    }
+  };
+
+  const isChartVisible = drawerSize !== 'closed';
 
   return (
     <div 
-      onClick={() => setIsChartOpen(!isChartOpen)}
       className={`
         absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40 
         transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
-        ${isChartOpen ? 'h-[300px] md:h-[400px]' : 'h-12'}
-        cursor-pointer
+        ${getHeightClass()}
       `}
     >
-      <div 
-        className="absolute -top-5 left-1/2 -translate-x-1/2 pointer-events-none"
-      >
-        <div className="bg-white border border-slate-200 rounded-full pl-4 pr-3 py-1.5 shadow-md text-[11px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 transition-all">
-          <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-          <span>{chartTitle}</span>
-          <div className={`bg-slate-100 rounded-full p-0.5 transition-transform duration-300 ${isChartOpen ? 'rotate-180' : 'rotate-0'}`}>
-            <ChevronUp className="w-3 h-3 text-slate-500" />
+      {/* Integrated Control Panel */}
+      <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+        <div className="bg-white border border-slate-200 rounded-full shadow-md p-1.5 flex items-center gap-2">
+          {/* Main Title and Toggle */}
+          <div 
+            onClick={handleToggle}
+            className="cursor-pointer pl-2.5 pr-1 flex items-center gap-2"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{chartTitle}</span>
+            <div className={`bg-slate-100 rounded-full p-0.5 transition-transform duration-300 ${isChartVisible ? 'rotate-180' : 'rotate-0'}`}>
+              <ChevronUp className="w-3 h-3 text-slate-500" />
+            </div>
+          </div>
+          
+          {/* Separator */}
+          <div className={`h-4 w-px bg-slate-200 transition-opacity ${isChartVisible ? 'opacity-100' : 'opacity-0'}`} />
+
+          {/* Size Controls */}
+          <div className={`flex items-center gap-1 transition-opacity ${isChartVisible ? 'opacity-100' : 'opacity-0'}`}>
+            <button
+              onClick={(e) => { e.stopPropagation(); setDrawerSize('large'); setLastOpenSize('large'); }}
+              className={`p-1 rounded-full ${drawerSize === 'large' ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}
+              title="放大"
+            >
+              <ChevronsUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setDrawerSize('small'); setLastOpenSize('small'); }}
+              className={`p-1 rounded-full ${drawerSize === 'small' ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}
+              title="縮小"
+            >
+              <ChevronsDown className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
       <div className={`
-        h-full w-full p-4 pb-6 transition-all duration-300 delay-100
-        ${isChartOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+        h-full w-full p-4 pb-6 pt-8 transition-opacity duration-300
+        ${isChartVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
       `}>
         <PriceChart 
           selectedCities={selectedCities} 
