@@ -90,11 +90,9 @@ TooltipSpy.displayName = 'TooltipSpy';
 
 
 export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
-  // === 狀態宣告 (確保基礎狀態最先初始化) ===
   const [isMobile, setIsMobile] = useState(false);
   const [activeDataPoint, setActiveDataPoint] = useState<any[] | null>(null);
 
-  // === 衍生數據 (確保在被依賴前計算) ===
   const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
   const unitLabel = dataType === 'price' ? "萬" : ""; 
 
@@ -123,7 +121,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
 
   const [brushedData, setBrushedData] = useState(filteredData);
 
-  // === Effect Hooks (依賴狀態) ===
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -137,7 +134,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
     setBrushedData(filteredData);
   }, [filteredData]);
 
-  // === 回呼函式 (依賴狀態和函式) ===
   const handleBrushChange = useCallback((range: any) => {
     if (range && filteredData.length > 0) {
       const { startIndex, endIndex } = range;

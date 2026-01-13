@@ -49,8 +49,8 @@ export default function DashboardChart({
 
   const getHeightClass = () => {
     switch (drawerSize) {
-      case 'small': return 'h-[150px] md:h-[200px]';
-      case 'large': return 'h-[250px] md:h-[300px]';
+      case 'small': return 'h-[220px]'; // Increased height for small mode
+      case 'large': return 'h-[300px] md:h-[400px]'; // Adjusted large mode for consistency
       case 'closed':
       default:
         return 'h-12';
@@ -58,7 +58,8 @@ export default function DashboardChart({
   };
 
   const isChartVisible = drawerSize !== 'closed';
-  
+  const isSmallMode = drawerSize === 'small';
+
   useEffect(() => {
     onVisibilityChange(isChartVisible);
   }, [isChartVisible, onVisibilityChange]);
@@ -118,6 +119,7 @@ export default function DashboardChart({
           startPeriod={startPeriod} 
           endPeriod={endPeriod} 
           dataType={dataType}
+          isSmallMode={isSmallMode} // Pass down the small mode flag
         />
       </div>
     </div>
