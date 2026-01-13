@@ -18,6 +18,8 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChartOpen, setIsChartOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // ✨ 新增：追蹤圖表目前的尺寸 ('closed' | 'small' | 'large')
+  const [chartSize, setChartSize] = useState<'closed' | 'small' | 'large'>('large');
 
   // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
   const [dataType, setDataType] = useState<'price' | 'index'>('price');
@@ -67,12 +69,24 @@ export default function Home() {
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
+  // ✨ 動態計算列表底部留白 (避免被圖表遮擋)
+  const getListPaddingBottom = () => {
+    switch (chartSize) {
+      case 'large': return 'pb-[410px]'; // 比圖表高度 (400px) 再多一點 (原為 460)
+      case 'small': return 'pb-[270px]'; // 比圖表高度 (260px) 再多一點 (原為 280)
+      case 'closed': 
+      default:
+        return 'pb-24'; // 預設留白
+    }
+  };
+
   // === 4. 畫面渲染 (Render) ===
   return (
     <main className="h-full w-full flex bg-slate-50 font-sans">
       
       {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
+        // ... (props 保持不變) ...
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
         isSidebarCollapsed={isSidebarCollapsed}
@@ -86,7 +100,6 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
-        // ✨ 傳遞切換功能
         dataType={dataType}
         setDataType={setDataType}
       />
@@ -96,6 +109,7 @@ export default function Home() {
         
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
+           {/* ... (Header 內容保持不變) ... */}
            <div className="flex items-center gap-4">
              <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
              <div className="flex items-center gap-3">
@@ -118,7 +132,8 @@ export default function Home() {
         </header>
 
         {/* List Content */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${isChartOpen ? 'pb-75' : 'pb-20'} relative z-10`}>
+        {/* ✨ 這裡使用動態計算的 padding-bottom */}
+        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${getListPaddingBottom()} relative z-10`}>
            <div className="pt-8">
               <EventList 
                 data={currentViewEvents} 
@@ -138,6 +153,8 @@ export default function Home() {
           endPeriod={endPeriod}
           dataType={dataType}
           onVisibilityChange={setIsChartOpen}
+          // ✨ 傳遞尺寸變更 callback
+          onSizeChange={(size) => setChartSize(size)}
         />
         
       </div>

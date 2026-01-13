@@ -20,6 +20,8 @@ interface DashboardChartProps {
   endPeriod: string;
   dataType?: 'price' | 'index';
   onVisibilityChange: (isVisible: boolean) => void;
+  // 新增：通知父層尺寸改變，以便調整 Padding
+  onSizeChange?: (size: DrawerSize) => void;
 }
 
 type DrawerSize = 'closed' | 'small' | 'large';
@@ -30,6 +32,7 @@ export default function DashboardChart({
   endPeriod,
   dataType = 'price',
   onVisibilityChange,
+  onSizeChange,
 }: DashboardChartProps) {
   
   const chartTitle = dataType === 'price' ? '房價中位數走勢圖' : '政大永慶房價指數';
@@ -49,8 +52,9 @@ export default function DashboardChart({
 
   const getHeightClass = () => {
     switch (drawerSize) {
-      case 'small': return 'h-[220px]'; // Increased height for small mode
-      case 'large': return 'h-[300px] md:h-[400px]'; // Adjusted large mode for consistency
+      // 加高 Small Mode 高度 (220px -> 260px) 以容納 Brush
+      case 'small': return 'h-[260px]'; 
+      case 'large': return 'h-[320px] md:h-[400px]'; // 稍微調小放大模式的高度 (原為 350/450)
       case 'closed':
       default:
         return 'h-12';
@@ -63,6 +67,13 @@ export default function DashboardChart({
   useEffect(() => {
     onVisibilityChange(isChartVisible);
   }, [isChartVisible, onVisibilityChange]);
+
+  // 新增：當尺寸改變時通知父層
+  useEffect(() => {
+    if (onSizeChange) {
+      onSizeChange(drawerSize);
+    }
+  }, [drawerSize, onSizeChange]);
 
   return (
     <div 
