@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import InfoTooltip from '@/components/InfoTooltip'; // 匯入組件
 import { rawData } from "@/data/sourceData";
@@ -16,13 +15,7 @@ export default function Home() {
   const [mainCity, setMainCity] = useState("taipei");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isChartOpen, setIsChartOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  // ✨ 新增：追蹤圖表目前的尺寸 ('closed' | 'small' | 'large')
-  const [chartSize, setChartSize] = useState<'closed' | 'small' | 'large'>('large');
-
-  // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
-  const [dataType, setDataType] = useState<'price' | 'index'>('price');
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -69,24 +62,12 @@ export default function Home() {
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
-  // ✨ 動態計算列表底部留白 (避免被圖表遮擋)
-  const getListPaddingBottom = () => {
-    switch (chartSize) {
-      case 'large': return 'pb-[410px]'; // 比圖表高度 (400px) 再多一點 (原為 460)
-      case 'small': return 'pb-[270px]'; // 比圖表高度 (260px) 再多一點 (原為 280)
-      case 'closed': 
-      default:
-        return 'pb-24'; // 預設留白
-    }
-  };
-
   // === 4. 畫面渲染 (Render) ===
   return (
-    <main className="h-full w-full flex bg-slate-50 font-sans">
+    <main className="h-full w-full flex bg-[#f4f1ea] font-serif">
       
       {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
-        // ... (props 保持不變) ...
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
         isSidebarCollapsed={isSidebarCollapsed}
@@ -100,31 +81,36 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
-        dataType={dataType}
-        setDataType={setDataType}
       />
 
       {/* 2. 右側主要內容區 */}
       <div className="flex-1 flex flex-col h-full relative">
         
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
-           {/* ... (Header 內容保持不變) ... */}
-           <div className="flex items-center gap-4">
-             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
-             <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-slate-400">目前顯示：</span>
-                <div className="flex items-center gap-2">
-                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></span>
-                      {getDisplayName(mainCity)}
-                   </span>
+        {/* Top Header - Status Bar Style */}
+        <header className="h-14 bg-white/90 backdrop-blur-md border-b border-slate-200 shrink-0 flex items-center justify-between px-6 z-30 sticky top-0 transition-all">
+           <div className="flex items-center gap-4 w-full">
+             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">☰</button>
+             
+             <div className="flex items-center gap-4 flex-1 overflow-x-auto no-scrollbar">
+                {/* 主要城市：純文字 + 色點 */}
+                <div className="flex items-center gap-2 shrink-0">
+                   <span className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: getDisplayColor(mainCity) }}></span>
+                   <span className="text-sm font-bold text-slate-800">{getDisplayName(mainCity)}</span>
+                </div>
+
+                {/* 分隔線 (僅當有比較城市時顯示) */}
+                {compareCities.length > 0 && (
+                  <div className="h-4 w-px bg-slate-300 mx-1 shrink-0"></div>
+                )}
+
+                {/* 對照城市：淡化處理 */}
+                <div className="flex items-center gap-4 shrink-0">
                    {compareCities.map(id => (
-                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2">
-                         <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
-                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></span>
-                         {getCityName(id)}
-                      </span>
+                      <div key={id} className="flex items-center gap-2 group">
+                         <span className="text-xs font-medium text-slate-400 italic">vs</span>
+                         <span className="w-2 h-2 rounded-full ring-1 ring-slate-200" style={{ backgroundColor: getDisplayColor(id) }}></span>
+                         <span className="text-sm font-medium text-slate-600">{getCityName(id)}</span>
+                      </div>
                    ))}
                 </div>
              </div>
@@ -132,9 +118,8 @@ export default function Home() {
         </header>
 
         {/* List Content */}
-        {/* ✨ 這裡使用動態計算的 padding-bottom */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${getListPaddingBottom()} relative z-10`}>
-           <div className="pt-8">
+        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50 scroll-smooth transition-all duration-300 pb-24 relative z-10 px-4`}>
+           <div className="pt-8 max-w-5xl mx-auto min-h-full">
               <EventList 
                 data={currentViewEvents} 
                 startPeriod={startPeriod} 
@@ -145,17 +130,6 @@ export default function Home() {
               />
            </div>
         </div>
-
-        {/* 3. 底部圖表組件 */}
-        <DashboardChart 
-          selectedCities={chartCities}
-          startPeriod={startPeriod}
-          endPeriod={endPeriod}
-          dataType={dataType}
-          onVisibilityChange={setIsChartOpen}
-          // ✨ 傳遞尺寸變更 callback
-          onSizeChange={(size) => setChartSize(size)}
-        />
         
       </div>
 

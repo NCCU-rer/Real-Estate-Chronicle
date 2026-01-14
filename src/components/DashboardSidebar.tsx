@@ -3,19 +3,17 @@
 import { generateQuarterOptions } from "@/utils/eventHelper";
 import { CITIES_CONFIG } from "@/config/cityColors"; 
 import { 
-  Building2, 
-  Calendar, 
-  MapPin, 
-  GitCompare, 
+  ScrollText, 
+  History, 
+  Compass, 
+  Layers, 
   X, 
   ArrowRight,
-  CheckCircle2,
+  CircleDot,
   Circle,
   ChevronLeft,
   ChevronRight,
   Plus,
-  DollarSign, // ✨ 新增
-  TrendingUp, // ✨ 新增
 } from "lucide-react";
 
 const QUARTER_OPTIONS = generateQuarterOptions();
@@ -34,9 +32,6 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
-  // ✨ 新增 props
-  dataType: 'price' | 'index';
-  setDataType: (v: 'price' | 'index') => void;
 }
 
 export default function DashboardSidebar({
@@ -53,8 +48,6 @@ export default function DashboardSidebar({
   compareCities,
   toggleCompare,
   handleCancelCompare,
-  dataType,
-  setDataType,
 }: SidebarProps) {
 
   const handleCompareSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -81,15 +74,14 @@ export default function DashboardSidebar({
       <aside className={`
         fixed md:static inset-y-0 left-0 z-60
         bg-white border-r border-slate-200 
-        flex flex-col shadow-2xl transition-all duration-300 ease-in-out
+        flex flex-col shadow-xl transition-all duration-300 ease-in-out
         ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         ${isSidebarCollapsed ? "w-20" : "w-72"} 
       `}>
-        {/* 👆 上面 z-[60] 已改為 z-60 */}
         
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all hover:shadow-xl"
+          className="hidden md:flex absolute -right-4 top-8 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all shadow-md"
         >
           {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
@@ -97,30 +89,26 @@ export default function DashboardSidebar({
         <div 
           onClick={expandSidebar}
           className={`
-            bg-slate-900 text-white flex items-center shrink-0 relative overflow-hidden group transition-all duration-300
-            ${isSidebarCollapsed ? "p-4 justify-center cursor-pointer hover:bg-slate-800" : "p-6 justify-between"}
+            flex items-center shrink-0 relative overflow-hidden group transition-all duration-300
+            ${isSidebarCollapsed ? "p-4 justify-center cursor-pointer hover:bg-slate-50" : "p-6 justify-between"}
           `}
         >
-          {!isSidebarCollapsed && (
-            <Building2 className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 rotate-[-15deg] group-hover:rotate-0 transition-transform duration-500" />
-          )}
-          
-          <div className="relative z-10 flex items-center gap-3">
-            <div className={`
-              p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/50 shrink-0 flex items-center justify-center
-              ${isSidebarCollapsed ? "mx-auto" : ""}
-            `}>
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            
-            <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
-              <h1 className="font-bold text-lg tracking-wide whitespace-nowrap">不動產大事紀</h1>
-              <p className="text-[10px] text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap">Market Intelligence</p>
-            </div>
+          <div className="relative z-10 flex items-center gap-3 w-full">
+             <div className={`
+               p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 shrink-0 flex items-center justify-center text-white
+               ${isSidebarCollapsed ? "mx-auto" : ""}
+             `}>
+               <ScrollText className="w-5 h-5" />
+             </div>
+             
+             <div className={`transition-all duration-300 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 flex-1"}`}>
+               <h1 className="font-bold text-lg text-slate-800 tracking-tight leading-tight">不動產大事紀</h1>
+               <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Market Intelligence</p>
+             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden text-white/70 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden text-slate-400 hover:text-slate-600 transition-colors absolute right-4 top-6">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -128,95 +116,41 @@ export default function DashboardSidebar({
           flex-1 overflow-y-auto custom-scrollbar space-y-8 overflow-x-hidden
           ${isSidebarCollapsed ? "px-2 py-6 flex flex-col items-center" : "p-6"}
         `}>
-          
-          {/* ✨ 0. 資料模式切換 */}
-          <div className="relative group/section w-full">
-            {isSidebarCollapsed ? (
-              <div 
-                onClick={() => setDataType(dataType === 'price' ? 'index' : 'price')}
-                className={`
-                  flex justify-center items-center w-12 h-12 mx-auto rounded-xl cursor-pointer transition-all shadow-sm mb-2
-                  ${/* ✨ 修改：將 violet 改為 amber */ ''}
-                  ${dataType === 'price' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}
-                `}
-                title={dataType === 'price' ? "目前：房價中位數" : "目前：永慶房價指數"}
-              >
-                {dataType === 'price' ? <DollarSign className="w-6 h-6" /> : <TrendingUp className="w-6 h-6" />}
-              </div>
-            ) : (
-              <>
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 whitespace-nowrap">
-                   {/* ✨ 修改：Icon 顏色改為 amber */}
-                   {dataType === 'price' ? <DollarSign className="w-4 h-4 text-emerald-600" /> : <TrendingUp className="w-4 h-4 text-amber-600" />}
-                   資料模式
-                </label>
-                <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200">
-                  <button
-                    onClick={() => setDataType('price')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${
-                      dataType === 'price' 
-                        ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-black/5' 
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    <DollarSign className="w-3.5 h-3.5" />
-                    房價中位數
-                  </button>
-                  <button
-                    onClick={() => setDataType('index')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${
-                      dataType === 'index' 
-                        /* ✨ 修改：按鈕激活樣式改為 amber */
-                        ? 'bg-white text-amber-600 shadow-sm ring-1 ring-black/5' 
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    永慶房價指數
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
 
           {/* 1. 時間區間 */}
           <div className="relative group/section w-full">
             {isSidebarCollapsed ? (
               <div 
                 onClick={expandSidebar}
-                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
+                className="flex justify-center items-center w-10 h-10 mx-auto rounded-lg hover:bg-blue-50 hover:text-blue-600 text-slate-400 cursor-pointer transition-all" 
                 title="點擊展開設定時間"
               >
-                <Calendar className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
+                <History className="w-5 h-5" />
               </div>
             ) : (
               <>
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 whitespace-nowrap">
-                  <Calendar className="w-4 h-4 text-blue-600" />
-                  時間區間
-                </label>
+                <div className="flex items-center gap-2 mb-3">
+                  <History className="w-4 h-4 text-blue-500" />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    時間範圍
+                  </label>
+                </div>
                 
                 <div className="flex flex-col gap-2">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-[10px] font-bold text-slate-400 group-focus-within:text-blue-500 transition-colors">START</span>
-                    </div>
-                    <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg pl-12 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 uppercase">起</span>
+                    <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium pl-8 pr-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer hover:bg-white">
                       {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                     </select>
                   </div>
                   <div className="flex justify-center -my-1 z-10">
-                    <div className="bg-white p-1 rounded-full border border-slate-100 shadow-sm text-slate-300">
-                      <ArrowRight className="w-3 h-3 rotate-90" />
+                    <div className="bg-white p-0.5 rounded-full border border-slate-100 shadow-sm">
+                      <ArrowRight className="w-3 h-3 rotate-90 text-slate-300" />
                     </div>
                   </div>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                       <span className="text-[10px] font-bold text-slate-400 group-focus-within:text-blue-500 transition-colors">END</span>
-                    </div>
-                    <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 uppercase">迄</span>
+                    <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium pl-8 pr-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer hover:bg-white">
                       {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                     </select>
                   </div>
@@ -227,55 +161,125 @@ export default function DashboardSidebar({
 
           <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
 
-          {/* 2. 主要城市 */}
-          <div className="relative group/section w-full">
-             {isSidebarCollapsed ? (
-              <div 
-                onClick={expandSidebar}
-                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
-                title="點擊展開設定城市"
-              >
-                <MapPin className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
-              </div>
-             ) : (
-               <>
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 whitespace-nowrap">
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                  主要城市
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={() => handleMainCityChange("nation")}
-                    className={`
-                      col-span-2 p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm flex items-center justify-center gap-2 group
-                      ${mainCity === "nation" 
-                        ? 'bg-slate-800 text-white border-slate-800 shadow-md ring-2 ring-slate-800/20' 
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-                      }
-                    `}
-                  >
-                    {mainCity === "nation" ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3 opacity-30" />}
-                    全國均價 
-                  </button>
-                  {CITIES_CONFIG.map((c) => (
-                    <button 
-                      key={c.id} 
-                      onClick={() => handleMainCityChange(c.id)} 
-                      className={`
-                        p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm flex items-center justify-center gap-1.5
-                        ${mainCity === c.id 
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-600/20' 
-                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200'
-                        }
-                      `}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-               </>
-             )}
-          </div>
+                    {/* 2. 主要城市 */}          <div className="relative group/section w-full">
+
+                       {isSidebarCollapsed ? (
+
+                        <div 
+
+                          onClick={expandSidebar}
+
+                          className="flex justify-center items-center w-10 h-10 mx-auto rounded-lg hover:bg-blue-50 hover:text-blue-600 text-slate-400 cursor-pointer transition-all" 
+
+                          title="點擊展開設定城市"
+
+                        >
+
+                          <Compass className="w-5 h-5" />
+
+                        </div>
+
+                       ) : (
+
+                         <>
+
+                          <div className="flex items-center gap-2 mb-4">
+
+                            <Compass className="w-4 h-4 text-blue-500" />
+
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+
+                              主要檢視城市
+
+                            </label>
+
+                          </div>
+
+                          <div className="space-y-1.5">
+
+                            <button 
+
+                              onClick={() => handleMainCityChange("nation")}
+
+                              className={`
+
+                                w-full p-2.5 text-sm font-medium transition-all duration-200 flex items-center justify-between rounded-xl border
+
+                                ${mainCity === "nation" 
+
+                                  ? 'bg-slate-50 border-slate-900 text-slate-900 shadow-sm' 
+
+                                  : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+
+                                }
+
+                              `}
+
+                            >
+
+                              <span className="flex items-center gap-3">
+
+                                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${mainCity === "nation" ? "border-blue-600" : "border-slate-200"}`}>
+
+                                    {mainCity === "nation" && <div className="w-2 h-2 rounded-full bg-blue-600 animate-in zoom-in duration-200"></div>}
+
+                                 </div>
+
+                                 全國平均
+
+                              </span>
+
+                            </button>
+
+                            
+
+                            <div className="grid grid-cols-2 gap-2">
+
+                              {CITIES_CONFIG.map((c) => (
+
+                                <button 
+
+                                  key={c.id} 
+
+                                  onClick={() => handleMainCityChange(c.id)} 
+
+                                  className={`
+
+                                    p-2.5 text-xs font-medium transition-all duration-200 rounded-xl border flex items-center gap-2.5
+
+                                    ${mainCity === c.id 
+
+                                      ? 'bg-slate-50 border-slate-900 text-slate-900 shadow-sm' 
+
+                                      : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+
+                                    }
+
+                                  `}
+
+                                >
+
+                                  <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${mainCity === c.id ? "border-blue-600" : "border-slate-200"}`}>
+
+                                    {mainCity === c.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-in zoom-in duration-200"></div>}
+
+                                  </div>
+
+                                  {c.label}
+
+                                </button>
+
+                              ))}
+
+                            </div>
+
+                          </div>
+
+                         </>
+
+                       )}
+
+                    </div>
 
           <div className={`h-px bg-slate-100 w-full ${isSidebarCollapsed ? 'my-2' : ''}`} />
 
@@ -284,37 +288,39 @@ export default function DashboardSidebar({
             {isSidebarCollapsed ? (
               <div 
                 onClick={expandSidebar}
-                className="flex justify-center items-center w-12 h-12 mx-auto rounded-xl hover:bg-slate-100 cursor-pointer transition-colors" 
+                className="flex justify-center items-center w-10 h-10 mx-auto rounded-lg hover:bg-blue-50 hover:text-blue-600 text-slate-400 cursor-pointer transition-all" 
                 title="點擊展開設定比對"
               >
-                <GitCompare className="w-6 h-6 text-slate-400 group-hover/section:text-blue-600 transition-colors" />
+                <Layers className="w-5 h-5" />
               </div>
             ) : (
               <>
-                <div className="flex justify-between items-center mb-1">
-                   <label className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider whitespace-nowrap">
-                     <GitCompare className="w-4 h-4 text-blue-600" />
-                     加入比對
-                   </label>
+                <div className="flex justify-between items-center mb-3">
+                   <div className="flex items-center gap-2">
+                     <Layers className="w-4 h-4 text-blue-500" />
+                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                       加入對照
+                     </label>
+                   </div>
                    {compareCities.length > 0 && (
-                     <button onClick={handleCancelCompare} className="text-[10px] text-red-500 hover:text-red-600 font-bold hover:underline transition-all">
-                       清除
+                     <button onClick={handleCancelCompare} className="text-[10px] text-slate-400 hover:text-red-500 transition-colors font-medium">
+                       清除全部
                      </button>
                    )}
                 </div>
                 
                 <div className="relative mb-3">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Plus className="w-3.5 h-3.5 text-slate-400" />
+                    <Plus className="w-4 h-4 text-slate-400" />
                   </div>
                   <select 
                     onChange={handleCompareSelect}
                     defaultValue="default"
                     disabled={compareCities.length >= 3}
-                    className="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-lg pl-9 pr-2 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium pl-9 pr-2 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="default" disabled>
-                      {compareCities.length >= 3 ? "已達上限 (最多3個)" : "點擊新增對照城市..."}
+                      {compareCities.length >= 3 ? "已達上限 (3個)" : "新增對照城市..."}
                     </option>
                     {CITIES_CONFIG.filter(c => c.id !== mainCity && !compareCities.includes(c.id)).map(c => (
                       <option key={c.id} value={c.id}>
@@ -325,9 +331,8 @@ export default function DashboardSidebar({
                 </div>
 
                 <div className="flex flex-wrap gap-2 min-h-7.5">
-                {/* 👆 上面 min-h-[30px] 已改為 min-h-7.5 */}
                    {compareCities.length === 0 && (
-                     <span className="text-[10px] text-slate-400 italic pl-1">尚無比對項目</span>
+                     <span className="text-[10px] text-slate-300 italic pl-1">無對照項目</span>
                    )}
                    
                    {compareCities.map(cityId => {
@@ -335,16 +340,16 @@ export default function DashboardSidebar({
                      if (!cityConfig) return null;
                      
                      return (
-                       <span key={cityId} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 group animate-in fade-in zoom-in duration-200">
+                       <div key={cityId} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-700 group animate-in fade-in zoom-in duration-200">
                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cityConfig.color }}></span>
                          {cityConfig.label}
                          <button 
                            onClick={() => toggleCompare(cityId)}
-                           className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-500 transition-colors"
+                           className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors"
                          >
                            <X className="w-3 h-3" />
                          </button>
-                       </span>
+                       </div>
                      );
                    })}
                 </div>
@@ -356,9 +361,9 @@ export default function DashboardSidebar({
         {/* Footer */}
         <div className={`
           bg-slate-50 text-[10px] text-slate-400 border-t border-slate-200 text-center transition-all duration-300
-          ${isSidebarCollapsed ? "p-2" : "p-4"}
+          ${isSidebarCollapsed ? "p-2 opacity-0" : "p-4 opacity-100"}
         `}>
-          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心、永慶房產集團"}
+          資料來源：政大不動產研究中心、永慶房產集團
         </div>
       </aside>
     </>

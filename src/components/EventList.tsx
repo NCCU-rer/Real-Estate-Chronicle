@@ -11,6 +11,8 @@ interface GroupedQuarter { year: number; quarter: string; nationalEvents: EventI
 
 export default function EventList({ data, startPeriod, endPeriod, citiesOrder, mainCityName }: EventListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // ✨ 新增：分類篩選狀態
+  const [filterCategory, setFilterCategory] = useState<string>("全部");
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -22,11 +24,23 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
   const isNationOnly = citiesOrder[0] === 'nation' && !hasCompare;
 
   // ✨ 動態決定 Grid 的欄位設定
-  // 1. 有比較城市 -> 4欄 (全國 | 時間 | 主城市 | 比較城市)
-  // 2. 僅全國模式 -> 2欄 (全國 | 時間) -> 這裡我們讓時間軸靠右，事件靠左
-  // 3. 一般模式   -> 3欄 (全國 | 時間 | 主城市)
-  // ✨ 使用固定的三欄式佈局，確保時間軸永遠在中間
   const gridClass = "grid-cols-[1fr_80px_1fr]";
+
+  // ✨ 提取所有不重複的類別
+  const allCategories = useMemo(() => {
+    const cats = new Set<string>(["全部"]);
+    data.forEach(item => {
+      if (item.category) {
+        // 有些 category可能是陣列或逗號分隔，這裡簡化處理
+        if (Array.isArray(item.category)) {
+          item.category.forEach(c => cats.add(c));
+        } else {
+          cats.add(item.category);
+        }
+      }
+    });
+    return Array.from(cats);
+  }, [data]);
 
   // ... useMemo 資料處理邏輯保持不變 ...
   const groupedData = useMemo(() => {
@@ -44,7 +58,14 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
         }
       }
     }
+    
     data.forEach(event => {
+      // ✨ 篩選邏輯
+      if (filterCategory !== "全部") {
+        const eventCats = Array.isArray(event.category) ? event.category : [event.category];
+        if (!eventCats.includes(filterCategory)) return;
+      }
+
       const key = `${event.year}_${event.quarter}`;
       if (groups[key]) {
         if (event.isNational) groups[key].nationalEvents.push(event);
@@ -59,11 +80,14 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
         return indexA - indexB;
       });
     });
-    return Object.values(groups).sort((a, b) => {
+    // 過濾掉完全沒有事件的季度，避免版面太空 (可選)
+    return Object.values(groups).filter(g => 
+      g.nationalEvents.length > 0 || g.mainCityEvents.length > 0 || g.compareEvents.length > 0
+    ).sort((a, b) => {
        if (a.year !== b.year) return a.year - b.year;
        return a.quarter.localeCompare(b.quarter);
     });
-  }, [data, startPeriod, endPeriod, citiesOrder]);
+  }, [data, startPeriod, endPeriod, citiesOrder, filterCategory]); // 加入 filterCategory 依賴
 
   const renderEventCard = (event: EventItem, index: number, type: 'nat' | 'main' | 'comp') => {
     const uniqueId = `${event.year}_${event.quarter}_${type}_${index}`;
@@ -77,17 +101,18 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
         key={uniqueId}
         onClick={() => event.description && toggleExpand(uniqueId)}
         className={`
-          group/card relative rounded-xl border transition-all duration-300 cursor-pointer overflow-hidden
+          group/card relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden
           ${isOpen 
-            ? "bg-white shadow-lg ring-1 ring-slate-200 scale-[1.02] z-10" 
-            : "bg-white/60 hover:bg-white border-slate-200/60 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
+            ? "bg-white shadow-lg ring-1 ring-black/5 z-10" 
+            : "bg-white/80 hover:bg-white border-transparent hover:border-slate-200 hover:shadow-md hover:-translate-y-0.5"
           }
         `}
-        style={{ borderLeft: `4px solid ${cityColor}` }}
       >
-        <div className="p-3">
-          <div className="flex justify-between items-start gap-2 mb-1.5">
-            <h3 className={`text-sm font-bold leading-snug transition-colors ${isOpen ? 'text-slate-800' : 'text-slate-600 group-hover/card:text-slate-800'}`}>
+        <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: cityColor }}></div>
+
+        <div className="p-4 pl-5">
+          <div className="flex justify-between items-start gap-3 mb-2">
+            <h3 className={`text-sm font-bold leading-snug transition-colors ${isOpen ? 'text-slate-900' : 'text-slate-700 group-hover/card:text-slate-900'}`}>
               {event.title}
             </h3>
             {!isMain && !isNational && (
@@ -96,19 +121,23 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
               </span>
             )}
           </div>
+          
           {event.category && (
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold ${
-                 event.category === '政策' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${
+                 event.category.includes('政策') 
+                   ? 'bg-rose-50 text-rose-600 border border-rose-100' 
+                   : 'bg-slate-100 text-slate-500 border border-slate-200'
               }`}>
-                {event.category}
+                {Array.isArray(event.category) ? event.category[0] : event.category}
               </span>
             </div>
           )}
-          <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-3 pt-3 border-t border-slate-100' : 'grid-rows-[0fr] opacity-0'}`}>
+
+          <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
              <div className="overflow-hidden">
                 <div 
-                  className="text-xs text-slate-600 leading-relaxed font-medium"
+                  className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-100 mt-2"
                   dangerouslySetInnerHTML={{ __html: event.description || "" }} 
                 />
              </div>
@@ -121,30 +150,59 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
   return (
     <div className="w-full max-w-350 mx-auto px-4 sm:px-6">
       
-      {/* 1. 表頭 */}
-      <div className="sticky top-0 z-40 pt-4 pb-2 -mx-4 px-4 backdrop-blur-md bg-gray-50/80 border-b border-slate-200/50">
+      {/* 1. 表頭 + 現代化篩選 Tabs */}
+      <div className="sticky top-0 z-40 pt-6 pb-4 -mx-4 px-4 bg-slate-50/90 backdrop-blur-md border-b border-slate-200/50">
+        
+        {/* Filter Bar - Modern Tabs */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+           {allCategories.map(cat => (
+             <button
+               key={cat}
+               onClick={() => setFilterCategory(cat)}
+               className={`
+                 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200 border
+                 ${filterCategory === cat 
+                   ? "bg-slate-900 text-white border-slate-900 shadow-sm" 
+                   : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700"
+                 }
+               `}
+             >
+               {cat}
+             </button>
+           ))}
+        </div>
+
         <div className={`
-          hidden md:grid gap-6 text-xs font-bold uppercase tracking-wider text-slate-400
+          hidden md:grid gap-6 text-xs font-bold uppercase tracking-wider text-slate-500
           ${gridClass}
         `}>
-          <div className="flex items-center justify-center bg-slate-200/50 py-1.5 rounded text-slate-500">
-            全國
+          {/* 左欄標題 */}
+          <div className="flex items-center gap-2 pl-1 border-b-2 border-slate-100 pb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            全國焦點
           </div>
-          <div className="flex items-center justify-center">時間軸</div>
+          
+          {/* 中欄標題 */}
+          <div className="flex items-center justify-center border-b-2 border-slate-100 pb-2 text-slate-300 font-black">
+            TIMELINE
+          </div>
           
           {/* 右側標題區 (巢狀 Grid) */}
-          <div className={`grid ${hasCompare ? 'grid-cols-2 gap-3' : ''}`}>
+          <div className={`grid ${hasCompare ? 'grid-cols-2 gap-3' : ''} border-b-2 border-slate-100 pb-2`}>
             {!isNationOnly && (
-              <div 
-                className="flex items-center justify-center py-1.5 rounded text-white shadow-sm"
-                style={{ backgroundColor: citiesOrder[0] === 'nation' ? '#333333' : getCityColor(citiesOrder[0]) }}
-              >
+              <div className="flex items-center gap-2 font-bold text-slate-700">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: citiesOrder[0] === 'nation' ? '#333333' : getCityColor(citiesOrder[0]) }}></span>
                 {mainCityName} 
               </div>
             )}
             {hasCompare && (
-              <div className="flex items-center justify-center bg-white border border-slate-200 border-dashed text-slate-500 py-1.5 rounded px-2 text-center overflow-hidden text-ellipsis whitespace-nowrap">
-                {citiesOrder.slice(1).map(id => getCityName(id)).join(" / ")}
+              <div className="flex items-center gap-2 text-slate-500 pl-4 border-l border-slate-200 border-dashed">
+                {citiesOrder.slice(1).map(id => (
+                  <div key={id} className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getCityColor(id) }}></span>
+                    {getCityName(id)}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -152,7 +210,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
       </div>
 
       {/* 2. 內容 */}
-      <div className="relative mt-6 pb-32">
+      <div className="relative mt-4 pb-32">
         <div className="space-y-8">
           {groupedData.map((group, index) => (
             <div 
@@ -170,18 +228,19 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
 
               {/* 中：時間 */}
               <div className="relative flex justify-center h-full pt-1">
-                {/* 垂直的軸線，透過 style 向上延伸以填補間隙 */}
+                {/* 垂直的軸線 */}
                 <div 
                   className="absolute w-px bg-slate-200 hidden md:block"
                   style={{
-                    top: index === 0 ? '0' : '-2rem', // space-y-8 is 2rem
+                    top: index === 0 ? '0' : '-2rem',
                     bottom: '0',
+                    left: '50%'
                   }}
                 />
                 
-                <div className="sticky top-28 z-20 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-white border-4 border-slate-100 shadow-sm text-center">
-                  <span className="text-[10px] font-extrabold text-slate-400 block -mb-1">{group.year}</span>
-                  <span className="text-sm font-black text-slate-700">{group.quarter}</span>
+                <div className="sticky top-32 z-20 flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm text-center">
+                  <span className="text-[10px] font-bold text-slate-400 block -mb-0.5">{group.year}</span>
+                  <span className="text-xs font-black text-slate-700">{group.quarter}</span>
                 </div>
               </div>
 
