@@ -9,7 +9,7 @@ const PriceChart = dynamic(() => import('@/components/PriceChart'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
-      <p className="text-sm text-slate-400">圖表載入中...</p>
+      <p className="text-sm text-neutral-400">圖表載入中...</p>
     </div>
   ),
 });
@@ -78,41 +78,43 @@ export default function DashboardChart({
   return (
     <div 
       className={`
-        absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40 
+        absolute bottom-0 left-0 right-0 z-40 
+        bg-white/80 backdrop-blur-2xl border-t border-white/40 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]
         transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+        rounded-t-[40px]
         ${getHeightClass()}
       `}
     >
       {/* Integrated Control Panel */}
       <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        <div className="bg-white border border-slate-200 rounded-full shadow-md p-1.5 flex items-center gap-2">
+        <div className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-full shadow-lg shadow-blue-900/5 p-1.5 flex items-center gap-2 ring-1 ring-blue-100/50">
           {/* Main Title and Toggle */}
           <div 
             onClick={handleToggle}
-            className="cursor-pointer pl-2.5 pr-1 flex items-center gap-2"
+            className="cursor-pointer pl-2.5 pr-1 flex items-center gap-2 group"
           >
-            <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{chartTitle}</span>
-            <div className={`bg-slate-100 rounded-full p-0.5 transition-transform duration-300 ${isChartVisible ? 'rotate-180' : 'rotate-0'}`}>
-              <ChevronUp className="w-3 h-3 text-slate-500" />
+            <TrendingUp className="w-3.5 h-3.5 text-blue-600 group-hover:scale-110 transition-transform" />
+            <span className="text-[11px] font-bold text-neutral-600 uppercase tracking-widest group-hover:text-neutral-800 transition-colors">{chartTitle}</span>
+            <div className={`bg-blue-50/50 rounded-full p-0.5 transition-transform duration-300 ${isChartVisible ? 'rotate-180' : 'rotate-0'}`}>
+              <ChevronUp className="w-3 h-3 text-blue-400" />
             </div>
           </div>
           
           {/* Separator */}
-          <div className={`h-4 w-px bg-slate-200 transition-opacity ${isChartVisible ? 'opacity-100' : 'opacity-0'}`} />
+          <div className={`h-4 w-px bg-neutral-200/50 transition-opacity ${isChartVisible ? 'opacity-100' : 'opacity-0'}`} />
 
           {/* Size Controls */}
           <div className={`flex items-center gap-1 transition-opacity ${isChartVisible ? 'opacity-100' : 'opacity-0'}`}>
             <button
               onClick={(e) => { e.stopPropagation(); setDrawerSize('large'); setLastOpenSize('large'); }}
-              className={`p-1 rounded-full ${drawerSize === 'large' ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}
+              className={`p-1 rounded-full transition-colors ${drawerSize === 'large' ? 'bg-blue-100 text-blue-700' : 'text-neutral-400 hover:bg-neutral-100'}`}
               title="放大"
             >
               <ChevronsUp className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setDrawerSize('small'); setLastOpenSize('small'); }}
-              className={`p-1 rounded-full ${drawerSize === 'small' ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}
+              className={`p-1 rounded-full transition-colors ${drawerSize === 'small' ? 'bg-blue-100 text-blue-700' : 'text-neutral-400 hover:bg-neutral-100'}`}
               title="縮小"
             >
               <ChevronsDown className="w-3.5 h-3.5" />

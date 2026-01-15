@@ -49,9 +49,9 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100">
-        <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
-          <span className="w-1 h-3 bg-blue-500 rounded-full"></span>
+      <div className="bg-white/95 backdrop-blur-md p-3 border border-neutral-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-neutral-100">
+        <p className="font-bold text-neutral-700 mb-2 border-b border-neutral-100 pb-1.5 flex items-center gap-2">
+          <span className="w-1 h-3 bg-blue-600 rounded-full"></span>
           {label}
         </p>
         <div className="space-y-1.5">
@@ -62,10 +62,10 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
                 className="w-2.5 h-2.5 rounded-full ring-2 ring-white shadow-sm" 
                 style={{ backgroundColor: entry.stroke }}
               />
-              <span className="text-slate-500 flex-1 font-medium">{entry.name}</span>
-              <span className="font-mono font-bold text-slate-700 text-sm">
+              <span className="text-neutral-500 flex-1 font-medium">{entry.name}</span>
+              <span className="font-mono font-bold text-neutral-700 text-sm">
                 {Number(entry.value).toFixed(1)} 
-                <span className="text-[10px] text-slate-400 font-normal ml-1">{unit}</span>
+                <span className="text-[10px] text-neutral-400 font-normal ml-1">{unit}</span>
               </span>
             </div>
           ))}
@@ -80,16 +80,16 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[]
   const label = payload?.[0]?.payload?.quarter;
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm p-3 text-xs h-16 border-b border-slate-100 sticky top-0 z-10">
+    <div className="bg-white/80 backdrop-blur-sm p-3 text-xs h-16 border-b border-neutral-100 sticky top-0 z-10">
       <div className="flex items-center justify-between mb-2 h-5">
-         <p className="font-bold text-slate-700 truncate flex items-center gap-2">
+         <p className="font-bold text-neutral-700 truncate flex items-center gap-2">
            {label ? (
              <>
-               <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+               <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
                {label}
              </>
            ) : (
-             <span className="text-slate-400 font-normal flex items-center gap-1">
+             <span className="text-neutral-400 font-normal flex items-center gap-1">
                <span className="animate-bounce">👆</span> 按住圖表滑動查看
              </span>
            )}
@@ -97,10 +97,10 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[]
       </div>
       <div className="flex items-center gap-x-4 gap-y-1 flex-wrap h-8 overflow-hidden">
         {payload && payload.map((entry) => (
-          <div key={entry.name} className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+          <div key={entry.name} className="flex items-center gap-1.5 bg-neutral-50 px-2 py-0.5 rounded-full border border-neutral-100">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.stroke }} />
-            <span className="text-slate-500 font-medium">{entry.name}</span>
-            <span className="font-mono font-bold text-slate-700">
+            <span className="text-neutral-500 font-medium">{entry.name}</span>
+            <span className="font-mono font-bold text-neutral-700">
               {Number(entry.value).toFixed(1)}
             </span>
           </div>
@@ -221,17 +221,17 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
 
   const mainCityId = selectedCities.length > 0 ? selectedCities[0] : 'nation';
   const mainCityConfig = CITIES_CONFIG.find(c => c.id === mainCityId);
-  const mainCityColor = mainCityConfig ? mainCityConfig.color : '#94a3b8';
+  const mainCityColor = mainCityConfig ? mainCityConfig.color : '#a3a3a3';
 
   return (
     <div className="w-full h-full select-none flex flex-col font-sans" onClick={(e) => e.stopPropagation()}>
       
       {/* 新增：動態時間範圍顯示器 (放在上方，解決 Brush 字太小的問題) */}
       <div className="flex items-center justify-end px-4 pt-2 pb-0">
-        <div className="flex items-center gap-2 bg-slate-100/80 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-          <CalendarRange className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-xs font-bold text-slate-600 font-mono">
-            {displayRange.start} <span className="text-slate-300 mx-1">→</span> {displayRange.end}
+        <div className="flex items-center gap-2 bg-neutral-100/80 px-3 py-1.5 rounded-lg border border-neutral-200 shadow-sm">
+          <CalendarRange className="w-3.5 h-3.5 text-neutral-400" />
+          <span className="text-xs font-bold text-neutral-600 font-mono">
+            {displayRange.start} <span className="text-neutral-300 mx-1">→</span> {displayRange.end}
           </span>
         </div>
       </div>
@@ -249,8 +249,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               <defs>
                 {/* 為每個城市定義漸層 */}
                 <linearGradient id="colorNation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#a3a3a3" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#a3a3a3" stopOpacity={0}/>
                 </linearGradient>
                 {CITIES_CONFIG.map(city => (
                   <linearGradient key={city.id} id={`color-${city.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -260,25 +260,25 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                 ))}
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
               
                           <XAxis 
                             dataKey="quarter"
                             tickFormatter={formatXAxis}
                             tick={{ 
                               fontSize: 11, 
-                              fill: '#94a3b8',
+                              fill: '#a3a3a3',
                               fontWeight: 500
                             } as any} 
                             tickLine={false}
-                            axisLine={{ stroke: '#e2e8f0' }}
+                            axisLine={{ stroke: '#e5e5e5' }}
                             height={30}
                             interval={isMobile ? "preserveStartEnd" : 3} // 手機版自動隱藏過密的標籤
                             minTickGap={30}
                             padding={{ left: 15, right: 15 }} // ★ 新增：內部留白，確保頭尾標籤不會切到
                           />
               <YAxis 
-                tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 500 }} 
+                tick={{ fontSize: 10, fill: '#a3a3a3', fontWeight: 500 }} 
                 tickLine={false}
                 axisLine={false}
                 width={40}
@@ -289,7 +289,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               
               <Tooltip
                 wrapperStyle={isMobile ? { display: 'none' } : {}}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
+                cursor={{ stroke: '#a3a3a3', strokeWidth: 1, strokeDasharray: '5 5' }}
                 content={renderTooltipContent}
               />
               
@@ -299,11 +299,11 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                 type="monotone"
                 dataKey="nation"
                 name="全國"
-                stroke="#94a3b8" 
+                stroke="#a3a3a3" 
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
-                activeDot={{ r: 5, strokeWidth: 0, fill: '#94a3b8' }}
+                activeDot={{ r: 5, strokeWidth: 0, fill: '#a3a3a3' }}
                 animationDuration={500}
               />
 
@@ -350,7 +350,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               <Brush 
                 dataKey="quarter" 
                 height={40} 
-                stroke="#3b82f6"     // ★ 選取框邊框：亮藍色，非常明顯
+                stroke="#2563eb"     // ★ 選取框邊框：亮藍色，非常明顯
                 travellerWidth={20} 
                 fill="#eff6ff"       // ★ 選取框背景：淺藍色，與未選取區分
                 fillOpacity={0.2}    // ★ 輕微透明

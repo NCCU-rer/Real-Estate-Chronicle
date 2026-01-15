@@ -3,21 +3,23 @@
 import { useState, useMemo } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import EventList from "@/components/EventList";
-import InfoTooltip from '@/components/InfoTooltip'; // 匯入組件
+import InfoTooltip from '@/components/InfoTooltip'; 
+import ImpactModal from '@/components/ImpactModal';
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName } from "@/config/cityColors";
 
+interface EventItem { year: number; quarter: string; title: string; description?: string; city?: string; cityName?: string; category?: string; isNational?: boolean; }
+
 export default function Home() {
-  // === 1. 狀態管理 (State) ===
   const [startPeriod, setStartPeriod] = useState("2013_Q1");
   const [endPeriod, setEndPeriod] = useState("2025_Q4");
   const [mainCity, setMainCity] = useState("taipei");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [analyzingEvent, setAnalyzeEvent] = useState<EventItem | null>(null);
 
-  // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
     setMainCity(cityId);
     setCompareCities(prev => prev.filter(c => c !== cityId));
@@ -42,12 +44,11 @@ export default function Home() {
   };
   
   const getDisplayColor = (id: string) => {
-    if (id === "nation") return "#333333";
+    if (id === "nation") return "#525252"; // neutral-600
     const city = CITIES_CONFIG.find(c => c.id === id);
-    return city ? city.color : "#333333";
+    return city ? city.color : "#525252";
   };
 
-  // === 3. 資料計算 (Computation) ===
   const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
   const chartCities = useMemo(() => [mainCity, ...compareCities], [mainCity, compareCities]);
   
@@ -62,11 +63,9 @@ export default function Home() {
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
-  // === 4. 畫面渲染 (Render) ===
   return (
-    <main className="h-full w-full flex bg-[#f4f1ea] font-serif">
+    <main className="h-full w-full flex bg-transparent font-sans relative">
       
-      {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
@@ -83,33 +82,27 @@ export default function Home() {
         handleCancelCompare={handleCancelCompare}
       />
 
-      {/* 2. 右側主要內容區 */}
-      <div className="flex-1 flex flex-col h-full relative">
-        
-        {/* Top Header - Status Bar Style */}
-        <header className="h-14 bg-white/90 backdrop-blur-md border-b border-slate-200 shrink-0 flex items-center justify-between px-6 z-30 sticky top-0 transition-all">
+      <div className="flex-1 flex flex-col h-full relative p-4 pl-0">
+        <header className="h-16 bg-white/60 backdrop-blur-xl border border-white/50 shrink-0 flex items-center justify-between px-6 z-30 sticky top-0 transition-all rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.03)]">
            <div className="flex items-center gap-4 w-full">
-             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">☰</button>
+             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-neutral-500 hover:bg-white/60 rounded-full transition-colors">☰</button>
              
              <div className="flex items-center gap-4 flex-1 overflow-x-auto no-scrollbar">
-                {/* 主要城市：純文字 + 色點 */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0 bg-white/40 px-3 py-1.5 rounded-full border border-white/60 shadow-sm">
                    <span className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: getDisplayColor(mainCity) }}></span>
-                   <span className="text-sm font-bold text-slate-800">{getDisplayName(mainCity)}</span>
+                   <span className="text-sm font-bold text-neutral-900">{getDisplayName(mainCity)}</span>
                 </div>
 
-                {/* 分隔線 (僅當有比較城市時顯示) */}
                 {compareCities.length > 0 && (
-                  <div className="h-4 w-px bg-slate-300 mx-1 shrink-0"></div>
+                  <div className="h-4 w-px bg-neutral-300/30 mx-1 shrink-0"></div>
                 )}
 
-                {/* 對照城市：淡化處理 */}
-                <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                    {compareCities.map(id => (
-                      <div key={id} className="flex items-center gap-2 group">
-                         <span className="text-xs font-medium text-slate-400 italic">vs</span>
-                         <span className="w-2 h-2 rounded-full ring-1 ring-slate-200" style={{ backgroundColor: getDisplayColor(id) }}></span>
-                         <span className="text-sm font-medium text-slate-600">{getCityName(id)}</span>
+                      <div key={id} className="flex items-center gap-2.5 bg-white/30 px-3 py-1.5 rounded-full border border-white/40 group hover:bg-white/50 transition-all cursor-default">
+                         <span className="text-[10px] font-black text-neutral-400 uppercase tracking-tighter">VS</span>
+                         <span className="w-2 h-2 rounded-full ring-2 ring-white shadow-sm" style={{ backgroundColor: getDisplayColor(id) }}></span>
+                         <span className="text-sm font-bold text-neutral-600">{getCityName(id)}</span>
                       </div>
                    ))}
                 </div>
@@ -117,8 +110,7 @@ export default function Home() {
            </div>
         </header>
 
-        {/* List Content */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50 scroll-smooth transition-all duration-300 pb-24 relative z-10 px-4`}>
+        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-transparent scroll-smooth transition-all duration-300 pb-24 relative z-10 px-4`}>
            <div className="pt-8 max-w-5xl mx-auto min-h-full">
               <EventList 
                 data={currentViewEvents} 
@@ -127,13 +119,20 @@ export default function Home() {
                 quarterWidth={0} 
                 citiesOrder={chartCities} 
                 mainCityName={getDisplayName(mainCity)}
+                onAnalyze={setAnalyzeEvent}
               />
            </div>
         </div>
-        
       </div>
 
       <InfoTooltip />
+      
+      <ImpactModal 
+        isOpen={!!analyzingEvent} 
+        onClose={() => setAnalyzeEvent(null)} 
+        event={analyzingEvent}
+        mainCity={mainCity}
+      />
     </main>
   );
 }
