@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
@@ -120,11 +121,13 @@ const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: { active
   const quarter = payload?.[0]?.payload?.quarter;
 
   useEffect(() => {
-    if (active && payload && payload.length) {
-      setActiveDataPoint(payload);
-    } else {
-      setActiveDataPoint(null);
-    }
+    Promise.resolve().then(() => {
+      if (active && payload && payload.length) {
+        setActiveDataPoint(payload);
+      } else {
+        setActiveDataPoint(null);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, quarter, setActiveDataPoint]);
 

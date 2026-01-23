@@ -16,11 +16,7 @@ export default function Home() {
   const [mainCity, setMainCity] = useState("taipei");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isChartOpen, setIsChartOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  // ✨ 新增：追蹤圖表目前的尺寸 ('closed' | 'small' | 'large')
-  const [chartSize, setChartSize] = useState<'closed' | 'small' | 'large'>('large');
-
   // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
   const [dataType, setDataType] = useState<'price' | 'index'>('price');
 
@@ -64,21 +60,10 @@ export default function Home() {
     return allEvents.filter(event => {
       const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
       const isTimeMatch = eventTimeVal >= startVal && eventTimeVal <= endVal;
-      const isCityMatch = event.city === "oldLabel" || chartCities.includes(event.city);
+      const isCityMatch = event.city === 'oldLabel' || chartCities.includes(event.city);
       return isTimeMatch && isCityMatch;
     });
   }, [chartCities, startPeriod, endPeriod, allEvents]);
-
-  // ✨ 動態計算列表底部留白 (避免被圖表遮擋)
-  const getListPaddingBottom = () => {
-    switch (chartSize) {
-      case 'large': return 'pb-[410px]'; // 比圖表高度 (400px) 再多一點 (原為 460)
-      case 'small': return 'pb-[270px]'; // 比圖表高度 (260px) 再多一點 (原為 280)
-      case 'closed': 
-      default:
-        return 'pb-24'; // 預設留白
-    }
-  };
 
   // === 4. 畫面渲染 (Render) ===
   return (
@@ -105,7 +90,7 @@ export default function Home() {
       />
 
       {/* 2. 右側主要內容區 */}
-      <div className="flex-1 flex flex-col h-full relative">
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
@@ -131,31 +116,27 @@ export default function Home() {
            </div>
         </header>
 
-        {/* List Content */}
-        {/* ✨ 這裡使用動態計算的 padding-bottom */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 scroll-smooth transition-all duration-300 ${getListPaddingBottom()} relative z-10`}>
-           <div className="pt-8">
-              <EventList 
-                data={currentViewEvents} 
-                startPeriod={startPeriod} 
-                endPeriod={endPeriod} 
-                quarterWidth={0} 
-                citiesOrder={chartCities} 
-                mainCityName={getDisplayName(mainCity)}
-              />
-           </div>
+        {/* List Content: Takes up remaining space and scrolls */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 p-8 z-10">
+          <EventList 
+            data={currentViewEvents} 
+            startPeriod={startPeriod} 
+            endPeriod={endPeriod} 
+            quarterWidth={0} 
+            citiesOrder={chartCities} 
+            mainCityName={getDisplayName(mainCity)}
+          />
         </div>
 
         {/* 3. 底部圖表組件 */}
-        <DashboardChart 
-          selectedCities={chartCities}
-          startPeriod={startPeriod}
-          endPeriod={endPeriod}
-          dataType={dataType}
-          onVisibilityChange={setIsChartOpen}
-          // ✨ 傳遞尺寸變更 callback
-          onSizeChange={(size) => setChartSize(size)}
-        />
+        <div className="shrink-0 z-20">
+          <DashboardChart 
+            selectedCities={chartCities}
+            startPeriod={startPeriod}
+            endPeriod={endPeriod}
+            dataType={dataType}
+          />
+        </div>
         
       </div>
 
@@ -163,3 +144,5 @@ export default function Home() {
     </main>
   );
 }
+
+  

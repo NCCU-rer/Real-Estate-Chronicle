@@ -19,7 +19,7 @@ interface DashboardChartProps {
   startPeriod: string;
   endPeriod: string;
   dataType?: 'price' | 'index';
-  onVisibilityChange: (isVisible: boolean) => void;
+  onVisibilityChange?: (isVisible: boolean) => void;
   // 新增：通知父層尺寸改變，以便調整 Padding
   onSizeChange?: (size: DrawerSize) => void;
 }
@@ -65,7 +65,9 @@ export default function DashboardChart({
   const isSmallMode = drawerSize === 'small';
 
   useEffect(() => {
-    onVisibilityChange(isChartVisible);
+    if (onVisibilityChange) {
+      onVisibilityChange(isChartVisible);
+    }
   }, [isChartVisible, onVisibilityChange]);
 
   // 新增：當尺寸改變時通知父層
