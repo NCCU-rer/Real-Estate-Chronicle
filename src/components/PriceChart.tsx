@@ -48,6 +48,9 @@ interface CustomTooltipProps {
 
 const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
+    const uniquePayload = payload.filter((entry, index, self) =>
+      index === self.findIndex((t) => t.name === entry.name)
+    );
     return (
       <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
@@ -56,7 +59,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
         </p>
         <div className="space-y-1.5">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {payload.map((entry: any) => (
+          {uniquePayload.map((entry: any) => (
             <div key={entry.name} className="flex items-center gap-3 min-w-30">
               <div 
                 className="w-2.5 h-2.5 rounded-full ring-2 ring-white shadow-sm" 
@@ -78,6 +81,9 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
 
 const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[] | null, unit: string }) => {
   const label = payload?.[0]?.payload?.quarter;
+  const uniquePayload = payload ? payload.filter((entry, index, self) =>
+    index === self.findIndex((t) => t.name === entry.name)
+  ) : null;
 
   return (
     <div className="bg-white/80 backdrop-blur-sm p-3 text-xs h-16 border-b border-slate-100 sticky top-0 z-10">
@@ -96,7 +102,7 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[]
          </p>
       </div>
       <div className="flex items-center gap-x-4 gap-y-1 flex-wrap h-8 overflow-hidden">
-        {payload && payload.map((entry) => (
+        {uniquePayload && uniquePayload.map((entry) => (
           <div key={entry.name} className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.stroke }} />
             <span className="text-slate-500 font-medium">{entry.name}</span>
@@ -318,6 +324,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
                       <Area
                         type="monotone"
                         dataKey={city.id}
+                        name={city.label}
                         stroke="none"
                         fill={`url(#color-${city.id})`}
                         animationDuration={500}
