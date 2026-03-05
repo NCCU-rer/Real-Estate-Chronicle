@@ -1,152 +1,229 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Landmark } from "lucide-react";
 
-interface EventItem { year: number; quarter: string; title: string; description?: string; city?: string; cityName?: string; category?: string; isNational?: boolean; }
-interface EventListProps { data: EventItem[]; startPeriod: string; endPeriod: string; quarterWidth: number; citiesOrder: string[]; mainCityName?: string; }
-interface GroupedQuarter { year: number; quarter: string; nationalEvents: EventItem[]; mainCityEvents: EventItem[]; compareEvents: EventItem[]; }
+// --- TYPE DEFINITIONS ---
+interface EventItem {
+  year: number;
+  quarter: string;
+  title: string;
+  description?: string;
+  city?: string;
+  cityName?: string;
+  category?: string;
+  isNational?: boolean;
+}
 
-export default function EventList({ data, startPeriod, endPeriod, citiesOrder, mainCityName }: EventListProps) {
+interface EventListProps {
+  data: EventItem[];
+  startPeriod: string;
+  endPeriod: string;
+  citiesOrder: string[];
+  mainCityName?: string;
+}
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const hasCompare = citiesOrder.length > 1;
+// --- SUB-COMPONENTS ---
 
-  const groupedData = useMemo(() => {
-    const groups: Record<string, GroupedQuarter> = {};
-    const startVal = getQuarterValue(startPeriod);
-    const endVal = getQuarterValue(endPeriod);
-    const mainCityId = citiesOrder[0];
+const EventCard = ({ event }: { event: EventItem }) => {
+  const cityColor = event.city ? getCityColor(event.city) : NATIONAL_CONFIG.color;
+  const categoryStyle = event.category === '政策' 
+    ? 'bg-rose-100 text-rose-700 border-rose-200' 
+    : 'bg-emerald-100 text-emerald-700 border-emerald-200';
 
-    for (let y = 2013; y <= 2025; y++) {
-      for (let q = 1; q <= 4; q++) {
-        const currentVal = y * 10 + q;
-        if (currentVal >= startVal && currentVal <= endVal) {
-           const qKey = `${y}_Q${q}`;
-           groups[qKey] = { year: y, quarter: `Q${q}`, nationalEvents: [], mainCityEvents: [], compareEvents: [] };
-        }
-      }
-    }
-    data.forEach(event => {
-      const key = `${event.year}_${event.quarter}`;
-      if (groups[key]) {
-        if (event.isNational) groups[key].nationalEvents.push(event);
-        else if (event.city === mainCityId) groups[key].mainCityEvents.push(event);
-        else groups[key].compareEvents.push(event);
-      }
-    });
-    Object.values(groups).forEach(group => {
-      group.compareEvents.sort((a, b) => {
-        const indexA = a.city ? citiesOrder.indexOf(a.city) : 999;
-        const indexB = b.city ? citiesOrder.indexOf(b.city) : 999;
-        return indexA - indexB;
-      });
-    });
-    return Object.values(groups).sort((a, b) => {
-       if (a.year !== b.year) return a.year - b.year;
-       return a.quarter.localeCompare(b.quarter);
-    });
-  }, [data, startPeriod, endPeriod, citiesOrder]);
-
-  const renderEventCard = (event: EventItem, index: number, type: 'nat' | 'main' | 'comp') => {
-    const uniqueId = `${event.year}_${event.quarter}_${type}_${index}`;
-    const cityColor = event.city ? getCityColor(event.city) : NATIONAL_CONFIG.color;
-
-    return (
-      <div 
-        key={uniqueId}
-        className={`w-full group/card relative rounded-xl border transition-all duration-300 overflow-hidden bg-white/80 hover:bg-white border-slate-200/60 hover:border-slate-300 hover:shadow-md`}
-        style={{ borderLeft: `4px solid ${cityColor}` }}
-      >
-        <div className="p-2.5">
-          {event.category && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold ${
-                 event.category === '政策' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
-              }`}>
-                {event.category}
-              </span>
-            </div>
-          )}
-          {event.description && (
-            <div className="overflow-hidden">
-              <div 
-                className="text-xs text-slate-600 leading-relaxed font-medium"
-                dangerouslySetInnerHTML={{ __html: event.description || "" }} 
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-  
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -350 : 350;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  const cityEventsTitle = hasCompare ? `${mainCityName} / ${citiesOrder.slice(1).map(getCityName).join(' / ')}` : mainCityName;
+  // Add margin-left for city events to make space for the vertical name
+  const cardMargin = !event.isNational ? "ml-6" : "";
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-100 relative">
-      {/* Arrow Buttons */}
-       <button 
-           onClick={() => handleScroll('left')}
-           className="absolute top-1/2 left-2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md border border-slate-100 text-slate-600 hover:text-slate-900 transition-all"
-       >
-           <ChevronLeft size={20} />
-       </button>
-       <button 
-           onClick={() => handleScroll('right')}
-           className="absolute top-1/2 right-2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md border border-slate-100 text-slate-600 hover:text-slate-900 transition-all"
-       >
-           <ChevronRight size={20} />
-       </button>
-
-      {/* Main Content */}
-      <div 
-        ref={scrollRef}
-        className="w-full h-full flex-1 overflow-auto custom-scrollbar"
-      >
-        <div className="flex flex-nowrap relative px-4">
-            {groupedData.map((group) => (
-                <div key={`${group.year}_${group.quarter}`} className="relative flex-shrink-0 w-80 px-4">
-                   {/* Timeline Marker */}
-                   <div className="flex items-center gap-4 my-4">
-                       <div className="flex-1 h-px bg-slate-300"></div>
-                       <div className="flex-shrink-0 flex flex-col items-center justify-center w-20 h-14 rounded-lg bg-white/50 border border-slate-200 shadow-sm text-center">
-                         <span className="text-sm font-extrabold text-slate-500 block">{group.year}</span>
-                         <span className="text-lg font-black text-slate-800">{group.quarter}</span>
-                       </div>
-                       <div className="flex-1 h-px bg-slate-300"></div>
-                   </div>
-
-                   {/* Event Cards Container */}
-                   <div className="space-y-4">
-                        {/* Top section for National Events */}
-                        <div className="space-y-3">
-                            <h3 className="text-center font-bold text-slate-500">全國</h3>
-                            {group.nationalEvents.map((event, idx) => renderEventCard(event, idx, 'nat'))}
-                        </div>
-                       
-                       <hr className="border-slate-300/70 border-dashed"/>
-
-                        {/* Bottom section for City Events */}
-                        <div className="space-y-3">
-                           <h3 className="text-center font-bold text-slate-500">{cityEventsTitle}</h3>
-                           {group.mainCityEvents.map((event, idx) => renderEventCard(event, idx, 'main'))}
-                           {group.compareEvents.map((event, idx) => renderEventCard(event, idx, 'comp'))}
-                        </div>
-                   </div>
-                </div>
-            ))}
+    <div className={`w-full group/card relative rounded-lg border transition-all duration-200 bg-white/70 hover:bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xl hover:scale-[1.02] hover:z-10 ${cardMargin}`}>
+      {/* Vertical City Name for non-national events */}
+      {!event.isNational && (
+        <div 
+          className="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-bottom-left"
+          style={{ color: cityColor }}
+        >
+          <span className="text-xs font-bold whitespace-nowrap tracking-wider">
+            {event.cityName}
+          </span>
         </div>
+      )}
+
+      <div className="p-3">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="font-bold text-sm text-slate-800 leading-tight">{event.title}</p>
+          {event.category && (
+            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap border ${categoryStyle}`}>
+              {event.category}
+            </span>
+          )}
+        </div>
+        {event.description && (
+          <div 
+            className="text-xs text-slate-600 leading-relaxed font-medium prose-p:my-1 prose-ul:my-1"
+            dangerouslySetInnerHTML={{ __html: event.description }} 
+          />
+        )}
       </div>
+    </div>
+  );
+};
+
+
+// --- MAIN COMPONENT ---
+
+export default function EventList({ data, startPeriod, endPeriod, citiesOrder, mainCityName }: EventListProps) {
+  const hasCompare = citiesOrder.length > 1;
+
+  // 1. Separate and group national events by year
+  const nationalEventsByYear = useMemo(() => {
+    const startVal = getQuarterValue(startPeriod);
+    const endVal = getQuarterValue(endPeriod);
+    const groups: Record<number, EventItem[]> = {};
+
+    data.forEach(event => {
+      if (!event.isNational) return;
+      const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
+      if (eventTimeVal >= startVal && eventTimeVal <= endVal) {
+        if (!groups[event.year]) {
+          groups[event.year] = [];
+        }
+        groups[event.year].push(event);
+      }
+    });
+
+    return Object.entries(groups)
+      .map(([year, events]) => ({
+        year: Number(year),
+        events: events.sort((a,b) => a.quarter.localeCompare(b.quarter)),
+      }))
+      .sort((a, b) => a.year - b.year);
+  }, [data, startPeriod, endPeriod]);
+
+
+  // 2. Group city events by year and quarter
+  const cityEventsByYear = useMemo(() => {
+    const mainCityId = citiesOrder[0];
+    const yearGroups: Record<number, Record<string, EventItem[]>> = {};
+    const startVal = getQuarterValue(startPeriod);
+    const endVal = getQuarterValue(endPeriod);
+
+    data.forEach(event => {
+      if (event.isNational) return;
+      
+      const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
+      if (eventTimeVal < startVal || eventTimeVal > endVal) return;
+
+      if (!yearGroups[event.year]) {
+        yearGroups[event.year] = {};
+      }
+      if (!yearGroups[event.year][event.quarter]) {
+        yearGroups[event.year][event.quarter] = [];
+      }
+      yearGroups[event.year][event.quarter].push(event);
+    });
+
+    return Object.entries(yearGroups)
+      .map(([year, quarters]) => ({
+        year: Number(year),
+        quarters: Object.entries(quarters)
+          .map(([quarter, events]) => {
+            events.sort((a, b) => {
+              if (a.city === mainCityId && b.city !== mainCityId) return -1;
+              if (a.city !== mainCityId && b.city === mainCityId) return 1;
+              const indexA = a.city ? citiesOrder.indexOf(a.city) : 999;
+              const indexB = b.city ? citiesOrder.indexOf(b.city) : 999;
+              return indexA - indexB;
+            });
+            return { quarter, events };
+          })
+          .sort((a, b) => a.quarter.localeCompare(b.quarter)),
+      }))
+      .sort((a, b) => a.year - b.year);
+  }, [data, startPeriod, endPeriod, citiesOrder]);
+
+
+
+  return (
+    <div className="w-full h-full flex gap-x-12 px-8 bg-slate-100 relative isolate">
+
+      {/* --- LEFT COLUMN: National Timeline --- */}
+      <aside className="w-72 shrink-0 h-full sticky top-0 py-6">
+        <div className="text-center mb-6">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
+              <Landmark className="text-slate-400" size={20}/>
+              全國事件
+            </h2>
+        </div>
+        <div className="h-[calc(100%-68px)] overflow-y-auto custom-scrollbar pr-4">
+          <div className="relative pl-6">
+            {/* The vertical line */}
+            <div className="absolute left-[29px] top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
+            
+            {nationalEventsByYear.map(yearGroup => (
+              <div key={yearGroup.year} className="relative mb-6">
+                <div className="flex items-center gap-4 sticky top-0 bg-slate-100 py-1 z-10">
+                   <div className="z-10 w-4 h-4 rounded-full bg-slate-400 ring-4 ring-slate-100"></div>
+                   <h3 className="font-bold text-slate-600 text-lg">{yearGroup.year}</h3>
+                </div>
+                <div className="pt-2 pl-2 space-y-4">
+                  {yearGroup.events.map((event, idx) => (
+                    <div key={idx} className="relative">
+                       <div className="absolute left-[5px] top-4 w-2 h-2 rounded-full bg-slate-300 ring-2 ring-slate-100"></div>
+                       <div className="pl-8">
+                         <EventCard event={event} />
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      {/* --- RIGHT COLUMN: City Timelines --- */}
+      <main className="flex-1 min-w-0 py-6 flex flex-col">
+         <div className="text-center mb-6 shrink-0">
+            <h2 className="text-lg font-bold text-slate-800">城市事件</h2>
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-4 pr-8">
+            <div className="relative pl-3">
+                {/* The vertical line */}
+                <div className="absolute left-6 top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
+
+                {cityEventsByYear.map((yearGroup) => (
+                <div key={yearGroup.year} className="relative mb-8">
+                    {/* Year Marker */}
+                    <div className="flex items-center gap-4 sticky top-0 bg-slate-100 py-2 z-10">
+                        <div className="z-10 w-4 h-4 rounded-full bg-slate-400 ring-4 ring-slate-100"></div>
+                        <h3 className="font-bold text-slate-600 text-xl">{yearGroup.year}</h3>
+                    </div>
+
+                    {/* Quarters */}
+                    <div className="pt-2 pl-10 space-y-6">
+                    {yearGroup.quarters.map((qGroup) => (
+                        <div key={qGroup.quarter} className="relative">
+                            {/* Quarter Marker */}
+                            <div className="absolute -left-5 top-5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-2 ring-slate-100"></div>
+                            <div className="flex gap-4 items-start">
+                               <p className="text-sm font-bold text-slate-500 w-8 text-right">{qGroup.quarter}</p>
+                               <div className="flex-1 space-y-3">
+                                {qGroup.events.length > 0 
+                                    ? qGroup.events.map((event, idx) => ( <EventCard key={idx} event={event} /> ))
+                                    : ( <div className="h-10"></div> )
+                                }
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                ))}
+            </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -45,7 +45,7 @@ interface SidebarProps {
 const InfoCard = ({ icon, title, description, children }: { icon: React.ReactNode, title: string, description: string, children: React.ReactNode }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
     <div className="flex items-start gap-4">
-      <div className="bg-slate-100 rounded-lg p-2 text-blue-600">{icon}</div>
+      <div className="bg-slate-100 rounded-lg p-2 text-orange-600">{icon}</div>
       <div>
         <h3 className="font-bold text-slate-800">{title}</h3>
         <p className="text-xs text-slate-500 mt-1">{description}</p>
@@ -106,7 +106,7 @@ export default function DashboardSidebar({
         
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="hidden md:flex absolute -right-4 top-8 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-blue-600 hover:scale-110 z-50 transition-all hover:shadow-xl"
+          className="hidden md:flex absolute -right-4 top-8 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-orange-600 hover:scale-110 z-50 transition-all hover:shadow-xl"
         >
           {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
@@ -121,7 +121,7 @@ export default function DashboardSidebar({
           )}
           
           <div className="relative z-10 flex items-center gap-3">
-            <div className={`p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/50 shrink-0 flex items-center justify-center`}>
+            <div className={`p-2 bg-orange-500 rounded-lg shadow-lg shadow-orange-800/50 shrink-0 flex items-center justify-center`}>
               <Building2 className="w-5 h-5 text-white" />
             </div>
             
@@ -151,7 +151,7 @@ export default function DashboardSidebar({
              <>
               <InfoCard title="資料與指標" description="選擇圖表與時間軸呈現的數據類型" icon={<TrendingUp />}>
                 <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200">
-                  <button onClick={() => setDataType('price')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${dataType === 'price' ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}>
+                  <button onClick={() => setDataType('price')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${dataType === 'price' ? 'bg-white text-orange-600 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}>
                     <DollarSign className="w-3.5 h-3.5" />房價中位數
                   </button>
                   <button onClick={() => setDataType('index')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${dataType === 'index' ? 'bg-white text-amber-600 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}>
@@ -163,11 +163,11 @@ export default function DashboardSidebar({
 
               <InfoCard title="時間區間" description="設定您想觀察的事件與房價時間範圍" icon={<Calendar />}>
                 <div className="flex items-center gap-2">
-                  <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
+                  <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                   <ArrowRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
+                  <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                 </div>
@@ -181,13 +181,13 @@ export default function DashboardSidebar({
                         <button onClick={() => handleMainCityChange("nation")} className={`col-span-2 p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm flex items-center justify-center gap-2 group ${mainCity === "nation" ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
                            {mainCity === "nation" ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3 opacity-30" />}全國均價
                         </button>
-                        {CITIES_CONFIG.map(c => (<button key={c.id} onClick={() => handleMainCityChange(c.id)} className={`p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm ${mainCity === c.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200'}`}>{c.label}</button>))}
+                        {CITIES_CONFIG.map(c => (<button key={c.id} onClick={() => handleMainCityChange(c.id)} className={`p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm ${mainCity === c.id ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-orange-600 hover:border-orange-200'}`}>{c.label}</button>))}
                     </div>
                   </div>
                   <div>
                      <label className="text-xs font-bold text-slate-500">比較城市</label>
                      <div className="relative mt-2 mb-3">
-                       <select onChange={handleCompareSelect} defaultValue="default" disabled={compareCities.length >= 3} className="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-lg pl-3 pr-2 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                       <select onChange={handleCompareSelect} defaultValue="default" disabled={compareCities.length >= 3} className="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-lg pl-3 pr-2 py-2 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all appearance-none cursor-pointer hover:border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed">
                          <option value="default" disabled>{compareCities.length >= 3 ? "已達上限 (最多3個)" : "點擊新增對照城市..."}</option>
                          {CITIES_CONFIG.filter(c => c.id !== mainCity && !compareCities.includes(c.id)).map(c => (<option key={c.id} value={c.id}>{c.label}</option>))}
                        </select>

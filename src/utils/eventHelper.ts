@@ -1,5 +1,7 @@
 // src/utils/eventHelper.ts
 
+import { getCityName } from "@/config/cityColors";
+
 // 1. 主要清洗邏輯
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processEvents = (data: any[]) => {
@@ -21,7 +23,7 @@ export const processEvents = (data: any[]) => {
 
     // 判斷這筆資料屬於哪個城市
     // 邏輯：檢查物件裡有沒有特定的 Key (例如 KaohsiungLabel)
-    let city = "oldLabel"; // 預設為全國
+    let city = "nation"; // 預設為全國
     let title = item.Label || "大事紀";
 
     if (item.TaipeiLabel) {
@@ -51,9 +53,10 @@ export const processEvents = (data: any[]) => {
       year: parseInt(yearStr) || 0,
       quarter: quarterStr || "",
       city: city,
+      cityName: getCityName(city), // Add city name
       title: title,
       category: item.Category,
-      isNational: city === "oldLabel",
+      isNational: city === "nation",
       
       // ⚠️ 關鍵：將原始資料的 Detail 對應到 description (給彈跳視窗用)
       description: item.Detail || null, 

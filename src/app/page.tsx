@@ -7,7 +7,7 @@ import EventList from "@/components/EventList";
 import InfoTooltip from '@/components/InfoTooltip'; // 匯入組件
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
-import { CITIES_CONFIG, getCityName } from "@/config/cityColors";
+import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -45,7 +45,7 @@ export default function Home() {
   };
   
   const getDisplayColor = (id: string) => {
-    if (id === "nation") return "#333333";
+    if (id === "nation") return NATIONAL_CONFIG.color;
     const city = CITIES_CONFIG.find(c => c.id === id);
     return city ? city.color : "#333333";
   };
@@ -57,12 +57,23 @@ export default function Home() {
   const currentViewEvents = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
-    return allEvents.filter(event => {
+    
+    const nationalEvents = allEvents.filter(event => {
       const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
       const isTimeMatch = eventTimeVal >= startVal && eventTimeVal <= endVal;
-      const isCityMatch = event.city === 'oldLabel' || chartCities.includes(event.city);
-      return isTimeMatch && isCityMatch;
+      return event.isNational && isTimeMatch;
     });
+
+    const cityEvents = allEvents.filter(event => {
+      const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
+      const isTimeMatch = eventTimeVal >= startVal && eventTimeVal <= endVal;
+      return !event.isNational && chartCities.includes(event.city) && isTimeMatch;
+    });
+
+    // Use a Set to avoid duplicates, then convert back to an array
+    const eventSet = new Set([...nationalEvents, ...cityEvents]);
+    return Array.from(eventSet);
+
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
   // === 4. 畫面渲染 (Render) ===
@@ -116,20 +127,19 @@ export default function Home() {
            </div>
         </header>
 
-        {/* List Content: Takes up remaining space and scrolls */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 p-8 z-10">
+        {/* List Content: Takes up 60% of the space */}
+        <div className="h-[60%] bg-slate-50/50 z-10">
           <EventList 
             data={currentViewEvents} 
             startPeriod={startPeriod} 
             endPeriod={endPeriod} 
-            quarterWidth={0} 
             citiesOrder={chartCities} 
             mainCityName={getDisplayName(mainCity)}
           />
         </div>
 
-        {/* 3. 底部圖表組件 */}
-        <div className="shrink-0 z-20">
+        {/* 3. 底部圖表組件: Takes up 40% of the space */}
+        <div className="h-[40%] shrink-0 z-20">
           <DashboardChart 
             selectedCities={chartCities}
             startPeriod={startPeriod}

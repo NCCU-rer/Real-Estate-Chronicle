@@ -14,7 +14,7 @@ import {
   Area,
   ComposedChart,
 } from "recharts";
-import { CITIES_CONFIG } from "@/config/cityColors";
+import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { rawPriceData } from "@/data/priceData";
 import { rawIndexData } from "@/data/indexData";
@@ -55,7 +55,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
     return (
       <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
-          <span className="w-1 h-3 bg-blue-500 rounded-full"></span>
+          <span className="w-1 h-3 bg-orange-500 rounded-full"></span>
           {label}
         </p>
         <div className="space-y-1.5">
@@ -92,7 +92,7 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[]
          <p className="font-bold text-slate-700 truncate flex items-center gap-2">
            {label ? (
              <>
-               <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+               <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
                {label}
              </>
            ) : (
@@ -230,7 +230,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
 
   const mainCityId = selectedCities.length > 0 ? selectedCities[0] : 'nation';
   const mainCityConfig = CITIES_CONFIG.find(c => c.id === mainCityId);
-  const mainCityColor = mainCityConfig ? mainCityConfig.color : '#94a3b8';
+  const mainCityColor = mainCityId === 'nation' ? NATIONAL_CONFIG.color : (mainCityConfig ? mainCityConfig.color : '#94a3b8');
 
   return (
     <div className="w-full h-full select-none flex flex-col font-sans" onClick={(e) => e.stopPropagation()}>
@@ -350,8 +350,8 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
           </ResponsiveContainer>
         </div>
         
-        {/* 優化後的 Brush 區域 - 固定高度 50px，確保永遠可見 */}
-        <div className="h-12.5 w-full px-2 shrink-0">
+        {/* 優化後的 Brush 區域 - 固定高度 32px，確保永遠可見 */}
+        <div className="h-8 w-full px-2 shrink-0">
            <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={filteredData}
@@ -359,11 +359,11 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
             >
               <Brush 
                 dataKey="quarter" 
-                height={40} 
-                stroke="#3b82f6"     // ★ 選取框邊框：亮藍色，非常明顯
+                height={20} 
+                stroke="#f97316"     // ★ 選取框邊框：亮橘色
                 travellerWidth={20} 
-                fill="#eff6ff"       // ★ 選取框背景：淺藍色，與未選取區分
-                fillOpacity={0.2}    // ★ 輕微透明
+                fill="#fff7ed"       // ★ 選取框背景：淺橘色
+                fillOpacity={0.4}    // ★ 輕微透明
                 tickFormatter={() => ""} 
                 onChange={handleBrushChange}
                 alwaysShowText={false}
