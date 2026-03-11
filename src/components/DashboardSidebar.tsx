@@ -146,7 +146,7 @@ export default function DashboardSidebar({
 
         <div 
           className={`
-            bg-slate-800 text-white flex items-center shrink-0 relative overflow-hidden group transition-all duration-300 p-6 justify-between
+            bg-orange-600 text-white flex items-center shrink-0 relative overflow-hidden group transition-all duration-300 p-6 justify-between
           `}
         >
           <div className="relative z-10 flex items-center gap-3">

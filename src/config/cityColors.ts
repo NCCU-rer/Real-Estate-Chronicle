@@ -6,24 +6,23 @@ export interface CityConfig {
   color: string; // 主色 (用於線條、文字)
 }
 
-// 根據您提供的圖片 (Scientific Color Palette) 進行配色
-// 這些顏色取自圖片底部的色票，具有高對比且沈穩的特性
+// 推薦的高對比類別色票 (Categorical Palette)
+// 這些顏色跨度較大，能有效在圖表中區分多條重疊的線條
 export const CITIES_CONFIG: CityConfig[] = [
-  // Using shades of amber/orange
-  { id: "taipei", label: "台北市", color: "#f59e0b" },    // amber-500
-  { id: "newTaipei", label: "新北市", color: "#fbbf24" },  // amber-400
-  { id: "taoyuan", label: "桃園市", color: "#f97316" },    // orange-500
-  { id: "hsinchu", label: "新竹縣/市", color: "#fb923c" },  // orange-400
-  { id: "taichung", label: "台中市", color: "#ea580c" },    // orange-600
-  { id: "tainan", label: "台南市", color: "#c2410c" },    // orange-700
-  { id: "kaohsiung", label: "高雄市", color: "#9a3412" },   // orange-800
+  { id: "taipei", label: "台北市", color: "#2563eb" },    // 藍色 (blue-600)
+  { id: "newTaipei", label: "新北市", color: "#059669" },  // 綠色 (emerald-600)
+  { id: "taoyuan", label: "桃園市", color: "#d97706" },    // 琥珀色 (amber-600)
+  { id: "hsinchu", label: "新竹縣/市", color: "#0891b2" },  // 青色 (cyan-600)
+  { id: "taichung", label: "台中市", color: "#dc2626" },    // 紅色 (red-600)
+  { id: "tainan", label: "台南市", color: "#7c3aed" },    // 紫色 (violet-600)
+  { id: "kaohsiung", label: "高雄市", color: "#db2777" },   // 粉色 (pink-600)
 ];
 
-// 全國：使用圖片中的深灰色/黑色，保持中立
+// 全國：使用中立的深灰色，作為基準線
 export const NATIONAL_CONFIG = {
   id: "nation",
-  label: "全國/歷史",
-  color: "#333333", 
+  label: "全國均價",
+  color: "#475569", // slate-600
 };
 
 // 輔助函式：取得顏色
