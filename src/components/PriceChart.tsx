@@ -17,14 +17,12 @@ import {
 import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { rawPriceData } from "@/data/priceData";
-import { rawIndexData } from "@/data/indexData";
 import { CalendarRange } from "lucide-react";
 
 interface PriceChartProps {
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
-  dataType?: 'price' | 'index';
   isSmallMode?: boolean;
 }
 
@@ -136,12 +134,12 @@ const TooltipSpy = React.memo(({ active, payload, setActiveDataPoint }: { active
 TooltipSpy.displayName = 'TooltipSpy';
 
 
-export default function PriceChart({ selectedCities, startPeriod, endPeriod, dataType = 'price' }: PriceChartProps) {
+export default function PriceChart({ selectedCities, startPeriod, endPeriod }: PriceChartProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [activeDataPoint, setActiveDataPoint] = useState<TooltipPayloadItem[] | null>(null);
 
-  const sourceData = dataType === 'price' ? rawPriceData : rawIndexData;
-  const unitLabel = dataType === 'price' ? "萬" : ""; 
+  const sourceData = rawPriceData;
+  const unitLabel = "萬"; 
 
   const filteredData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
@@ -153,19 +151,19 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
       rawQuarter: item.Quarter,
       quarter: item.Quarter.replace("_", " "),
       shortQuarter: item.Quarter.split("_")[0].slice(2) + (item.Quarter.includes("Q1") ? "'" : ""), // '13, '14...
-      nation: item.Nation?.all ? (dataType === 'price' ? item.Nation.all / 10000 : item.Nation.all) : 0,
-      taipei: item.Taipei?.all ? (dataType === 'price' ? item.Taipei.all / 10000 : item.Taipei.all) : 0,
-      newTaipei: item.NewTaipei?.all ? (dataType === 'price' ? item.NewTaipei.all / 10000 : item.NewTaipei.all) : 0,
-      taoyuan: item.Taoyuan?.all ? (dataType === 'price' ? item.Taoyuan.all / 10000 : item.Taoyuan.all) : 0,
-      taichung: item.Taichung?.all ? (dataType === 'price' ? item.Taichung.all / 10000 : item.Taichung.all) : 0,
-      tainan: item.Tainan?.all ? (dataType === 'price' ? item.Tainan.all / 10000 : item.Tainan.all) : 0,
-      kaohsiung: item.Kaohsiung?.all ? (dataType === 'price' ? item.Kaohsiung.all / 10000 : item.Kaohsiung.all) : 0,
-      hsinchu: item.Hsinchu?.all ? (dataType === 'price' ? item.Hsinchu.all / 10000 : item.Hsinchu.all) : 0,
+      nation: item.Nation?.all ? (item.Nation.all / 10000) : 0,
+      taipei: item.Taipei?.all ? (item.Taipei.all / 10000) : 0,
+      newTaipei: item.NewTaipei?.all ? (item.NewTaipei.all / 10000) : 0,
+      taoyuan: item.Taoyuan?.all ? (item.Taoyuan.all / 10000) : 0,
+      taichung: item.Taichung?.all ? (item.Taichung.all / 10000) : 0,
+      tainan: item.Tainan?.all ? (item.Tainan.all / 10000) : 0,
+      kaohsiung: item.Kaohsiung?.all ? (item.Kaohsiung.all / 10000) : 0,
+      hsinchu: item.Hsinchu?.all ? (item.Hsinchu.all / 10000) : 0,
     })).filter(item => {
       const currentVal = getQuarterValue(item.rawQuarter);
       return currentVal >= startVal && currentVal <= endVal;
     });
-  }, [startPeriod, endPeriod, dataType, sourceData]);
+  }, [startPeriod, endPeriod, sourceData]);
 
   const [brushedData, setBrushedData] = useState(filteredData);
   // 新增狀態來追蹤目前顯示的時間範圍
@@ -303,18 +301,20 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod, dat
               />
               
               {/* 這裡改用 ComposedChart 混和 Area 和 Line */}
-              {/* 1. 全國 (虛線) */}
-              <Line
-                type="monotone"
-                dataKey="nation"
-                name="全國"
-                stroke="#94a3b8" 
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                dot={false}
-                activeDot={{ r: 5, strokeWidth: 0, fill: '#94a3b8' }}
-                animationDuration={500}
-              />
+              {/* 1. 全國 (虛線) - 僅在選中時顯示 */}
+              {selectedCities.includes('nation') && (
+                <Line
+                  type="monotone"
+                  dataKey="nation"
+                  name="全國"
+                  stroke="#94a3b8" 
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                  dot={false}
+                  activeDot={{ r: 5, strokeWidth: 0, fill: '#94a3b8' }}
+                  animationDuration={500}
+                />
+              )}
 
               {/* 2. 其他選中城市 (實線 + 漸層 Area) */}
               {CITIES_CONFIG.map((city) => {

@@ -18,17 +18,15 @@ interface DashboardChartProps {
   selectedCities: string[];
   startPeriod: string;
   endPeriod: string;
-  dataType?: 'price' | 'index';
 }
 
 export default function DashboardChart({
   selectedCities,
   startPeriod,
   endPeriod,
-  dataType = 'price',
 }: DashboardChartProps) {
   
-  const chartTitle = dataType === 'price' ? '房價中位數走勢圖' : '政大永慶房價指數';
+  const chartTitle = '房價中位數走勢圖';
 
   return (
     <div className="w-full h-full bg-white border-t border-slate-200 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col">
@@ -44,7 +42,6 @@ export default function DashboardChart({
           selectedCities={selectedCities} 
           startPeriod={startPeriod} 
           endPeriod={endPeriod} 
-          dataType={dataType}
           isSmallMode={false} // isSmallMode is kept for brush visibility, but chart is not resizable.
         />
       </div>

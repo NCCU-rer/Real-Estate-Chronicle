@@ -1,7 +1,7 @@
 "use client";
 
 import { generateQuarterOptions } from "@/utils/eventHelper";
-import { CITIES_CONFIG } from "@/config/cityColors"; 
+import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors"; 
 import { 
   Building2, 
   Calendar, 
@@ -38,20 +38,18 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
-  dataType: 'price' | 'index';
-  setDataType: (v: 'price' | 'index') => void;
 }
 
 const InfoCard = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
-  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-    <div className="flex items-start gap-4">
+  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+    <div className="flex items-start gap-3">
       {/* <div className="bg-slate-100 rounded-lg p-2 text-slate-600">{icon}</div> */}
       <div>
-        <h3 className="font-bold text-slate-800">{title}</h3>
-        <p className="text-xs text-slate-500 mt-1">{description}</p>
+        <h3 className="font-bold text-slate-700 text-sm">{title}</h3>
+        <p className="text-[10px] text-slate-500 mt-0.5">{description}</p>
       </div>
     </div>
-    <div className="mt-5">{children}</div>
+    <div className="mt-3">{children}</div>
   </div>
 );
 
@@ -69,8 +67,6 @@ export default function DashboardSidebar({
   compareCities,
   toggleCompare,
   handleCancelCompare,
-  dataType,
-  setDataType,
 }: SidebarProps) {
 
   const handleCompareSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -84,8 +80,6 @@ export default function DashboardSidebar({
   const expandSidebar = () => {
     if (isSidebarCollapsed) setIsSidebarCollapsed(false);
   };
-
-  const mainCityLabel = mainCity === 'nation' ? '全國均價' : CITIES_CONFIG.find(c => c.id === mainCity)?.label;
 
   return (
     <>
@@ -130,29 +124,16 @@ export default function DashboardSidebar({
 
         <div className={`
           flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden transition-all duration-300
-          ${isSidebarCollapsed ? "space-y-3 p-3" : "space-y-4 p-6"}
+          ${isSidebarCollapsed ? "space-y-3 p-3" : "space-y-3 p-4"}
         `}>
           {isSidebarCollapsed ? (
              <>
-                <div onClick={expandSidebar} title="資料與指標" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100">資料</div>
                 <div onClick={expandSidebar} title="時間區間" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100">時間</div>
                 <div onClick={expandSidebar} title="城市設定" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100">城市</div>
                 <div onClick={expandSidebar} title="輸出與分享" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100">分享</div>
              </>
           ) : (
              <>
-              <InfoCard title="資料與指標" description="選擇圖表與時間軸呈現的數據類型">
-                <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200">
-                  <button onClick={() => setDataType('price')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${dataType === 'price' ? 'bg-white text-slate-700 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}>
-                    房價中位數
-                  </button>
-                  <button onClick={() => setDataType('index')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-md transition-all duration-200 ${dataType === 'index' ? 'bg-white text-slate-700 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}>
-                    永慶房價指數
-                  </button>
-                </div>
-                <p className="text-xs text-slate-500 mt-3 text-center">目前：<span className="font-bold text-slate-600">{dataType === 'price' ? '房價中位數 (萬/坪)' : '永慶房價指數'}</span></p>
-              </InfoCard>
-
               <InfoCard title="時間區間" description="設定您想觀察的事件與房價時間範圍">
                 <div className="flex items-center gap-2">
                   <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all font-bold appearance-none cursor-pointer hover:bg-white">
@@ -165,39 +146,73 @@ export default function DashboardSidebar({
                 </div>
               </InfoCard>
 
-              <InfoCard title="城市設定" description="選擇主要觀察城市，並加入最多3個城市比較">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-slate-500">主要城市</label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                        <button onClick={() => handleMainCityChange("nation")} className={`col-span-2 p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm flex items-center justify-center gap-2 group ${mainCity === "nation" ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                           全國均價
-                        </button>
-                        {CITIES_CONFIG.map(c => (<button key={c.id} onClick={() => handleMainCityChange(c.id)} className={`p-2 rounded-lg text-xs font-bold transition-all duration-200 border shadow-sm ${mainCity === c.id ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300'}`}>{c.label}</button>))}
+              <InfoCard title="城市選取" description="點擊名稱設為主要，點擊 ＋ 號加入對照 (最多3個)">
+                <div className="space-y-2">
+                  {/* 全國選項 */}
+                  <div className={`
+                    flex items-center justify-between p-2 rounded-lg border transition-all
+                    ${mainCity === 'nation' ? 'bg-slate-800 border-slate-800 text-white shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}
+                    ${compareCities.includes('nation') ? 'ring-2 ring-orange-500/20 border-orange-200 bg-orange-50/30' : ''}
+                  `}>
+                    <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => handleMainCityChange('nation')}>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: NATIONAL_CONFIG.color }}></div>
+                      <span className="text-xs font-bold">全國均價</span>
                     </div>
+
+                    {mainCity !== 'nation' && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); toggleCompare('nation'); }}
+                        className={`
+                          ml-1 p-1 rounded-md transition-all
+                          ${compareCities.includes('nation') ? 'bg-orange-500 text-white' : 'text-slate-300 hover:bg-slate-100 hover:text-slate-600'}
+                        `}
+                        title={compareCities.includes('nation') ? "移除對照" : "加入對照"}
+                      >
+                        {compareCities.includes('nation') ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                      </button>
+                    )}
                   </div>
-                  <div>
-                     <label className="text-xs font-bold text-slate-500">比較城市</label>
-                     <div className="relative mt-2 mb-3">
-                       <select onChange={handleCompareSelect} defaultValue="default" disabled={compareCities.length >= 3} className="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-lg pl-3 pr-2 py-2 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all appearance-none cursor-pointer hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                         <option value="default" disabled>{compareCities.length >= 3 ? "已達上限 (最多3個)" : "點擊新增對照城市..."}</option>
-                         {CITIES_CONFIG.filter(c => c.id !== mainCity && !compareCities.includes(c.id)).map(c => (<option key={c.id} value={c.id}>{c.label}</option>))}
-                       </select>
-                     </div>
-                     <div className="flex flex-wrap gap-2 min-h-7.5">
-                       {compareCities.map(cityId => {
-                         const cityConfig = CITIES_CONFIG.find(c => c.id === cityId);
-                         if (!cityConfig) return null;
-                         return (
-                           <span key={cityId} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 group animate-in fade-in zoom-in duration-200">
-                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cityConfig.color }}></span>
-                             {cityConfig.label}
-                             <button onClick={() => toggleCompare(cityId)} className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-red-500 transition-colors">移除</button>
-                           </span>
-                         );
-                       })}
-                     </div>
+
+                  {/* 城市網格 */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {CITIES_CONFIG.map(city => {
+                      const isMain = mainCity === city.id;
+                      const isComparing = compareCities.includes(city.id);
+                      
+                      return (
+                        <div key={city.id} className={`
+                          relative flex items-center justify-between p-2 rounded-lg border transition-all group
+                          ${isMain ? 'bg-slate-700 border-slate-700 text-white shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}
+                          ${isComparing ? 'ring-2 ring-orange-500/20 border-orange-200 bg-orange-50/30' : ''}
+                        `}>
+                          <div className="flex items-center gap-2 flex-1 cursor-pointer overflow-hidden" onClick={() => handleMainCityChange(city.id)}>
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: city.color }}></div>
+                            <span className="text-xs font-bold truncate">{city.label}</span>
+                          </div>
+                          
+                          {!isMain && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); toggleCompare(city.id); }}
+                              className={`
+                                ml-1 p-1 rounded-md transition-all
+                                ${isComparing ? 'bg-orange-500 text-white' : 'text-slate-300 hover:bg-slate-100 hover:text-slate-600'}
+                              `}
+                              title={isComparing ? "移除對照" : "加入對照"}
+                            >
+                              {isComparing ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
+
+                  {compareCities.length > 0 && (
+                    <div className="pt-2 flex items-center justify-between">
+                       <span className="text-[10px] font-bold text-slate-400">目前對照：{compareCities.length} / 3</span>
+                       <button onClick={handleCancelCompare} className="text-[10px] font-bold text-orange-500 hover:text-orange-600 underline underline-offset-2">清除全部對照</button>
+                    </div>
+                  )}
                 </div>
               </InfoCard>
 

@@ -17,8 +17,6 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  // ✨ 新增：資料模式狀態 ('price' = 房價中位數, 'index' = 房價指數)
-  const [dataType, setDataType] = useState<'price' | 'index'>('price');
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -61,7 +59,7 @@ export default function Home() {
     const nationalEvents = allEvents.filter(event => {
       const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
       const isTimeMatch = eventTimeVal >= startVal && eventTimeVal <= endVal;
-      return event.isNational && isTimeMatch;
+      return event.isNational && chartCities.includes('nation') && isTimeMatch;
     });
 
     const cityEvents = allEvents.filter(event => {
@@ -96,8 +94,6 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
-        dataType={dataType}
-        setDataType={setDataType}
       />
 
       {/* 2. 右側主要內容區 */}
@@ -144,10 +140,8 @@ export default function Home() {
             selectedCities={chartCities}
             startPeriod={startPeriod}
             endPeriod={endPeriod}
-            dataType={dataType}
           />
         </div>
-        
       </div>
 
       <InfoTooltip />
