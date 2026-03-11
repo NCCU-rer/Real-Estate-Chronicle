@@ -93,6 +93,16 @@ export default function DashboardSidebar({
     setIsSettingsOpen(false);
   };
 
+  const handleReset = () => {
+    setTempStart("2013_Q1");
+    setTempEnd("2025_Q4");
+    setTempMain("nation");
+    setTempCompare([]);
+    
+    // 立即同步回全域 (可選，這裡選擇點擊重設後仍需點擊確定，或直接同步)
+    // 為了體驗一致性，重設後也需要按「確定更新」才生效
+  };
+
   const hasChanges = tempStart !== startPeriod || 
                      tempEnd !== endPeriod || 
                      tempMain !== mainCity || 
@@ -248,7 +258,15 @@ export default function DashboardSidebar({
         
         {/* 底部固定確定按鈕區 */}
         {!isSidebarCollapsed && (
-          <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+          <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] space-y-2">
+            <button 
+              onClick={handleReset}
+              className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-100"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              重設所有設定
+            </button>
+            
             <button 
               onClick={handleApply}
               disabled={!hasChanges}
@@ -259,7 +277,7 @@ export default function DashboardSidebar({
                   : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
               `}
             >
-              <RotateCcw className={`w-6 h-6 ${hasChanges ? 'animate-spin-slow' : ''}`} />
+              <CheckCircle2 className={`w-6 h-6 ${hasChanges ? 'animate-pulse' : ''}`} />
               確定更新資料
             </button>
             {hasChanges && (
