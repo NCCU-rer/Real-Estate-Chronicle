@@ -3,7 +3,7 @@
 import { useMemo, useRef, useEffect } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { NATIONAL_CONFIG, getCityColor } from "@/config/cityColors";
-import { Landmark } from "lucide-react";
+import { Pin, GitCompare, Info } from "lucide-react";
 
 // --- TYPE DEFINITIONS ---
 interface EventItem {
@@ -21,47 +21,42 @@ interface EventListProps {
   data: EventItem[];
   startPeriod: string;
   endPeriod: string;
-  citiesOrder: string[];
-  mainCityName?: string;
+  citiesOrder: string[]; // [mainCityId, ...compareCitiesIds]
 }
 
 // --- SUB-COMPONENTS ---
 
-const EventCard = ({ event }: { event: EventItem }) => {
-  const cityColor = event.city ? getCityColor(event.city) : NATIONAL_CONFIG.color;
-  const categoryStyle = event.category === '政策' 
-    ? 'bg-rose-100 text-rose-700 border-rose-200' 
-    : 'bg-emerald-100 text-emerald-700 border-emerald-200';
-
-  // Add margin-left for city events to make space for the vertical name
-  const cardMargin = !event.isNational ? "ml-6" : "";
+const EventCard = ({ event, isMain }: { event: EventItem, isMain: boolean }) => {
+  const cityColor = event.isNational ? NATIONAL_CONFIG.color : (event.city ? getCityColor(event.city) : NATIONAL_CONFIG.color);
+  const isPolicy = event.category === '政策';
+  
+  const categoryStyle = isPolicy 
+    ? 'bg-rose-50 text-rose-600 border-rose-100' 
+    : 'bg-emerald-50 text-emerald-600 border-emerald-100';
 
   return (
-    <div className={`w-full group/card relative rounded-lg border transition-all duration-200 bg-white/70 hover:bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xl hover:scale-[1.02] hover:z-10 ${cardMargin}`}>
-      {/* Vertical City Name for non-national events */}
-      {!event.isNational && (
-        <div 
-          className="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-bottom-left"
-          style={{ color: cityColor }}
-        >
-          <span className="text-xs font-bold whitespace-nowrap tracking-wider">
-            {event.cityName}
-          </span>
-        </div>
-      )}
-
+    <div className={`w-full group/card relative rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md border-slate-200 hover:border-slate-300 overflow-hidden`}>
+      {/* 側邊色條 */}
+      <div className={`absolute top-0 bottom-0 w-1 ${isMain ? 'left-0' : 'right-0'}`} style={{ backgroundColor: cityColor }}></div>
+      
       <div className="p-3">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <p className="font-bold text-sm text-slate-800 leading-tight">{event.title}</p>
+        <div className={`flex items-start justify-between gap-2 mb-1.5 ${isMain ? 'flex-row' : 'flex-row-reverse'}`}>
+          <div className={`flex flex-col ${isMain ? 'items-start' : 'items-end'}`}>
+            <span className="text-[10px] font-black tracking-wider uppercase mb-0.5" style={{ color: cityColor }}>
+              {event.cityName || '全國'}
+            </span>
+            <p className={`font-bold text-sm text-slate-800 leading-snug ${isMain ? 'text-left' : 'text-right'}`}>{event.title}</p>
+          </div>
           {event.category && (
-            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap border ${categoryStyle}`}>
+            <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-black border ${categoryStyle} shrink-0`}>
               {event.category}
             </span>
           )}
         </div>
+        
         {event.description && (
           <div 
-            className="text-xs text-slate-600 leading-relaxed font-medium prose-p:my-1 prose-ul:my-1"
+            className={`text-xs text-slate-500 leading-relaxed font-medium ${isMain ? 'text-left' : 'text-right'}`}
             dangerouslySetInnerHTML={{ __html: event.description }} 
           />
         )}
@@ -74,167 +69,148 @@ const EventCard = ({ event }: { event: EventItem }) => {
 // --- MAIN COMPONENT ---
 
 export default function EventList({ data, startPeriod, endPeriod, citiesOrder }: EventListProps) {
-  const scrollRefNational = useRef<HTMLDivElement>(null);
-  const scrollRefCity = useRef<HTMLDivElement>(null);
+  const scrollRefMain = useRef<HTMLDivElement>(null);
+  const scrollRefCompare = useRef<HTMLDivElement>(null);
+  
+  const mainCityId = citiesOrder[0];
+  const compareCityIds = citiesOrder.slice(1);
 
-  // 1. Separate and group national events by year
-  const nationalEventsByYear = useMemo(() => {
+  // 1. 分類事件：主要 vs 比較
+  const sortedData = useMemo(() => {
     const startVal = getQuarterValue(startPeriod);
     const endVal = getQuarterValue(endPeriod);
-    const groups: Record<number, EventItem[]> = {};
+    
+    const main: Record<number, EventItem[]> = {};
+    const compare: Record<number, EventItem[]> = {};
 
     data.forEach(event => {
-      if (!event.isNational) return;
-      const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
-      if (eventTimeVal >= startVal && eventTimeVal <= endVal) {
-        if (!groups[event.year]) {
-          groups[event.year] = [];
-        }
-        groups[event.year].push(event);
-      }
-    });
-
-    return Object.entries(groups)
-      .map(([year, events]) => ({
-        year: Number(year),
-        events: events.sort((a,b) => a.quarter.localeCompare(b.quarter)),
-      }))
-      .sort((a, b) => a.year - b.year);
-  }, [data, startPeriod, endPeriod]);
-
-
-  // 2. Group city events by year and quarter
-  const cityEventsByYear = useMemo(() => {
-    const mainCityId = citiesOrder[0];
-    const yearGroups: Record<number, Record<string, EventItem[]>> = {};
-    const startVal = getQuarterValue(startPeriod);
-    const endVal = getQuarterValue(endPeriod);
-
-    data.forEach(event => {
-      if (event.isNational) return;
-      
       const eventTimeVal = getQuarterValue(`${event.year}_${event.quarter}`);
       if (eventTimeVal < startVal || eventTimeVal > endVal) return;
 
-      if (!yearGroups[event.year]) {
-        yearGroups[event.year] = {};
+      // 判斷該事件歸屬：如果是主要城市的事件，或全國事件且全國被選為主要
+      const isMainEvent = (event.city === mainCityId) || (event.isNational && mainCityId === 'nation');
+      // 判斷是否屬於對照組：如果是對照城市的事件，或全國事件且全國被選為對照
+      const isCompareEvent = (compareCityIds.includes(event.city || '')) || (event.isNational && compareCityIds.includes('nation'));
+
+      if (isMainEvent) {
+        if (!main[event.year]) main[event.year] = [];
+        main[event.year].push(event);
       }
-      if (!yearGroups[event.year][event.quarter]) {
-        yearGroups[event.year][event.quarter] = [];
+      
+      if (isCompareEvent) {
+        if (!compare[event.year]) compare[event.year] = [];
+        compare[event.year].push(event);
       }
-      yearGroups[event.year][event.quarter].push(event);
     });
 
-    return Object.entries(yearGroups)
-      .map(([year, quarters]) => ({
-        year: Number(year),
-        quarters: Object.entries(quarters)
-          .map(([quarter, events]) => {
-            events.sort((a, b) => {
-              if (a.city === mainCityId && b.city !== mainCityId) return -1;
-              if (a.city !== mainCityId && b.city === mainCityId) return 1;
-              const indexA = a.city ? citiesOrder.indexOf(a.city) : 999;
-              const indexB = b.city ? citiesOrder.indexOf(b.city) : 999;
-              return indexA - indexB;
-            });
-            return { quarter, events };
-          })
-          .sort((a, b) => a.quarter.localeCompare(b.quarter)),
-      }))
-      .sort((a, b) => a.year - b.year);
-  }, [data, startPeriod, endPeriod, citiesOrder]);
+    const formatGroup = (group: Record<number, EventItem[]>) => {
+      return Object.entries(group)
+        .map(([year, events]) => ({
+          year: Number(year),
+          events: events.sort((a, b) => a.quarter.localeCompare(b.quarter))
+        }))
+        .sort((a, b) => a.year - b.year);
+    };
 
-  // ✨ 當資料更新時，將捲動區域回到最頂端
+    return {
+      mainGroups: formatGroup(main),
+      compareGroups: formatGroup(compare)
+    };
+  }, [data, startPeriod, endPeriod, mainCityId, compareCityIds]);
+
+  // 當資料更新時回到頂端
   useEffect(() => {
-    if (scrollRefNational.current) scrollRefNational.current.scrollTop = 0;
-    if (scrollRefCity.current) scrollRefCity.current.scrollTop = 0;
+    if (scrollRefMain.current) scrollRefMain.current.scrollTop = 0;
+    if (scrollRefCompare.current) scrollRefCompare.current.scrollTop = 0;
   }, [data]);
 
   return (
-    <div className="w-full h-full flex gap-x-12 px-8 bg-slate-100 relative isolate">
-
-      {/* --- LEFT COLUMN: National Timeline --- */}
-      <aside className="w-72 shrink-0 h-full sticky top-0 py-6">
-        <div className="text-center mb-6">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
-              <Landmark className="text-slate-400" size={20}/>
-              全國事件
-            </h2>
+    <div className="w-full h-full flex bg-slate-50 relative divide-x divide-slate-200">
+      
+      {/* 1. 左側：主要觀察 (Primary) */}
+      <section className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-30 bg-slate-800 text-white px-6 py-4 flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-1.5 rounded-lg">
+              <Pin size={18} className="fill-white" />
+            </div>
+            <div>
+              <h2 className="text-base font-black tracking-wider">主要觀察</h2>
+              <p className="text-[10px] opacity-70 uppercase font-bold tracking-widest">Primary View</p>
+            </div>
+          </div>
+          <span className="text-xs font-bold bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
+            {mainCityId === 'nation' ? '全國均價' : (data.find(e => e.city === mainCityId)?.cityName || '已選取')}
+          </span>
         </div>
-        <div 
-          ref={scrollRefNational}
-          className="h-[calc(100%-68px)] overflow-y-auto custom-scrollbar pr-4 scroll-smooth"
-        >
-          <div className="relative pl-6">
-            {/* The vertical line */}
-            <div className="absolute left-[29px] top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
-            
-            {nationalEventsByYear.map(yearGroup => (
-              <div key={yearGroup.year} className="relative mb-6">
-                <div className="flex items-center gap-4 sticky top-0 bg-slate-100 py-1 z-10">
-                   <div className="z-10 w-4 h-4 rounded-full bg-slate-400 ring-4 ring-slate-100"></div>
-                   <h3 className="font-bold text-slate-600 text-lg">{yearGroup.year}</h3>
-                </div>
-                <div className="pt-2 pl-2 space-y-4">
-                  {yearGroup.events.map((event, idx) => (
-                    <div key={idx} className="relative">
-                       <div className="absolute left-[5px] top-4 w-2 h-2 rounded-full bg-slate-300 ring-2 ring-slate-100"></div>
-                       <div className="pl-8">
-                         <EventCard event={event} />
-                       </div>
-                    </div>
-                  ))}
-                </div>
+
+        <div ref={scrollRefMain} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 scroll-smooth">
+          {sortedData.mainGroups.length > 0 ? sortedData.mainGroups.map(group => (
+            <div key={group.year} className="relative">
+              <div className="sticky top-0 bg-slate-50/90 backdrop-blur-sm z-10 py-2 mb-4 border-b border-slate-200">
+                <span className="text-lg font-black text-slate-400 tracking-widest">{group.year}</span>
               </div>
-            ))}
+              <div className="space-y-4">
+                {group.events.map((ev, i) => (
+                  <div key={i} className="flex gap-4">
+                    <span className="text-xs font-bold text-slate-400 w-8 pt-4 shrink-0">{ev.quarter}</span>
+                    <EventCard event={ev} isMain={true} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )) : (
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+              <Info size={40} strokeWidth={1} />
+              <p className="text-sm font-bold">此區間尚無重大事件紀錄</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 2. 右側：對照比較 (Comparison) */}
+      <section className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="bg-orange-500 p-1.5 rounded-lg shadow-sm shadow-orange-200">
+              <GitCompare size={18} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-800 tracking-wider">對照比較</h2>
+              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Comparison</p>
+            </div>
+          </div>
+          <div className="flex gap-1.5">
+            {compareCityIds.length > 0 ? compareCityIds.map(id => (
+              <span key={id} className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ backgroundColor: id === 'nation' ? NATIONAL_CONFIG.color : getCityColor(id) }}></span>
+            )) : <span className="text-[10px] font-bold text-slate-400 italic">尚未加入對照</span>}
           </div>
         </div>
-      </aside>
 
-      {/* --- RIGHT COLUMN: City Timelines --- */}
-      <main className="flex-1 min-w-0 py-6 flex flex-col">
-         <div className="text-center mb-6 shrink-0">
-            <h2 className="text-lg font-bold text-slate-800">城市事件</h2>
-        </div>
-        <div 
-          ref={scrollRefCity}
-          className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-4 pr-8 scroll-smooth"
-        >
-            <div className="relative pl-3">
-                {/* The vertical line */}
-                <div className="absolute left-6 top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
-
-                {cityEventsByYear.map((yearGroup) => (
-                <div key={yearGroup.year} className="relative mb-8">
-                    {/* Year Marker */}
-                    <div className="flex items-center gap-4 sticky top-0 bg-slate-100 py-2 z-10">
-                        <div className="z-10 w-4 h-4 rounded-full bg-slate-400 ring-4 ring-slate-100"></div>
-                        <h3 className="font-bold text-slate-600 text-xl">{yearGroup.year}</h3>
-                    </div>
-
-                    {/* Quarters */}
-                    <div className="pt-2 pl-10 space-y-6">
-                    {yearGroup.quarters.map((qGroup) => (
-                        <div key={qGroup.quarter} className="relative">
-                            {/* Quarter Marker */}
-                            <div className="absolute -left-5 top-5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-2 ring-slate-100"></div>
-                            <div className="flex gap-4 items-start">
-                               <p className="text-sm font-bold text-slate-500 w-8 text-right">{qGroup.quarter}</p>
-                               <div className="flex-1 space-y-3">
-                                {qGroup.events.length > 0 
-                                    ? qGroup.events.map((event, idx) => ( <EventCard key={idx} event={event} /> ))
-                                    : ( <div className="h-10"></div> )
-                                }
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    </div>
-                </div>
+        <div ref={scrollRefCompare} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 scroll-smooth bg-white/30">
+          {sortedData.compareGroups.length > 0 ? sortedData.compareGroups.map(group => (
+            <div key={group.year} className="relative">
+              <div className="sticky top-0 bg-slate-50/90 backdrop-blur-sm z-10 py-2 mb-4 border-b border-slate-200 text-right">
+                <span className="text-lg font-black text-slate-400 tracking-widest">{group.year}</span>
+              </div>
+              <div className="space-y-4">
+                {group.events.map((ev, i) => (
+                  <div key={i} className="flex flex-row-reverse gap-4">
+                    <span className="text-xs font-bold text-slate-400 w-8 pt-4 shrink-0 text-right">{ev.quarter}</span>
+                    <EventCard event={ev} isMain={false} />
+                  </div>
                 ))}
+              </div>
             </div>
+          )) : (
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+              <GitCompare size={40} strokeWidth={1} />
+              <p className="text-sm font-bold">點擊左側城市的「比」來加入對照事件</p>
+            </div>
+          )}
         </div>
-      </main>
+      </section>
+
     </div>
   );
 }

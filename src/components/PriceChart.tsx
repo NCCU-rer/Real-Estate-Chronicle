@@ -55,7 +55,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
       );
       
     return (
-      <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100 min-w-[160px]">
+      <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100 min-w-40">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
           <span className="w-1 h-3 bg-orange-500 rounded-full"></span>
           {label}
@@ -303,7 +303,6 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
                 wrapperStyle={isMobile ? { display: 'none' } : {}}
                 cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
                 content={renderTooltipContent}
-                trigger="axis"
               />
               
               {/* 這裡改用 ComposedChart 混和 Area 和 Line */}
