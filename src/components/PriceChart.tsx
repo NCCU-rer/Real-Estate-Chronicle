@@ -47,11 +47,15 @@ interface CustomTooltipProps {
 
 const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
-    const uniquePayload = payload.filter((entry, index, self) =>
-      index === self.findIndex((t) => t.name === entry.name)
-    );
+    // 優先過濾掉 Area 產生的重複項，只保留有顏色(stroke)且具備數值的項目
+    const uniquePayload = payload
+      .filter((entry) => entry.value !== undefined && entry.stroke !== 'none')
+      .filter((entry, index, self) =>
+        index === self.findIndex((t) => t.name === entry.name)
+      );
+      
     return (
-      <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100">
+      <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100 min-w-[160px]">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
           <span className="w-1 h-3 bg-orange-500 rounded-full"></span>
           {label}
@@ -151,6 +155,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
       rawQuarter: item.Quarter,
       quarter: item.Quarter.replace("_", " "),
       shortQuarter: item.Quarter.split("_")[0].slice(2) + (item.Quarter.includes("Q1") ? "'" : ""), // '13, '14...
+      // ✨ 修正：確保 Key 與 rawPriceData 中的首字母大寫一致
       nation: item.Nation?.all ? (item.Nation.all / 10000) : 0,
       taipei: item.Taipei?.all ? (item.Taipei.all / 10000) : 0,
       newTaipei: item.NewTaipei?.all ? (item.NewTaipei.all / 10000) : 0,
@@ -298,6 +303,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
                 wrapperStyle={isMobile ? { display: 'none' } : {}}
                 cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
                 content={renderTooltipContent}
+                trigger="axis"
               />
               
               {/* 這裡改用 ComposedChart 混和 Area 和 Line */}
@@ -322,7 +328,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
 
                 return (
                   <React.Fragment key={city.id}>
-                    {/* 只有主城市顯示漸層背景，避免畫面太髒 */}
+                    {/* 只有主城市顯示漸層背景，且排除在 Tooltip 之外以免干擾數據顯示 */}
                     {city.id === selectedCities[0] && (
                       <Area
                         type="monotone"
@@ -331,6 +337,7 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
                         stroke="none"
                         fill={`url(#color-${city.id})`}
                         animationDuration={500}
+                        tooltipType="none"
                       />
                     )}
                     <Line

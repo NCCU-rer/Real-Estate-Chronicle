@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
-import { NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
+import { NATIONAL_CONFIG, getCityColor } from "@/config/cityColors";
 import { Landmark } from "lucide-react";
 
 // --- TYPE DEFINITIONS ---
@@ -73,8 +73,9 @@ const EventCard = ({ event }: { event: EventItem }) => {
 
 // --- MAIN COMPONENT ---
 
-export default function EventList({ data, startPeriod, endPeriod, citiesOrder, mainCityName }: EventListProps) {
-  const hasCompare = citiesOrder.length > 1;
+export default function EventList({ data, startPeriod, endPeriod, citiesOrder }: EventListProps) {
+  const scrollRefNational = useRef<HTMLDivElement>(null);
+  const scrollRefCity = useRef<HTMLDivElement>(null);
 
   // 1. Separate and group national events by year
   const nationalEventsByYear = useMemo(() => {
@@ -143,7 +144,11 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
       .sort((a, b) => a.year - b.year);
   }, [data, startPeriod, endPeriod, citiesOrder]);
 
-
+  // ✨ 當資料更新時，將捲動區域回到最頂端
+  useEffect(() => {
+    if (scrollRefNational.current) scrollRefNational.current.scrollTop = 0;
+    if (scrollRefCity.current) scrollRefCity.current.scrollTop = 0;
+  }, [data]);
 
   return (
     <div className="w-full h-full flex gap-x-12 px-8 bg-slate-100 relative isolate">
@@ -156,7 +161,10 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
               全國事件
             </h2>
         </div>
-        <div className="h-[calc(100%-68px)] overflow-y-auto custom-scrollbar pr-4">
+        <div 
+          ref={scrollRefNational}
+          className="h-[calc(100%-68px)] overflow-y-auto custom-scrollbar pr-4 scroll-smooth"
+        >
           <div className="relative pl-6">
             {/* The vertical line */}
             <div className="absolute left-[29px] top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
@@ -188,7 +196,10 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder, m
          <div className="text-center mb-6 shrink-0">
             <h2 className="text-lg font-bold text-slate-800">城市事件</h2>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-4 pr-8">
+        <div 
+          ref={scrollRefCity}
+          className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mr-4 pr-8 scroll-smooth"
+        >
             <div className="relative pl-3">
                 {/* The vertical line */}
                 <div className="absolute left-6 top-3 bottom-3 w-0.5 bg-slate-200 rounded-full"></div>
