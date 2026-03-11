@@ -38,6 +38,7 @@ interface SidebarProps {
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
+  onDownload: () => void;
 }
 
 const InfoCard = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
@@ -66,6 +67,7 @@ export default function DashboardSidebar({
   compareCities,
   toggleCompare,
   handleCancelCompare,
+  onDownload,
 }: SidebarProps) {
   // 局部狀態，直到按下「確定更新」才同步回全域
   const [tempStart, setTempStart] = React.useState(startPeriod);
@@ -245,7 +247,10 @@ export default function DashboardSidebar({
 
               {/* 3. 功能選單 - 圖標化 */}
               <div className="grid grid-cols-2 gap-2 mt-auto">
-                <button className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                <button 
+                  onClick={onDownload}
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+                >
                   <Download className="w-4 h-4" /> 下載圖表
                 </button>
                 <button className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">

@@ -1,22 +1,25 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
-import InfoTooltip from '@/components/InfoTooltip'; // 匯入組件
-import { rawData } from "@/data/sourceData";
+import InfoTooltip from '@/components/InfoTooltip'; 
+import { rawPriceData as rawData } from "@/data/priceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
+import { domToPng } from "modern-screenshot";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
   const [startPeriod, setStartPeriod] = useState("2013_Q1");
   const [endPeriod, setEndPeriod] = useState("2025_Q4");
-  const [mainCity, setMainCity] = useState("taipei");
+  const [mainCity, setMainCity] = useState("nation");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -48,6 +51,25 @@ export default function Home() {
     return city ? city.color : "#333333";
   };
 
+  const handleDownload = async () => {
+    if (!dashboardRef.current) return;
+    
+    try {
+      // 使用 modern-screenshot 替代 html2canvas
+      const dataUrl = await domToPng(dashboardRef.current, {
+        scale: 2,
+        backgroundColor: "#f8fafc",
+      });
+      
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `不動產大事紀_${getDisplayName(mainCity)}_${startPeriod}-${endPeriod}.png`;
+      link.click();
+    } catch (err) {
+      console.error("下載失敗:", err);
+    }
+  };
+
   // === 3. 資料計算 (Computation) ===
   const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
   const chartCities = useMemo(() => [mainCity, ...compareCities], [mainCity, compareCities]);
@@ -68,7 +90,6 @@ export default function Home() {
       return !event.isNational && chartCities.includes(event.city) && isTimeMatch;
     });
 
-    // Use a Set to avoid duplicates, then convert back to an array
     const eventSet = new Set([...nationalEvents, ...cityEvents]);
     return Array.from(eventSet);
 
@@ -76,11 +97,10 @@ export default function Home() {
 
   // === 4. 畫面渲染 (Render) ===
   return (
-    <main className="h-full w-full flex bg-slate-50 font-sans">
+    <main className="h-full w-full flex bg-slate-50 font-sans overflow-hidden">
       
       {/* 1. 側邊欄組件 */}
       <DashboardSidebar 
-        // ... (props 保持不變) ...
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
         isSidebarCollapsed={isSidebarCollapsed}
@@ -94,27 +114,30 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
+        onDownload={handleDownload}
       />
 
       {/* 2. 右側主要內容區 */}
-      <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+      <div 
+        ref={dashboardRef}
+        className="flex-1 flex flex-col min-w-0 relative h-screen bg-slate-50 overflow-hidden"
+      >
         
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
-           {/* ... (Header 內容保持不變) ... */}
            <div className="flex items-center gap-4">
              <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
              <div className="flex items-center gap-3">
                 <span className="text-sm font-bold text-slate-400">目前顯示：</span>
                 <div className="flex items-center gap-2">
                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></span>
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
                       {getDisplayName(mainCity)}
                    </span>
                    {compareCities.map(id => (
-                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2">
+                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
                          <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
-                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></span>
+                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
                          {getCityName(id)}
                       </span>
                    ))}
@@ -124,13 +147,12 @@ export default function Home() {
         </header>
 
         {/* List Content: Takes up 60% of the space */}
-        <div className="h-[60%] bg-slate-50/50 z-10">
+        <div className="h-[60%] bg-slate-50/50 z-10 overflow-hidden">
           <EventList 
             data={currentViewEvents} 
             startPeriod={startPeriod} 
             endPeriod={endPeriod} 
             citiesOrder={chartCities} 
-            mainCityName={getDisplayName(mainCity)}
           />
         </div>
 
@@ -148,5 +170,3 @@ export default function Home() {
     </main>
   );
 }
-
-  
