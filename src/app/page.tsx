@@ -5,7 +5,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import InfoTooltip from '@/components/InfoTooltip'; 
-import { rawPriceData as rawData } from "@/data/priceData";
+import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { domToPng } from "modern-screenshot";
