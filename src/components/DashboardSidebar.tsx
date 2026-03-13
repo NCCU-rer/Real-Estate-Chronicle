@@ -154,6 +154,7 @@ export default function DashboardSidebar({
           <div className="relative z-10 flex items-center gap-3">
             <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
               <h1 className="font-bold text-2xl tracking-wide whitespace-nowrap">不動產大事紀</h1>
+              <p className="text-xs text-orange-100 font-bold tracking-widest mt-0.5">政治大學不動產研究中心</p>
             </div>
           </div>
           
