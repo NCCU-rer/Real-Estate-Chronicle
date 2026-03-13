@@ -12,7 +12,7 @@ export default function ExportLoadingOverlay({ isVisible, progress }: ExportLoad
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-200 bg-slate-900/90 backdrop-blur-lg flex flex-col items-center justify-center text-white animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[9999] bg-slate-900/90 backdrop-blur-lg flex flex-col items-center justify-center text-white animate-in fade-in duration-300">
       
       {/* 頂部裝飾 */}
       <div className="absolute top-12 flex items-center gap-3 opacity-50">

@@ -39,6 +39,7 @@ interface SidebarProps {
   toggleCompare: (cityId: string) => void;
   handleCancelCompare: () => void;
   onDownload: () => void;
+  onShare: () => void;
 }
 
 const InfoCard = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
@@ -68,6 +69,7 @@ export default function DashboardSidebar({
   toggleCompare,
   handleCancelCompare,
   onDownload,
+  onShare,
 }: SidebarProps) {
   // 局部狀態，直到按下「確定更新」才同步回全域
   const [tempStart, setTempStart] = React.useState(startPeriod);
@@ -253,7 +255,10 @@ export default function DashboardSidebar({
                 >
                   <Download className="w-4 h-4" /> 下載圖表
                 </button>
-                <button className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                <button 
+                  onClick={onShare}
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+                >
                   <Share2 className="w-4 h-4" /> 分享連結
                 </button>
               </div>

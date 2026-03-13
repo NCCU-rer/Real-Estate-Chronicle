@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
@@ -12,6 +12,7 @@ import { useDashboardExport } from "@/hooks/useDashboardExport";
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
+import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -22,19 +23,34 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // 匯出功能 Ref 與 Hook
+  // 匯出功能
   const reportRef = useRef<HTMLDivElement>(null);
   const { 
     isExportOpen, 
     isGenerating, 
     exportProgress,
-    exportConfig, 
+    exportConfig,
     openExportModal, 
     closeExportModal, 
     handleGenerate 
   } = useDashboardExport(reportRef);
 
-  // === 2. 業務邏輯 (Handlers) ===
+  // === 2. 初始化與 URL 同步 (Initialization) ===
+  useEffect(() => {
+    const params = decodeDashboardUrl();
+    if (params.start) setStartPeriod(params.start);
+    if (params.end) setEndPeriod(params.end);
+    if (params.main) setMainCity(params.main);
+    if (params.compare) setCompareCities(params.compare);
+  }, []);
+
+  // 當使用者點擊「確定更新資料」時，在 DashboardSidebar 呼叫全域更新時也會觸發此處邏輯
+  const updateUrl = (start: string, end: string, main: string, compare: string[]) => {
+    const newUrl = encodeDashboardUrl({ start, end, main, compare });
+    window.history.replaceState({}, '', newUrl);
+  };
+
+  // === 3. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
     setMainCity(cityId);
     setCompareCities(prev => prev.filter(c => c !== cityId));
@@ -43,13 +59,27 @@ export default function Home() {
   const toggleCompare = (cityId: string) => {
     if (cityId === mainCity) return;
     setCompareCities(prev => {
-      if (prev.includes(cityId)) return prev.filter(id => id !== cityId);
-      if (prev.length >= 3) return prev;
-      return [...prev, cityId];
+      const next = prev.includes(cityId) ? prev.filter(id => id !== cityId) : [...prev, cityId].slice(0, 3);
+      return next;
     });
   };
 
   const handleCancelCompare = () => setCompareCities([]);
+
+  const handleShare = () => {
+    const shareUrl = encodeDashboardUrl({ 
+      start: startPeriod, 
+      end: endPeriod, 
+      main: mainCity, 
+      compare: compareCities 
+    });
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("分享連結已複製到剪貼簿！");
+    }).catch(err => {
+      console.error("複製失敗", err);
+    });
+  };
 
   const getDisplayName = (id: string) => {
     if (id === "nation") return "全國";
@@ -62,7 +92,7 @@ export default function Home() {
     return city ? city.color : "#333333";
   };
 
-  // === 3. 資料計算 (Computation) ===
+  // === 4. 資料計算 (Computation) ===
   const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
   const chartCities = useMemo(() => [mainCity, ...compareCities], [mainCity, compareCities]);
   
@@ -87,7 +117,7 @@ export default function Home() {
 
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
-  // === 4. 畫面渲染 (Render) ===
+  // === 5. 畫面渲染 (Render) ===
   return (
     <main className="h-full w-full flex bg-slate-50 font-sans overflow-hidden">
       
@@ -98,15 +128,16 @@ export default function Home() {
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
         startPeriod={startPeriod}
-        setStartPeriod={setStartPeriod}
+        setStartPeriod={(v) => { setStartPeriod(v); updateUrl(v, endPeriod, mainCity, compareCities); }}
         endPeriod={endPeriod}
-        setEndPeriod={setEndPeriod}
+        setEndPeriod={(v) => { setEndPeriod(v); updateUrl(startPeriod, v, mainCity, compareCities); }}
         mainCity={mainCity}
-        handleMainCityChange={handleMainCityChange}
+        handleMainCityChange={(v) => { handleMainCityChange(v); updateUrl(startPeriod, endPeriod, v, compareCities.filter(c => c !== v)); }}
         compareCities={compareCities}
-        toggleCompare={toggleCompare}
+        toggleCompare={(v) => { toggleCompare(v); /* 這裡的同步較複雜，DashboardSidebar 內部的 handleApply 會一次性處理 */ }}
         handleCancelCompare={handleCancelCompare}
         onDownload={openExportModal}
+        onShare={handleShare}
       />
 
       {/* 2. 右側主要內容區 */}
@@ -133,13 +164,6 @@ export default function Home() {
                 </div>
              </div>
            </div>
-           
-           {isGenerating && (
-             <div className="flex items-center gap-2 text-orange-600 animate-pulse">
-               <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
-               <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">Generating High-Res Report...</span>
-             </div>
-           )}
         </header>
 
         {/* List Content: Takes up 60% of the space */}
@@ -162,7 +186,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 匯出設定彈窗 */}
       <ExportModal 
         isOpen={isExportOpen}
         onClose={closeExportModal}
@@ -173,14 +196,8 @@ export default function Home() {
         onGenerate={handleGenerate}
       />
 
-      {/* 隱形的報告畫布 (專門用於捕捉截圖) */}
-      {exportConfig && (
-        <ReportCanvas config={exportConfig} canvasRef={reportRef} />
-      )}
-
+      {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
       <InfoTooltip />
-
-      {/* 生成報告時的 Loading 遮罩組件 */}
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
     </main>
   );

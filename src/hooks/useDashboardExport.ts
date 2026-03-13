@@ -21,6 +21,9 @@ export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | n
     setIsGenerating(true);
     setExportProgress(5);
     
+    // 生產環境優化：確保 Loading UI 先渲染出來
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     setTimeout(async () => {
       if (!canvasRef.current) {
         setIsGenerating(false);
