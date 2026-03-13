@@ -5,10 +5,12 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import InfoTooltip from '@/components/InfoTooltip'; 
+import ExportModal from "@/components/ExportModal";
+import ReportCanvas from "@/components/ReportCanvas";
+import { useDashboardExport } from "@/hooks/useDashboardExport";
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
-import { domToPng } from "modern-screenshot";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -18,8 +20,17 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  const dashboardRef = useRef<HTMLDivElement>(null);
+  
+  // 匯出功能 Ref 與 Hook
+  const reportRef = useRef<HTMLDivElement>(null);
+  const { 
+    isExportOpen, 
+    isGenerating, 
+    exportConfig, 
+    openExportModal, 
+    closeExportModal, 
+    handleGenerate 
+  } = useDashboardExport(reportRef);
 
   // === 2. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
@@ -36,9 +47,7 @@ export default function Home() {
     });
   };
 
-  const handleCancelCompare = () => {
-    setCompareCities([]);
-  };
+  const handleCancelCompare = () => setCompareCities([]);
 
   const getDisplayName = (id: string) => {
     if (id === "nation") return "全國";
@@ -49,25 +58,6 @@ export default function Home() {
     if (id === "nation") return NATIONAL_CONFIG.color;
     const city = CITIES_CONFIG.find(c => c.id === id);
     return city ? city.color : "#333333";
-  };
-
-  const handleDownload = async () => {
-    if (!dashboardRef.current) return;
-    
-    try {
-      // 使用 modern-screenshot 替代 html2canvas
-      const dataUrl = await domToPng(dashboardRef.current, {
-        scale: 2,
-        backgroundColor: "#f8fafc",
-      });
-      
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `不動產大事紀_${getDisplayName(mainCity)}_${startPeriod}-${endPeriod}.png`;
-      link.click();
-    } catch (err) {
-      console.error("下載失敗:", err);
-    }
   };
 
   // === 3. 資料計算 (Computation) ===
@@ -114,14 +104,11 @@ export default function Home() {
         compareCities={compareCities}
         toggleCompare={toggleCompare}
         handleCancelCompare={handleCancelCompare}
-        onDownload={handleDownload}
+        onDownload={openExportModal}
       />
 
       {/* 2. 右側主要內容區 */}
-      <div 
-        ref={dashboardRef}
-        className="flex-1 flex flex-col min-w-0 relative h-screen bg-slate-50 overflow-hidden"
-      >
+      <div className="flex-1 flex flex-col min-w-0 relative h-screen bg-slate-50 overflow-hidden">
         
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
@@ -144,6 +131,13 @@ export default function Home() {
                 </div>
              </div>
            </div>
+           
+           {isGenerating && (
+             <div className="flex items-center gap-2 text-orange-600 animate-pulse">
+               <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
+               <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">Generating High-Res Report...</span>
+             </div>
+           )}
         </header>
 
         {/* List Content: Takes up 60% of the space */}
@@ -156,7 +150,7 @@ export default function Home() {
           />
         </div>
 
-        {/* 3. 底部圖表組件: Takes up 40% of the space */}
+        {/* 底部圖表組件 */}
         <div className="h-[40%] shrink-0 z-20">
           <DashboardChart 
             selectedCities={chartCities}
@@ -165,6 +159,22 @@ export default function Home() {
           />
         </div>
       </div>
+
+      {/* 匯出設定彈窗 */}
+      <ExportModal 
+        isOpen={isExportOpen}
+        onClose={closeExportModal}
+        defaultStart={startPeriod}
+        defaultEnd={endPeriod}
+        defaultMain={mainCity}
+        defaultCompare={compareCities}
+        onGenerate={handleGenerate}
+      />
+
+      {/* 隱形的報告畫布 (專門用於捕捉截圖) */}
+      {exportConfig && (
+        <ReportCanvas config={exportConfig} canvasRef={reportRef} />
+      )}
 
       <InfoTooltip />
     </main>
