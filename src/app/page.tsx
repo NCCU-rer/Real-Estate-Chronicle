@@ -7,6 +7,7 @@ import EventList from "@/components/EventList";
 import InfoTooltip from '@/components/InfoTooltip'; 
 import ExportModal from "@/components/ExportModal";
 import ReportCanvas from "@/components/ReportCanvas";
+import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
 import { useDashboardExport } from "@/hooks/useDashboardExport";
 import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
@@ -26,6 +27,7 @@ export default function Home() {
   const { 
     isExportOpen, 
     isGenerating, 
+    exportProgress,
     exportConfig, 
     openExportModal, 
     closeExportModal, 
@@ -177,6 +179,9 @@ export default function Home() {
       )}
 
       <InfoTooltip />
+
+      {/* 生成報告時的 Loading 遮罩組件 */}
+      <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
     </main>
   );
 }

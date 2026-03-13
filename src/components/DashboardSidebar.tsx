@@ -154,7 +154,6 @@ export default function DashboardSidebar({
           <div className="relative z-10 flex items-center gap-3">
             <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
               <h1 className="font-bold text-2xl tracking-wide whitespace-nowrap">不動產大事紀</h1>
-              <p className="text-xs text-slate-400 pl-1 tracking-wider uppercase whitespace-nowrap font-medium">Market Intelligence</p>
             </div>
           </div>
           

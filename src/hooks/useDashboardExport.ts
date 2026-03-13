@@ -10,6 +10,7 @@ import JSZip from "jszip";
 export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | null>) {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   const [exportConfig, setExportConfig] = useState<ExportConfig | null>(null);
 
   const openExportModal = () => setIsExportOpen(true);
@@ -18,8 +19,8 @@ export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | n
   const handleGenerate = async (config: ExportConfig) => {
     setExportConfig(config);
     setIsGenerating(true);
+    setExportProgress(5);
     
-    // 給予渲染時間
     setTimeout(async () => {
       if (!canvasRef.current) {
         setIsGenerating(false);
@@ -27,41 +28,58 @@ export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | n
       }
 
       try {
-        // 1. 取得所有待捕捉的頁面節點
+        // 抓取所有 PageFrame
         const pageNodes = canvasRef.current.querySelectorAll('.report-page');
         if (pageNodes.length === 0) throw new Error("No report pages found");
 
+        const totalPages = pageNodes.length;
         const cityName = config.mainCity === 'nation' ? '全國' : getCityName(config.mainCity);
         const baseFileName = `不動產大事紀報告_${cityName}_${config.start}-${config.end}`;
 
         if (config.format === 'pdf') {
-          // --- PDF 模式 ---
+          // --- PDF 模式：動態高度適配 ---
           let pdf: jsPDF | null = null;
 
-          for (let i = 0; i < pageNodes.length; i++) {
-            const canvas = await domToCanvas(pageNodes[i] as HTMLElement, { scale: 2 });
+          for (let i = 0; i < totalPages; i++) {
+            const node = pageNodes[i] as HTMLElement;
+            
+            // 關鍵：先獲取節點撐開後的實際高度
+            const canvas = await domToCanvas(node, { 
+              scale: 2,
+              backgroundColor: "#f8fafc",
+            });
+            
             const width = canvas.width;
             const height = canvas.height;
 
+            // 根據 canvas 的寬高動態建立 PDF 頁面
             if (!pdf) {
-              pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [width, height] });
+              pdf = new jsPDF({ 
+                orientation: width > height ? 'landscape' : 'portrait', 
+                unit: 'px', 
+                format: [width, height] 
+              });
             } else {
-              pdf.addPage([width, height], 'landscape');
+              pdf.addPage([width, height], width > height ? 'landscape' : 'portrait');
             }
 
             const imgData = canvas.toDataURL("image/jpeg", 0.95);
             pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+            
+            setExportProgress(Math.floor(((i + 1) / totalPages) * 90));
           }
           pdf?.save(`${baseFileName}.pdf`);
 
         } else {
           // --- JPEG ZIP 模式 ---
           const zip = new JSZip();
-          
-          for (let i = 0; i < pageNodes.length; i++) {
-            const canvas = await domToCanvas(pageNodes[i] as HTMLElement, { scale: 2 });
-            const imgData = canvas.toDataURL("image/jpeg", 0.9).split(',')[1]; // 取得 Base64 內容
+          for (let i = 0; i < totalPages; i++) {
+            const node = pageNodes[i] as HTMLElement;
+            const canvas = await domToCanvas(node, { scale: 2 });
+            const imgData = canvas.toDataURL("image/jpeg", 0.9).split(',')[1];
             zip.file(`${baseFileName}_P${i + 1}.jpg`, imgData, { base64: true });
+            
+            setExportProgress(Math.floor(((i + 1) / totalPages) * 80));
           }
 
           const content = await zip.generateAsync({ type: "blob" });
@@ -71,11 +89,14 @@ export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | n
           link.click();
         }
 
-        setIsExportOpen(false);
+        setExportProgress(100);
+        setTimeout(() => {
+          setIsGenerating(false);
+          setIsExportOpen(false);
+        }, 500);
       } catch (err) {
         console.error("匯出失敗:", err);
-        alert("報告生成失敗，請嘗試減少內容範圍");
-      } finally {
+        alert("報告輸出失敗，請確認內容是否過多");
         setIsGenerating(false);
       }
     }, 1500); 
@@ -84,6 +105,7 @@ export function useDashboardExport(canvasRef: React.RefObject<HTMLDivElement | n
   return {
     isExportOpen,
     isGenerating,
+    exportProgress,
     exportConfig,
     openExportModal,
     closeExportModal,

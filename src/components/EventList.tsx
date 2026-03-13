@@ -22,6 +22,7 @@ interface EventListProps {
   startPeriod: string;
   endPeriod: string;
   citiesOrder: string[]; // [mainCityId, ...compareCitiesIds]
+  quarterWidth?: string; // 保留選配屬性
 }
 
 // --- SUB-COMPONENTS ---
