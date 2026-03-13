@@ -67,18 +67,25 @@ export default function Home() {
   const handleCancelCompare = () => setCompareCities([]);
 
   const handleShare = () => {
-    const shareUrl = encodeDashboardUrl({ 
-      start: startPeriod, 
-      end: endPeriod, 
-      main: mainCity, 
-      compare: compareCities 
-    });
-    
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("分享連結已複製到剪貼簿！");
-    }).catch(err => {
-      console.error("複製失敗", err);
-    });
+    try {
+      const shareUrl = encodeDashboardUrl({ 
+        start: startPeriod || "2013_Q1", 
+        end: endPeriod || "2025_Q4", 
+        main: mainCity || "nation", 
+        compare: compareCities || [] 
+      });
+      
+      if (!shareUrl) return;
+
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("分享連結已複製到剪貼簿！");
+      }).catch(err => {
+        console.error("複製失敗", err);
+        alert("複製連結失敗，請手動複製網址列");
+      });
+    } catch (err) {
+      console.error("分享功能錯誤:", err);
+    }
   };
 
   const getDisplayName = (id: string) => {

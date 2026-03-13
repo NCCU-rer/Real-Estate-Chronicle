@@ -8,14 +8,13 @@ export interface DashboardParams {
 }
 
 export const encodeDashboardUrl = (params: DashboardParams) => {
-  const url = new URL(window.location.href);
+  if (typeof window === 'undefined') return '';
+  const url = new URL(window.location.origin + window.location.pathname);
   if (params.start) url.searchParams.set('start', params.start);
   if (params.end) url.searchParams.set('end', params.end);
   if (params.main) url.searchParams.set('main', params.main);
   if (params.compare && params.compare.length > 0) {
     url.searchParams.set('compare', params.compare.join(','));
-  } else {
-    url.searchParams.delete('compare');
   }
   return url.toString();
 };
