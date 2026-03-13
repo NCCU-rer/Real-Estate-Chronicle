@@ -25,6 +25,7 @@ export interface ExportConfig {
   includeChart: boolean;
   includeNationalEvents: boolean;
   includeCityEvents: boolean;
+  format: 'pdf' | 'jpg';
 }
 
 export default function ExportModal({ 
@@ -44,6 +45,7 @@ export default function ExportModal({
     includeChart: true,
     includeNationalEvents: true,
     includeCityEvents: true,
+    format: 'pdf',
   });
 
   if (!isOpen) return null;
@@ -115,8 +117,25 @@ export default function ExportModal({
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-800">
               <FileText size={18} className="text-orange-500" />
-              <h3 className="font-bold">選擇匯出內容</h3>
+              <h3 className="font-bold">選擇匯出內容與格式</h3>
             </div>
+            
+            {/* 格式切換 */}
+            <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
+              <button 
+                onClick={() => setConfig(prev => ({ ...prev, format: 'pdf' }))}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'pdf' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                PDF 報告 (單一檔案)
+              </button>
+              <button 
+                onClick={() => setConfig(prev => ({ ...prev, format: 'jpg' }))}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'jpg' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                JPEG 圖片 (打包下載)
+              </button>
+            </div>
+
             <div className="grid grid-cols-3 gap-3">
               {[
                 { id: 'includeChart', label: '房價趨勢圖', desc: '包含趨勢線與數據' },

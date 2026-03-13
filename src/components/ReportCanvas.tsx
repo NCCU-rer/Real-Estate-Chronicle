@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import { ExportConfig } from "@/components/ExportModal";
-import { getCityName } from "@/config/cityColors";
+import { NATIONAL_CONFIG, getCityColor } from "@/config/cityColors";
 import { processEvents } from "@/utils/eventHelper";
 import { rawData } from "@/data/sourceData";
 
@@ -13,88 +13,139 @@ interface ReportCanvasProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
+// 分頁標頭與腳標組件，確保每張圖都有
+const PageFrame = ({ children, pageNum, totalPages, config }: { children: React.ReactNode, pageNum: number, totalPages: number, config: ExportConfig }) => (
+  <div className="report-page w-[1200px] h-[900px] bg-slate-50 p-10 flex flex-col gap-6 relative overflow-hidden mb-10 border border-slate-200 shadow-xl shadow-slate-200/50 rounded-[40px]">
+    {/* Header */}
+    <div className="flex items-center justify-between border-b-2 border-orange-600 pb-4">
+      <div>
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight">不動產大事紀研究報告</h1>
+        <div className="flex items-center gap-3 mt-1.5">
+          <span className="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">Official Report</span>
+          <p className="text-slate-500 font-bold text-xs">
+            觀察期間：{config.start.replace("_", " ")} → {config.end.replace("_", " ")}
+          </p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-lg font-black text-slate-700">不動產研究中心</p>
+        <p className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase tracking-widest">Market Intelligence Division</p>
+      </div>
+    </div>
+
+    {/* Content Area */}
+    <div className="flex-1 min-h-0 overflow-hidden">
+      {children}
+    </div>
+
+    {/* Footer */}
+    <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© Real Estate Record Intelligence</span>
+        <div className="h-3 w-px bg-slate-200"></div>
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">產出時間：{new Date().toLocaleDateString()}</span>
+      </div>
+      <div className="bg-slate-800 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-widest shadow-lg shadow-slate-200">
+        PAGE {pageNum} / {totalPages}
+      </div>
+    </div>
+  </div>
+);
+
 export default function ReportCanvas({ config, canvasRef }: ReportCanvasProps) {
-  // 根據匯出設定重新計算事件
-  const exportEvents = useMemo(() => {
+  // 取得所有事件
+  const allEvents = useMemo(() => {
     const all = processEvents(Object.values(rawData).flat());
     const cities = [config.mainCity, ...config.compareCities];
-    
     return all.filter(event => {
-      const isTimeMatch = true; // 時間過濾已在 EventList 內部處理
       const isTypeMatch = (event.isNational && config.includeNationalEvents) || 
                           (!event.isNational && config.includeCityEvents && cities.includes(event.city));
-      return isTimeMatch && isTypeMatch;
+      return isTypeMatch;
     });
   }, [config]);
+
+  // 1. 拆分內容為「頁面數據塊」
+  const pages = useMemo(() => {
+    const result = [];
+    let currentEvents = [...allEvents];
+
+    // 第一頁：趨勢圖 + 前幾個事件 (如果包含圖的話)
+    if (config.includeChart) {
+      result.push({
+        type: 'chart_and_events',
+        events: currentEvents.splice(0, 4) // 第一頁放圖，只能容納約 4 個事件
+      });
+    }
+
+    // 後續頁面：純事件 (每頁約 8 個事件較安全，不擁擠)
+    while (currentEvents.length > 0) {
+      result.push({
+        type: 'events_only',
+        events: currentEvents.splice(0, 8)
+      });
+    }
+
+    // 如果完全沒選圖也沒選事件，至少留一個空頁 (標題頁)
+    if (result.length === 0) result.push({ type: 'empty', events: [] });
+
+    return result;
+  }, [allEvents, config.includeChart]);
 
   const citiesOrder = [config.mainCity, ...config.compareCities];
 
   return (
     <div className="fixed left-[-9999px] top-0 pointer-events-none">
-      <div 
-        ref={canvasRef}
-        className="w-[1200px] bg-slate-50 p-12 flex flex-col gap-8"
-        style={{ height: "auto", minHeight: "800px" }}
-      >
-        {/* Report Header */}
-        <div className="flex items-center justify-between border-b-2 border-orange-600 pb-6">
-          <div>
-            <h1 className="text-4xl font-black text-slate-800">不動產大事紀報告</h1>
-            <p className="text-slate-500 font-bold mt-2">
-              觀察期間：{config.start.replace("_", " ")} → {config.end.replace("_", " ")}
-            </p>
+      <div ref={canvasRef} className="flex flex-col bg-slate-200 p-10">
+        {pages.map((page, index) => (
+          <div key={index} className="capture-page">
+            <PageFrame 
+              pageNum={index + 1} 
+              totalPages={pages.length} 
+              config={config}
+            >
+              {page.type === 'chart_and_events' && (
+                <div className="flex flex-col gap-6 h-full">
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex-1 flex flex-col">
+                    <h2 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                      <span className="w-1 h-5 bg-orange-500 rounded-full"></span>
+                      房價中位數趨勢分析
+                    </h2>
+                    <div className="flex-1 w-full min-h-[350px]">
+                      <DashboardChart 
+                        selectedCities={citiesOrder}
+                        startPeriod={config.start}
+                        endPeriod={config.end}
+                      />
+                    </div>
+                  </div>
+                  {page.events.length > 0 && (
+                    <div className="h-[280px] overflow-hidden">
+                      <EventList data={page.events} startPeriod={config.start} endPeriod={config.end} citiesOrder={citiesOrder} />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {page.type === 'events_only' && (
+                <div className="flex flex-col gap-4 h-full">
+                  <h2 className="text-lg font-black text-slate-800 mb-2 flex items-center gap-2">
+                    <span className="w-1 h-5 bg-orange-500 rounded-full"></span>
+                    關鍵大事紀回顧 (續)
+                  </h2>
+                  <div className="flex-1 overflow-hidden px-4">
+                    <EventList data={page.events} startPeriod={config.start} endPeriod={config.end} citiesOrder={citiesOrder} />
+                  </div>
+                </div>
+              )}
+
+              {page.type === 'empty' && (
+                <div className="h-full flex items-center justify-center text-slate-300 font-bold italic">
+                  報告內容生成中...
+                </div>
+              )}
+            </PageFrame>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-black text-orange-600 uppercase tracking-widest">Market Intelligence Report</p>
-            <p className="text-xs text-slate-400 mt-1">產出時間：{new Date().toLocaleDateString()}</p>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <div className="grid grid-cols-1 gap-10">
-          
-          {/* Chart Section */}
-          {config.includeChart && (
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-              <h2 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                房價中位數趨勢分析
-              </h2>
-              <div className="h-[400px] w-full">
-                <DashboardChart 
-                  selectedCities={citiesOrder}
-                  startPeriod={config.start}
-                  endPeriod={config.end}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Events Section */}
-          {(config.includeNationalEvents || config.includeCityEvents) && (
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-              <h2 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                關鍵大事紀回顧
-              </h2>
-              {/* 注意：在匯出模式下，我們需要 EventList 不要捲動，而是撐開高度 */}
-              <div className="w-full">
-                <EventList 
-                  data={exportEvents}
-                  startPeriod={config.start}
-                  endPeriod={config.end}
-                  citiesOrder={citiesOrder}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-auto pt-8 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-          <span>數據來源：政大不動產研究中心、永慶房產集團</span>
-          <span>© Real Estate Record Intelligence System</span>
-        </div>
+        ))}
       </div>
     </div>
   );
