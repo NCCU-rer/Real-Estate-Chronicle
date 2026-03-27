@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
-import InfoTooltip from '@/components/InfoTooltip'; 
+import InfoTooltip from "@/components/InfoTooltip";
 import ExportModal from "@/components/ExportModal";
 import ReportCanvas from "@/components/ReportCanvas";
 import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
