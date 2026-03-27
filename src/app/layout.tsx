@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
-import DisclaimerModal from "@/components/DisclaimerModal"; // 1. 引入它
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ["latin"],
@@ -22,7 +21,6 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body className={`${notoSansTC.variable} font-sans antialiased`}>
-        <DisclaimerModal /> {/* 2. 放在 children 上面 */}
         {children}
       </body>
     </html>

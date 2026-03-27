@@ -5,6 +5,7 @@ html, body {
 @import "tailwindcss";
 
 @theme {
+  --color-brand: #EA7125;
   --color-background-start: rgb(248, 250, 252);
   --color-background-end: rgb(241, 245, 249);
   --color-foreground: rgb(15, 23, 42);

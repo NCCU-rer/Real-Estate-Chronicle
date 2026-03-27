@@ -28,8 +28,6 @@ const QUARTER_OPTIONS = generateQuarterOptions();
 interface SidebarProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (v: boolean) => void;
-  isSidebarCollapsed: boolean;
-  setIsSidebarCollapsed: (v: boolean) => void;
   startPeriod: string;
   setStartPeriod: (v: string) => void;
   endPeriod: string;
@@ -59,8 +57,6 @@ const InfoCard = ({ title, description, children }: { title: string, description
 export default function DashboardSidebar({
   isSettingsOpen,
   setIsSettingsOpen,
-  isSidebarCollapsed,
-  setIsSidebarCollapsed,
   startPeriod,
   setStartPeriod,
   endPeriod,
@@ -123,10 +119,6 @@ export default function DashboardSidebar({
     });
   };
 
-  const expandSidebar = () => {
-    if (isSidebarCollapsed) setIsSidebarCollapsed(false);
-  };
-
   return (
     <>
       {isSettingsOpen && (
@@ -138,91 +130,70 @@ export default function DashboardSidebar({
 
       <aside className={`
         fixed md:static inset-y-0 left-0 z-60
-        bg-slate-50 
-        flex flex-col shadow-2xl transition-all duration-300 ease-in-out
-        ${isSettingsOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        ${isSidebarCollapsed ? "w-20" : "w-80"} 
+        bg-white
+        flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out border-r border-slate-200
+        w-80 
       `}>
         
-        <button 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="hidden md:flex absolute -right-4 top-8 w-8 h-8 bg-white border border-slate-200 rounded-full items-center justify-center shadow-lg text-slate-500 hover:text-slate-700 hover:scale-110 z-50 transition-all hover:shadow-xl"
-        >
-          {isSidebarCollapsed ? '>>' : '<<'}
-        </button>
-
         <div 
-          className={`
-            bg-orange-600 text-white flex items-center shrink-0 relative overflow-hidden group transition-all duration-300 p-6 justify-between
-          `}
+          className="bg-white border-2 border-brand flex flex-col shrink-0 relative p-5 m-4 rounded-2xl shadow-sm"
         >
           <div className="relative z-10 flex items-center gap-4">
-            <div className="shrink-0">
+            <div className="shrink-0 bg-brand/5 p-1.5 rounded-xl">
                <Image 
                  src="/logo_transparent.svg" 
                  alt="Logo" 
-                 width={42} 
-                 height={42} 
-                 className="object-contain mix-blend-multiply"
+                 width={38} 
+                 height={38} 
+                 className="object-contain"
                />
             </div>
-            <div className={`transition-all duration-300 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
+            <div className="opacity-100">
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-2xl tracking-wide whitespace-nowrap">不動產大事紀</h1>
+                <h1 className="font-black text-2xl tracking-tight text-brand">不動產大事紀</h1>
                 <button 
                   onClick={onInfoOpen}
-                  className="p-1 hover:bg-white/20 rounded-full transition-colors group/info"
-                  title="查看說明"
+                  className="p-1 hover:bg-brand/10 rounded-full transition-colors group/info"
                 >
-                  <HelpCircle className="w-5 h-5 text-orange-100 group-hover/info:text-white" />
+                  <HelpCircle className="w-4 h-4 text-slate-300 group-hover:text-brand" />
                 </button>
               </div>
-              <p className="text-xs text-orange-100 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
+              <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden text-white/70 hover:text-white transition-colors font-bold text-base">
+          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-brand transition-colors font-bold text-xs">
             關閉
           </button>
         </div>
 
-        <div className={`
-          flex-1 overflow-hidden transition-all duration-300
-          ${isSidebarCollapsed ? "p-3 space-y-3" : "p-4 space-y-4"}
-        `}>
-          {isSidebarCollapsed ? (
-             <>
-                <div onClick={expandSidebar} title="時間區間" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100 font-bold text-base">時間</div>
-                <div onClick={expandSidebar} title="城市選取" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100 font-bold text-base">城市</div>
-                <div onClick={expandSidebar} title="輸出與分享" className="w-14 h-14 rounded-xl flex items-center justify-center bg-white border border-slate-200 shadow-sm text-slate-500 cursor-pointer hover:bg-slate-100 font-bold text-base">分享</div>
-             </>
-          ) : (
+        <div className="flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 p-4 space-y-4">
              <>
               {/* 1. 時間區間 - 單行 */}
-              <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="w-5 h-5 text-slate-400" />
-                  <span className="text-base font-bold text-slate-700">觀察區間</span>
+              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-4 bg-brand rounded-full"></div>
+                  <span className="text-base font-black text-slate-800 tracking-tight">觀察區間設定</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="flex-1 bg-slate-50 border-none text-slate-700 text-sm rounded-lg px-2 py-2.5 font-bold outline-none cursor-pointer hover:bg-slate-100">
+                  <select value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                   <ArrowRight className="w-4 h-4 text-slate-300" />
-                  <select value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="flex-1 bg-slate-50 border-none text-slate-700 text-sm rounded-lg px-2 py-2.5 font-bold outline-none cursor-pointer hover:bg-slate-100">
+                  <select value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                 </div>
               </div>
 
               {/* 2. 城市選取 - 網格 */}
-              <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm flex-1">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex-1">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-slate-400" />
-                    <span className="text-base font-bold text-slate-700 uppercase tracking-wider">城市選取</span>
+                    <div className="w-1 h-4 bg-brand rounded-full"></div>
+                    <span className="text-base font-black text-slate-800 tracking-tight uppercase">城市觀察選取</span>
                   </div>
-                  <span className="text-xs font-black text-slate-400">{tempCompare.length} / 3 選中</span>
+                  <span className="px-2 py-1 bg-slate-100 rounded-md text-[10px] font-black text-slate-500">{tempCompare.length} / 3 對照中</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2">
@@ -232,30 +203,39 @@ export default function DashboardSidebar({
                     
                     return (
                       <div key={city.id} className={`
-                        relative flex items-center p-2.5 rounded-lg border transition-all cursor-pointer group
-                        ${isMain ? 'bg-slate-800 border-slate-800 text-white z-10 shadow-md' : 'bg-slate-50/50 border-transparent text-slate-600 hover:bg-white hover:border-slate-200'}
-                        ${isComparing ? 'ring-2 ring-orange-500/30 bg-orange-50 border-orange-200 shadow-sm' : ''}
-                      `} onClick={() => setTempMain(city.id)}>
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5 ml-0.5 shadow-sm" style={{ backgroundColor: city.color }}></div>
-                        <span className="text-sm font-bold truncate flex-1">{city.label}</span>
+                        relative flex items-center p-2.5 rounded-xl border transition-all cursor-pointer group
+                        ${isMain ? 'z-10 shadow-md' : 'bg-white border-slate-100 text-slate-600 hover:border-brand/30 hover:bg-slate-50'}
+                        ${isComparing ? 'ring-2 ring-brand/20' : ''}
+                      `} 
+                      style={isMain ? { 
+                        backgroundColor: '#FFFFFF', 
+                        borderColor: '#EA7125', 
+                        borderWidth: '2px',
+                        color: '#1e293b' // slate-800
+                      } : {}}
+                      onClick={() => setTempMain(city.id)}>
+                        {/* 主要城市指示條 */}
+                        {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand rounded-r-full"></div>}
+                        
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5 ml-0.5" style={{ backgroundColor: city.color }}></div>
+                        <span className={`text-sm truncate flex-1 ${isMain ? 'font-black text-slate-900' : 'font-bold'}`}>{city.label}</span>
                         
                         {!isMain && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); localToggleCompare(city.id); }}
                             className={`
-                              flex items-center justify-center px-2 py-1.5 rounded-md border transition-all
+                              flex items-center justify-center px-2 py-1.5 rounded-lg border transition-all
                               ${isComparing 
-                                ? 'bg-orange-500 border-orange-500 text-white shadow-sm' 
-                                : 'bg-white border-slate-200 text-slate-300 group-hover:text-orange-400 group-hover:border-orange-200'}
+                                ? 'bg-brand border-brand text-white shadow-sm' 
+                                : 'bg-white border-slate-200 text-slate-300 group-hover:text-brand group-hover:border-brand/30'}
                             `}
-                            title={isComparing ? "移除對照" : "加入比對"}
                           >
-                            <span className="text-xs font-black tracking-tighter">比</span>
+                            <span className="text-[10px] font-black">比</span>
                           </button>
                         )}
                         {isMain && (
-                           <div className="px-2 py-1.5 rounded-md bg-white/20 text-white text-xs font-black tracking-tighter mr-0.5">
-                             主
+                           <div className="px-2 py-1 rounded-md bg-brand text-white text-[10px] font-black tracking-tighter shadow-sm shadow-brand/20">
+                             主要
                            </div>
                         )}
                       </div>
@@ -264,7 +244,7 @@ export default function DashboardSidebar({
                 </div>
                 
                 <p className="text-xs text-slate-400 mt-4 text-center italic font-medium">
-                  💡 點名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點「比」啟動 <span className="text-orange-500 font-bold underline decoration-orange-200">對照</span>
+                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「對照」開啟 <span className="text-brand font-bold underline decoration-brand/20">比較分析</span>
                 </p>
               </div>
 
@@ -284,46 +264,36 @@ export default function DashboardSidebar({
                 </button>
               </div>
              </>
-          )}
         </div>
         
         {/* 底部固定確定按鈕區 */}
-        {!isSidebarCollapsed && (
-          <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] space-y-2">
-            <button 
-              onClick={handleReset}
-              className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-100"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              重設所有設定
-            </button>
-            
-            <button 
-              onClick={handleApply}
-              disabled={!hasChanges}
-              className={`
-                w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2
-                ${hasChanges 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-95' 
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
-              `}
-            >
-              <CheckCircle2 className={`w-6 h-6 ${hasChanges ? 'animate-pulse' : ''}`} />
-              確定更新資料
-            </button>
-            {hasChanges && (
-              <p className="text-sm text-orange-500 text-center mt-2 animate-pulse font-bold">設定已變更，請點擊更新</p>
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className={`
-          bg-white text-xs text-slate-400 border-t border-slate-200 text-center transition-all duration-300
-          ${isSidebarCollapsed ? "p-2" : "p-4"}
-        `}>
-          {isSidebarCollapsed ? "@RER" : "資料來源：政大不動產研究中心、永慶房產集團"}
+        <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] space-y-2">
+          <button 
+            onClick={handleReset}
+            className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-100"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            重設所有設定
+          </button>
+          
+          <button 
+            onClick={handleApply}
+            disabled={!hasChanges}
+            className={`
+              w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2
+              ${hasChanges 
+                ? 'bg-brand text-white shadow-lg shadow-brand/20 hover:bg-brand/90 active:scale-95' 
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
+            `}
+          >
+            <CheckCircle2 className={`w-6 h-6 ${hasChanges ? 'animate-pulse' : ''}`} />
+            確定更新資料
+          </button>
+          {hasChanges && (
+            <p className="text-sm text-brand text-center mt-2 animate-pulse font-bold">設定已變更，請點擊更新</p>
+          )}
         </div>
+
       </aside>
     </>
   );

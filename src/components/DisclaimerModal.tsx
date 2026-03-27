@@ -22,7 +22,7 @@ export default function DisclaimerModal() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-10000 flex items-center justify-center px-4">
       {/* 這裡是半透明黑底遮罩，讓後面的 Dashboard 隱約可見 */}
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
 
@@ -44,7 +44,7 @@ export default function DisclaimerModal() {
           <div className="bg-slate-50 p-5 rounded-2xl text-slate-600 text-sm leading-relaxed space-y-3">
             <div className="flex gap-2">
               <span className="text-orange-500 font-bold">●</span>
-              <p>本平台數據由政大不動產研究中心與永慶房產集團提供，僅供學術與研究參考。</p>
+              <p>本平台數據由政大不動產研究中心提供，僅供學術與研究參考。</p>
             </div>
             <div className="flex gap-2">
               <span className="text-orange-500 font-bold">●</span>

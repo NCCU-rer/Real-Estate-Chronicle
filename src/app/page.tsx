@@ -5,6 +5,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
 import InfoTooltip from "@/components/InfoTooltip";
+import Footer from "@/components/layout/Footer";
 import ExportModal from "@/components/ExportModal";
 import ReportCanvas from "@/components/ReportCanvas";
 import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
@@ -21,7 +22,6 @@ export default function Home() {
   const [mainCity, setMainCity] = useState("nation");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(true);
   
   // 匯出功能
@@ -127,73 +127,75 @@ export default function Home() {
 
   // === 5. 畫面渲染 (Render) ===
   return (
-    <main className="h-full w-full flex bg-slate-50 font-sans overflow-hidden">
-      
-      {/* 1. 側邊欄組件 */}
-      <DashboardSidebar 
-        isSettingsOpen={isSettingsOpen}
-        setIsSettingsOpen={setIsSettingsOpen}
-        isSidebarCollapsed={isSidebarCollapsed}
-        setIsSidebarCollapsed={setIsSidebarCollapsed}
-        startPeriod={startPeriod}
-        setStartPeriod={(v) => { setStartPeriod(v); updateUrl(v, endPeriod, mainCity, compareCities); }}
-        endPeriod={endPeriod}
-        setEndPeriod={(v) => { setEndPeriod(v); updateUrl(startPeriod, v, mainCity, compareCities); }}
-        mainCity={mainCity}
-        handleMainCityChange={(v) => { handleMainCityChange(v); updateUrl(startPeriod, endPeriod, v, compareCities.filter(c => c !== v)); }}
-        compareCities={compareCities}
-        toggleCompare={(v) => { toggleCompare(v); /* 這裡的同步較複雜，DashboardSidebar 內部的 handleApply 會一次性處理 */ }}
-        handleCancelCompare={handleCancelCompare}
-        onDownload={openExportModal}
-        onShare={handleShare}
-        onInfoOpen={() => setIsInfoOpen(true)}
-      />
-
-      {/* 2. 右側主要內容區 */}
-      <div className="flex-1 flex flex-col min-w-0 relative h-screen bg-slate-50 overflow-hidden">
+    <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
+      <main className="flex-1 flex overflow-hidden">
         
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
-           <div className="flex items-center gap-4">
-             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
-             <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-slate-400">目前顯示：</span>
-                <div className="flex items-center gap-2">
-                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
-                      {getDisplayName(mainCity)}
-                   </span>
-                   {compareCities.map(id => (
-                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-                         <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
-                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
-                         {getCityName(id)}
-                      </span>
-                   ))}
-                </div>
+        {/* 1. 側邊欄組件 */}
+        <DashboardSidebar 
+          isSettingsOpen={isSettingsOpen}
+          setIsSettingsOpen={setIsSettingsOpen}
+          startPeriod={startPeriod}
+          setStartPeriod={(v) => { setStartPeriod(v); updateUrl(v, endPeriod, mainCity, compareCities); }}
+          endPeriod={endPeriod}
+          setEndPeriod={(v) => { setEndPeriod(v); updateUrl(startPeriod, v, mainCity, compareCities); }}
+          mainCity={mainCity}
+          handleMainCityChange={(v) => { handleMainCityChange(v); updateUrl(startPeriod, endPeriod, v, compareCities.filter(c => c !== v)); }}
+          compareCities={compareCities}
+          toggleCompare={(v) => { toggleCompare(v); }}
+          handleCancelCompare={handleCancelCompare}
+          onDownload={openExportModal}
+          onShare={handleShare}
+          onInfoOpen={() => setIsInfoOpen(true)}
+        />
+
+        {/* 2. 右側主要內容區 */}
+        <div className="flex-1 flex flex-col min-w-0 relative bg-slate-50 overflow-hidden">
+          
+          {/* Top Header */}
+          <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
+             <div className="flex items-center gap-4">
+               <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
+               <div className="flex items-center gap-3">
+                  <span className="text-sm font-bold text-slate-400">目前顯示：</span>
+                  <div className="flex items-center gap-2">
+                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
+                        {getDisplayName(mainCity)}
+                     </span>
+                     {compareCities.map(id => (
+                        <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                           <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
+                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
+                           {getCityName(id)}
+                        </span>
+                     ))}
+                  </div>
+               </div>
              </div>
-           </div>
-        </header>
+          </header>
 
-        {/* List Content: Takes up 60% of the space */}
-        <div className="h-[60%] bg-slate-50/50 z-10 overflow-hidden">
-          <EventList 
-            data={currentViewEvents} 
-            startPeriod={startPeriod} 
-            endPeriod={endPeriod} 
-            citiesOrder={chartCities} 
-          />
-        </div>
+          {/* List Content: Takes up 60% of the space */}
+          <div className="h-[60%] bg-slate-50/50 z-10 overflow-hidden">
+            <EventList 
+              data={currentViewEvents} 
+              startPeriod={startPeriod} 
+              endPeriod={endPeriod} 
+              citiesOrder={chartCities} 
+            />
+          </div>
 
-        {/* 底部圖表組件 */}
-        <div className="h-[40%] shrink-0 z-20">
-          <DashboardChart 
-            selectedCities={chartCities}
-            startPeriod={startPeriod}
-            endPeriod={endPeriod}
-          />
+          {/* 底部圖表組件 */}
+          <div className="h-[40%] shrink-0 z-20">
+            <DashboardChart 
+              selectedCities={chartCities}
+              startPeriod={startPeriod}
+              endPeriod={endPeriod}
+            />
+          </div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
 
       <ExportModal 
         isOpen={isExportOpen}
@@ -208,6 +210,6 @@ export default function Home() {
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
       <InfoTooltip isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
-    </main>
+    </div>
   );
 }
