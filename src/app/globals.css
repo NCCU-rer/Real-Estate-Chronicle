@@ -8,6 +8,7 @@ html, body {
   --color-background-start: rgb(248, 250, 252);
   --color-background-end: rgb(241, 245, 249);
   --color-foreground: rgb(15, 23, 42);
+  --font-sans: var(--font-noto-sans-tc);
 }
 
 :root {
