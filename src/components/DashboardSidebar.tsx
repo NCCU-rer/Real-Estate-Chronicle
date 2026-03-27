@@ -2,8 +2,8 @@
 
 import { generateQuarterOptions } from "@/utils/eventHelper";
 import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors"; 
+import Image from "next/image";
 import { 
-  Building2, 
   Calendar, 
   MapPin, 
   GitCompare, 
@@ -19,6 +19,7 @@ import {
   Download,
   Share2,
   RotateCcw,
+  HelpCircle,
 } from "lucide-react";
 import React from "react";
 
@@ -40,6 +41,7 @@ interface SidebarProps {
   handleCancelCompare: () => void;
   onDownload: () => void;
   onShare: () => void;
+  onInfoOpen: () => void;
 }
 
 const InfoCard = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
@@ -70,6 +72,7 @@ export default function DashboardSidebar({
   handleCancelCompare,
   onDownload,
   onShare,
+  onInfoOpen,
 }: SidebarProps) {
   // 局部狀態，直到按下「確定更新」才同步回全域
   const [tempStart, setTempStart] = React.useState(startPeriod);
@@ -153,10 +156,28 @@ export default function DashboardSidebar({
             bg-orange-600 text-white flex items-center shrink-0 relative overflow-hidden group transition-all duration-300 p-6 justify-between
           `}
         >
-          <div className="relative z-10 flex items-center gap-3">
-            <div className={`transition-opacity duration-200 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
-              <h1 className="font-bold text-2xl tracking-wide whitespace-nowrap">不動產大事紀</h1>
-              <p className="text-xs text-orange-100 font-bold tracking-widest mt-0.5">政治大學不動產研究中心</p>
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="shrink-0">
+               <Image 
+                 src="/logo_transparent.svg" 
+                 alt="Logo" 
+                 width={42} 
+                 height={42} 
+                 className="object-contain mix-blend-multiply"
+               />
+            </div>
+            <div className={`transition-all duration-300 ${isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-2xl tracking-wide whitespace-nowrap">不動產大事紀</h1>
+                <button 
+                  onClick={onInfoOpen}
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors group/info"
+                  title="查看說明"
+                >
+                  <HelpCircle className="w-5 h-5 text-orange-100 group-hover/info:text-white" />
+                </button>
+              </div>
+              <p className="text-xs text-orange-100 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
             </div>
           </div>
           

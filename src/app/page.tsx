@@ -22,6 +22,7 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(true);
   
   // 匯出功能
   const reportRef = useRef<HTMLDivElement>(null);
@@ -145,6 +146,7 @@ export default function Home() {
         handleCancelCompare={handleCancelCompare}
         onDownload={openExportModal}
         onShare={handleShare}
+        onInfoOpen={() => setIsInfoOpen(true)}
       />
 
       {/* 2. 右側主要內容區 */}
@@ -204,7 +206,7 @@ export default function Home() {
       />
 
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
-      <InfoTooltip />
+      <InfoTooltip isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
     </main>
   );
