@@ -56,12 +56,21 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
+        <div className="p-4 bg-slate-50 flex items-center justify-center gap-4 border-t border-slate-100">
           <button 
             onClick={onClose}
-            className="px-10 py-3 bg-[#2D2D24] text-white rounded-xl font-bold text-sm hover:bg-black/80 transition-all active:scale-95 shadow-lg shadow-black/20"
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             我知道了
+          </button>
+          <button 
+            onClick={() => {
+              onClose();
+              window.dispatchEvent(new Event('start-onboarding-tour'));
+            }}
+            className="px-8 py-3 bg-[#2D2D24] text-white rounded-xl font-bold text-sm hover:bg-black/80 transition-all active:scale-95 shadow-lg shadow-black/20"
+          >
+            開啟互動式導覽
           </button>
         </div>
     </Modal>

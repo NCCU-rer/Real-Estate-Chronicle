@@ -20,6 +20,7 @@ import {
   Share2,
   RotateCcw,
   HelpCircle,
+  PlayCircle,
 } from "lucide-react";
 import React from "react";
 
@@ -129,7 +130,7 @@ export default function DashboardSidebar({
       )}
 
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-60
+        tour-filter-pannel fixed md:static inset-y-0 left-0 z-60
         bg-white
         flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out border-r border-slate-200
         w-80 animate-in fade-in slide-in-from-left-8 duration-500
@@ -159,6 +160,14 @@ export default function DashboardSidebar({
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
+
+              <button 
+                onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
+                className="mt-2 flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold transition-colors"
+              >
+                <PlayCircle className="w-3.5 h-3.5 text-[#B7791F]" />
+                開啟互動式導覽
+              </button>
             </div>
           </div>
           

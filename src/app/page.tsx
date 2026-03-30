@@ -15,6 +15,7 @@ import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
 import SplashWrapper from "@/components/SplashWrapper";
+import UserTour from "@/components/Guide/UserTour";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -129,6 +130,7 @@ export default function Home() {
   // === 5. 畫面渲染 (Render) ===
   return (
     <SplashWrapper>
+      <UserTour />
       <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
       <main className="flex-1 flex overflow-hidden">
         
@@ -177,7 +179,7 @@ export default function Home() {
           </header>
 
           {/* List Content: Takes up 60% of the space */}
-          <div className="h-[60%] bg-slate-50/50 z-10 overflow-hidden">
+          <div className="tour-event-timeline h-[60%] bg-slate-50/50 z-10 overflow-hidden">
             <EventList 
               data={currentViewEvents} 
               startPeriod={startPeriod} 
@@ -187,7 +189,7 @@ export default function Home() {
           </div>
 
           {/* 底部圖表組件 */}
-          <div className="h-[40%] shrink-0 z-20">
+          <div className="tour-price-chart h-[40%] shrink-0 z-20">
             <DashboardChart 
               selectedCities={chartCities}
               startPeriod={startPeriod}
@@ -196,7 +198,20 @@ export default function Home() {
           </div>
         </div>
       </main>
-
+<div className="mt-6 p-4 border-t border-gray-100">
+  <p className="text-sm text-gray-500 mb-3">
+    💡 提示：若您是初次使用，可以點擊下方按鈕啟動功能導覽。
+  </p>
+  <button 
+    onClick={() => {
+      // 發送自定義事件，這會觸發上面的 UserTour 組件
+      window.dispatchEvent(new Event('start-onboarding-tour'));
+    }}
+    className="w-full py-2 bg-[#B7791F] text-white rounded-md font-medium hover:bg-opacity-90 transition-all"
+  >
+    開啟互動式功能導覽
+  </button>
+</div>
       <Footer />
 
       <ExportModal 

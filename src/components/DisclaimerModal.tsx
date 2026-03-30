@@ -17,6 +17,8 @@ export default function DisclaimerModal() {
   const handleAccept = () => {
     localStorage.setItem("disclaimer_accepted", "true");
     setIsVisible(false);
+    // 觸發自定義事件來啟動導覽
+    window.dispatchEvent(new Event('start-onboarding-tour'));
   };
 
   if (!isVisible) return null;

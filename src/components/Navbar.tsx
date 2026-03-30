@@ -12,7 +12,7 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-[#2D2D24] rounded-md flex items-center justify-center text-white font-bold">
                 房
               </div>
-              <span className="text-xl font-bold text-gray-900 tracking-tight">
+              <span className="text-xl font-bold text-[#2D2D24] tracking-tight">
                 不動產大事紀
               </span>
             </div>
