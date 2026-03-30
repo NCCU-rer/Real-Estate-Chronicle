@@ -33,7 +33,7 @@ export default function UserTour() {
       onEvent={handleJoyrideCallback}
       options={{
         showProgress: true,
-        showSkipButton: true,
+        buttons: ['back', 'close', 'primary', 'skip'], // v3 顯示跳過按鈕的正確寫法
         scrollOffset: 100, // 避免高亮框被 Navbar 擋住
         primaryColor: '#B7791F', // 你的琥珀古銅色
         zIndex: 10000, 

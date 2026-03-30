@@ -5,7 +5,7 @@ export const TOUR_STEPS: Step[] = [
     target: '.tour-filter-pannel',
     content: '利用側邊欄篩選器，您可以設定「觀察區間」，並切換「主要觀察」與「對照」的縣市。',
     placement: 'right',
-    disableBeacon: true, // 第一步直接展開，不需要等使用者點光點
+    skipBeacon: true, // v3 更名為 skipBeacon：第一步直接展開，不需要等使用者點光點
   },
   {
     target: '.tour-event-timeline',
