@@ -66,17 +66,17 @@ export default function ExportModal({
       
       <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
-        <div className="bg-[#FFD152] px-8 py-6 text-slate-800 flex items-center justify-between">
+        <div className="bg-[#2D2D24] px-8 py-6 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-black/5 p-2 rounded-xl">
+            <div className="bg-white/10 p-2 rounded-xl">
               <Download size={24} />
             </div>
             <div>
               <h2 className="text-xl font-bold">匯出數據報告</h2>
-              <p className="text-slate-800/70 text-xs mt-0.5">自定義您想要下載的內容與區間</p>
+              <p className="text-white/70 text-xs mt-0.5">自定義您想要下載的內容與區間</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-black/10 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -86,7 +86,7 @@ export default function ExportModal({
           {/* 1. 時間區間 */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-800">
-              <Calendar size={18} className="text-[#FFD152]" />
+              <Calendar size={18} className="text-[#B7791F]" />
               <h3 className="font-bold">設定匯出時間</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -116,7 +116,7 @@ export default function ExportModal({
           {/* 2. 內容勾選 */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-800">
-              <FileText size={18} className="text-[#FFD152]" />
+              <FileText size={18} className="text-[#B7791F]" />
               <h3 className="font-bold">選擇匯出內容與格式</h3>
             </div>
             
@@ -124,13 +124,13 @@ export default function ExportModal({
             <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
               <button 
                 onClick={() => setConfig(prev => ({ ...prev, format: 'pdf' }))}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'pdf' ? 'bg-white text-[#FFD152] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'pdf' ? 'bg-white text-[#B7791F] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 PDF 報告 (單一檔案)
               </button>
               <button 
                 onClick={() => setConfig(prev => ({ ...prev, format: 'jpg' }))}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'jpg' ? 'bg-white text-[#FFD152] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${config.format === 'jpg' ? 'bg-white text-[#B7791F] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 JPEG 圖片 (打包下載)
               </button>
@@ -145,7 +145,7 @@ export default function ExportModal({
                 <label key={item.id} className={`
                   flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all
                   ${config[item.id as keyof ExportConfig]
-                    ? 'border-[#FFD152] bg-[#FFD152]/10 shadow-sm' 
+                    ? 'border-[#B7791F] bg-[#B7791F]/10 shadow-sm' 
                     : 'border-slate-100 bg-slate-50 hover:border-slate-200'}
                 `}>
                   <input 
@@ -155,10 +155,10 @@ export default function ExportModal({
                     onChange={() => setConfig(prev => ({ ...prev, [item.id]: !prev[item.id as keyof ExportConfig] }))}
                   />
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-xs font-bold ${config[item.id as keyof ExportConfig] ? 'text-[#FFD152]' : 'text-slate-500'}`}>
+                    <span className={`text-xs font-bold ${config[item.id as keyof ExportConfig] ? 'text-[#B7791F]' : 'text-slate-500'}`}>
                       {item.label}
                     </span>
-                    {config[item.id as keyof ExportConfig] && <CheckCircle2 size={14} className="text-[#FFD152]" />}
+                    {config[item.id as keyof ExportConfig] && <CheckCircle2 size={14} className="text-[#B7791F]" />}
                   </div>
                   <p className="text-[10px] text-slate-400 leading-tight">{item.desc}</p>
                 </label>
@@ -170,7 +170,7 @@ export default function ExportModal({
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-800">
-                <MapPin size={18} className="text-[#FFD152]" />
+                <MapPin size={18} className="text-[#B7791F]" />
                 <h3 className="font-bold">選取比較縣市</h3>
               </div>
               <span className="text-[10px] font-bold text-slate-400">{config.compareCities.length}/3 已選取</span>
@@ -191,7 +191,7 @@ export default function ExportModal({
                       onClick={() => toggleCity(city.id)}
                       className={`
                         p-2 rounded-lg border text-xs font-bold transition-all
-                        ${active ? 'border-[#FFD152] bg-[#FFD152]/10 text-[#FFD152]' : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'}
+                        ${active ? 'border-[#B7791F] bg-[#B7791F]/10 text-[#B7791F]' : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'}
                       `}
                     >
                       {city.label}
@@ -209,7 +209,7 @@ export default function ExportModal({
           </button>
           <button 
             onClick={() => onGenerate(config)}
-            className="flex items-center gap-2 bg-[#FFD152] hover:brightness-95 text-slate-800 px-8 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-[#FFD152]/30 transition-all active:scale-95"
+            className="flex items-center gap-2 bg-[#2D2D24] hover:bg-black/80 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-black/20 transition-all active:scale-95"
           >
             開始生成報告
             <ChevronRight size={18} />
