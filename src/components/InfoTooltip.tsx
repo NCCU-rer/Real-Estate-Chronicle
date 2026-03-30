@@ -1,6 +1,7 @@
 // src/components/InfoTooltip.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Info, X, ShieldCheck, Database } from 'lucide-react';
+import Modal from '@/components/Modal';
 
 interface InfoTooltipProps {
   isOpen: boolean;
@@ -8,36 +9,17 @@ interface InfoTooltipProps {
 }
 
 const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
-  // Close when pressing Escape key
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    if (isOpen) document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 font-sans">
-      {/* 黑色半透明遮罩背景 */}
-      <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300"
-        onClick={onClose}
-      />
-
-      {/* 彈出式說明框 */}
-      <div 
-        className={`
-          relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden
-          transition-all duration-300 transform animate-in zoom-in-95 slide-in-from-bottom-4 duration-300
-        `}
-      >
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      zIndex={200}
+      className="max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+    >
         {/* Header */}
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800 font-black text-lg">
-            <Info className="w-5 h-5 text-blue-600" />
+            <Info className="w-5 h-5 text-orange-600" />
             研究說明與免責聲明
           </div>
           <button 
@@ -51,7 +33,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         {/* Content */}
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-6">
           <section>
-            <h3 className="font-black text-base text-blue-600 mb-3 flex items-center gap-2">
+            <h3 className="font-black text-base text-orange-600 mb-3 flex items-center gap-2">
               <Database className="w-4 h-4" />
               資料清理邏輯與圖示說明
             </h3>
@@ -63,7 +45,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
           <div className="h-px bg-slate-100"></div>
           
           <section>
-            <h3 className="font-black text-base text-blue-600 mb-3 flex items-center gap-2">
+            <h3 className="font-black text-base text-orange-600 mb-3 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" />
               免責聲明
             </h3>
@@ -77,13 +59,12 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
           <button 
             onClick={onClose}
-            className="px-8 py-2.5 bg-slate-800 text-white rounded-full font-bold text-sm hover:bg-slate-700 transition-all active:scale-95 shadow-lg"
+            className="px-10 py-3 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition-all active:scale-95 shadow-lg shadow-orange-200"
           >
             我知道了
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

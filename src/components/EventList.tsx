@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { getQuarterValue } from "@/utils/eventHelper";
 import { NATIONAL_CONFIG, getCityColor } from "@/config/cityColors";
-import { Pin, GitCompare, Info } from "lucide-react";
+import { Pin, GitCompare, Info, X, ChevronRight } from "lucide-react";
+import Modal from "@/components/Modal";
 
 // --- TYPE DEFINITIONS ---
 interface EventItem {
@@ -27,7 +28,7 @@ interface EventListProps {
 
 // --- SUB-COMPONENTS ---
 
-const EventCard = ({ event, isMain }: { event: EventItem, isMain: boolean }) => {
+const EventCard = ({ event, isMain, onClick }: { event: EventItem, isMain: boolean, onClick: () => void }) => {
   const cityColor = event.isNational ? NATIONAL_CONFIG.color : (event.city ? getCityColor(event.city) : NATIONAL_CONFIG.color);
   const isPolicy = event.category === '政策';
   
@@ -36,7 +37,10 @@ const EventCard = ({ event, isMain }: { event: EventItem, isMain: boolean }) => 
     : 'bg-emerald-50 text-emerald-600 border-emerald-100';
 
   return (
-    <div className={`w-full group/card relative rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md border-slate-200 hover:border-slate-300 overflow-hidden`}>
+    <div 
+      onClick={onClick}
+      className={`w-full group/card relative rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md border-slate-200 hover:border-orange-300 overflow-hidden cursor-pointer active:scale-[0.99]`}
+    >
       {/* 側邊色條 */}
       <div className={`absolute top-0 bottom-0 w-1 ${isMain ? 'left-0' : 'right-0'}`} style={{ backgroundColor: cityColor }}></div>
       
@@ -61,6 +65,12 @@ const EventCard = ({ event, isMain }: { event: EventItem, isMain: boolean }) => 
             dangerouslySetInnerHTML={{ __html: event.description }} 
           />
         )}
+        
+        {/* 點擊提示 */}
+        <div className={`mt-2.5 flex items-center gap-0.5 text-[10px] font-bold text-slate-300 group-hover/card:text-orange-500 transition-colors duration-300 ${isMain ? 'justify-start' : 'justify-end'}`}>
+          <span>點擊查看詳情</span>
+          <ChevronRight size={12} />
+        </div>
       </div>
     </div>
   );
@@ -73,6 +83,9 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
   const scrollRefMain = useRef<HTMLDivElement>(null);
   const scrollRefCompare = useRef<HTMLDivElement>(null);
   
+  // 追蹤當前被點擊的事件，若有值則顯示彈窗
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+
   const mainCityId = citiesOrder[0];
   const compareCityIds = citiesOrder.slice(1);
 
@@ -155,7 +168,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
                 {group.events.map((ev, i) => (
                   <div key={i} className="flex gap-4">
                     <span className="text-xs font-bold text-slate-400 w-8 pt-4 shrink-0">{ev.quarter}</span>
-                    <EventCard event={ev} isMain={true} />
+                    <EventCard event={ev} isMain={true} onClick={() => setSelectedEvent(ev)} />
                   </div>
                 ))}
               </div>
@@ -171,7 +184,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
 
       {/* 2. 右側：對照比較 (Comparison) */}
       <section className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div className="sticky top-0 z-30 bg-slate-100/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <div className="bg-orange-500 p-1.5 rounded-lg shadow-sm shadow-orange-200">
               <GitCompare size={18} className="text-white" />
@@ -198,7 +211,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
                 {group.events.map((ev, i) => (
                   <div key={i} className="flex flex-row-reverse gap-4">
                     <span className="text-xs font-bold text-slate-400 w-8 pt-4 shrink-0 text-right">{ev.quarter}</span>
-                    <EventCard event={ev} isMain={false} />
+                    <EventCard event={ev} isMain={false} onClick={() => setSelectedEvent(ev)} />
                   </div>
                 ))}
               </div>
@@ -212,6 +225,57 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
         </div>
       </section>
 
+      {/* 3. 事件詳情彈窗 (Modal) */}
+      <Modal
+        isOpen={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        zIndex={9000}
+        className="max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+      >
+        {selectedEvent && (
+          <>
+            {/* 彈窗 Header */}
+            <div 
+              className="px-6 py-5 flex items-start justify-between border-b border-slate-100"
+              style={{ 
+                backgroundColor: selectedEvent.isNational ? NATIONAL_CONFIG.color + '10' : (selectedEvent.city ? getCityColor(selectedEvent.city) + '10' : NATIONAL_CONFIG.color + '10'),
+                borderTopWidth: '4px',
+                borderTopColor: selectedEvent.isNational ? NATIONAL_CONFIG.color : (selectedEvent.city ? getCityColor(selectedEvent.city) : NATIONAL_CONFIG.color)
+              }}
+            >
+              <div className="flex flex-col gap-1.5 pr-4">
+                <span className="text-xs font-black tracking-widest uppercase opacity-80" style={{ color: selectedEvent.isNational ? NATIONAL_CONFIG.color : (selectedEvent.city ? getCityColor(selectedEvent.city) : NATIONAL_CONFIG.color) }}>
+                  {selectedEvent.cityName || '全國'} • {selectedEvent.year} {selectedEvent.quarter}
+                </span>
+                <h3 className="font-black text-xl text-slate-800 leading-snug">
+                  {selectedEvent.title}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setSelectedEvent(null)}
+                className="p-2 hover:bg-black/5 rounded-full transition-colors shrink-0 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* 彈窗 Content */}
+            <div className="p-6 overflow-y-auto custom-scrollbar bg-slate-50/50">
+               {selectedEvent.category && (
+                  <div className="mb-5">
+                    <span className={`text-xs px-2.5 py-1 rounded-md font-black border inline-block ${selectedEvent.category === '政策' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                      {selectedEvent.category}
+                    </span>
+                  </div>
+                )}
+              <div 
+                className="text-base text-slate-600 leading-relaxed font-medium"
+                dangerouslySetInnerHTML={{ __html: selectedEvent.description || '暫無詳細說明' }} 
+              />
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

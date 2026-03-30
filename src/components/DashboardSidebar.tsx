@@ -136,7 +136,7 @@ export default function DashboardSidebar({
       `}>
         
         <div 
-          className="bg-white border-2 border-brand flex flex-col shrink-0 relative p-5 m-4 rounded-2xl shadow-sm"
+          className="bg-white flex flex-col shrink-0 relative p-6 border-b border-slate-100"
         >
           <div className="relative z-10 flex items-center gap-4">
             <div className="shrink-0 bg-brand/5 p-1.5 rounded-xl">
@@ -162,7 +162,7 @@ export default function DashboardSidebar({
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-brand transition-colors font-bold text-xs">
+          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-slate-400 hover:text-brand transition-colors font-bold text-xs">
             關閉
           </button>
         </div>
@@ -203,16 +203,10 @@ export default function DashboardSidebar({
                     
                     return (
                       <div key={city.id} className={`
-                        relative flex items-center p-2.5 rounded-xl border transition-all cursor-pointer group
-                        ${isMain ? 'z-10 shadow-md' : 'bg-white border-slate-100 text-slate-600 hover:border-brand/30 hover:bg-slate-50'}
-                        ${isComparing ? 'ring-2 ring-brand/20' : ''}
-                      `} 
-                      style={isMain ? { 
-                        backgroundColor: '#FFFFFF', 
-                        borderColor: '#EA7125', 
-                        borderWidth: '2px',
-                        color: '#1e293b' // slate-800
-                      } : {}}
+                        relative flex items-center p-2.5 rounded-xl transition-all cursor-pointer group
+                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-brand text-slate-800' : 'border bg-white border-slate-100 text-slate-600 hover:border-brand/30 hover:bg-slate-50'}
+                        ${isComparing && !isMain ? 'ring-2 ring-brand/20' : ''}
+                      `}
                       onClick={() => setTempMain(city.id)}>
                         {/* 主要城市指示條 */}
                         {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand rounded-r-full"></div>}
@@ -244,7 +238,7 @@ export default function DashboardSidebar({
                 </div>
                 
                 <p className="text-xs text-slate-400 mt-4 text-center italic font-medium">
-                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「對照」開啟 <span className="text-brand font-bold underline decoration-brand/20">比較分析</span>
+                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「比」開啟 <span className="text-brand font-bold underline decoration-brand/20">比較分析</span>
                 </p>
               </div>
 
