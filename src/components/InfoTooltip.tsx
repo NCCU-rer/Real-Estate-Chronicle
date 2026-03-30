@@ -19,7 +19,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         {/* Header */}
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800 font-black text-lg">
-            <Info className="w-5 h-5 text-orange-600" />
+            <Info className="w-5 h-5 text-[#FFD152]" />
             研究說明與免責聲明
           </div>
           <button 
@@ -33,7 +33,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         {/* Content */}
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-6">
           <section>
-            <h3 className="font-black text-base text-orange-600 mb-3 flex items-center gap-2">
+            <h3 className="font-black text-base text-[#FFD152] mb-3 flex items-center gap-2">
               <Database className="w-4 h-4" />
               資料清理邏輯與圖示說明
             </h3>
@@ -45,7 +45,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
           <div className="h-px bg-slate-100"></div>
           
           <section>
-            <h3 className="font-black text-base text-orange-600 mb-3 flex items-center gap-2">
+            <h3 className="font-black text-base text-[#FFD152] mb-3 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" />
               免責聲明
             </h3>
@@ -59,7 +59,7 @@ const InfoTooltip = ({ isOpen, onClose }: InfoTooltipProps) => {
         <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
           <button 
             onClick={onClose}
-            className="px-10 py-3 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition-all active:scale-95 shadow-lg shadow-orange-200"
+            className="px-10 py-3 bg-[#FFD152] text-slate-800 rounded-xl font-bold text-sm hover:brightness-95 transition-all active:scale-95 shadow-lg shadow-[#FFD152]/30"
           >
             我知道了
           </button>

@@ -39,11 +39,11 @@ const StaticEventCard = ({ event, isMain }: { event: any, isMain: boolean }) => 
 // PageFrame 現在不設固定高度，讓內容自然撐開
 const PageFrame = ({ children, pageNum, totalPages, config, title }: { children: React.ReactNode, pageNum: number, totalPages: number, config: ExportConfig, title?: string }) => (
   <div className="report-page w-300 min-h-225 bg-slate-50 p-14 flex flex-col relative overflow-hidden mb-10 border border-slate-200 shadow-2xl rounded-[40px]">
-    <div className="flex items-center justify-between border-b-2 border-orange-600 pb-6 mb-8 shrink-0">
+    <div className="flex items-center justify-between border-b-2 border-[#FFD152] pb-6 mb-8 shrink-0">
       <div>
         <h1 className="text-3xl font-black text-slate-800 tracking-tight">政大不動產大事紀研究報告</h1>
         <div className="flex items-center gap-3 mt-2">
-          <span className="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">Official Report</span>
+          <span className="bg-[#FFD152] text-slate-800 text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">Official Report</span>
           <p className="text-slate-500 font-bold text-xs">觀察期間：{config.start.replace("_", " ")} → {config.end.replace("_", " ")}</p>
         </div>
       </div>
@@ -56,7 +56,7 @@ const PageFrame = ({ children, pageNum, totalPages, config, title }: { children:
     <div className="flex-1 flex flex-col min-h-0">
       {title && (
         <h2 className="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3 shrink-0">
-          <span className="w-2 h-7 bg-orange-500 rounded-full"></span>
+          <span className="w-2 h-7 bg-[#FFD152] rounded-full"></span>
           {title}
         </h2>
       )}

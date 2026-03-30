@@ -39,7 +39,7 @@ const EventCard = ({ event, isMain, onClick }: { event: EventItem, isMain: boole
   return (
     <div 
       onClick={onClick}
-      className={`w-full group/card relative rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md border-slate-200 hover:border-orange-300 overflow-hidden cursor-pointer active:scale-[0.99]`}
+      className={`w-full group/card relative rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md border-slate-200 hover:border-[#FFD152] overflow-hidden cursor-pointer active:scale-[0.99]`}
     >
       {/* 側邊色條 */}
       <div className={`absolute top-0 bottom-0 w-1 ${isMain ? 'left-0' : 'right-0'}`} style={{ backgroundColor: cityColor }}></div>
@@ -67,7 +67,7 @@ const EventCard = ({ event, isMain, onClick }: { event: EventItem, isMain: boole
         )}
         
         {/* 點擊提示 */}
-        <div className={`mt-2.5 flex items-center gap-0.5 text-[10px] font-bold text-slate-300 group-hover/card:text-orange-500 transition-colors duration-300 ${isMain ? 'justify-start' : 'justify-end'}`}>
+        <div className={`mt-2.5 flex items-center gap-0.5 text-[10px] font-bold text-slate-300 group-hover/card:text-[#FFD152] transition-colors duration-300 ${isMain ? 'justify-start' : 'justify-end'}`}>
           <span>點擊查看詳情</span>
           <ChevronRight size={12} />
         </div>
@@ -186,8 +186,8 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
       <section className="flex-1 flex flex-col min-w-0">
         <div className="sticky top-0 z-30 bg-slate-100/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="bg-orange-500 p-1.5 rounded-lg shadow-sm shadow-orange-200">
-              <GitCompare size={18} className="text-white" />
+            <div className="bg-[#FFD152] p-1.5 rounded-lg shadow-sm shadow-[#FFD152]/30">
+              <GitCompare size={18} className="text-slate-800" />
             </div>
             <div>
               <h2 className="text-base font-black text-slate-800 tracking-wider">對照比較</h2>

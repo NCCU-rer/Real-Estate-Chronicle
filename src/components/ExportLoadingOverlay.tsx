@@ -16,9 +16,9 @@ export default function ExportLoadingOverlay({ isVisible, progress }: ExportLoad
       
       {/* 頂部裝飾 */}
       <div className="absolute top-12 flex items-center gap-3 opacity-50">
-        <div className="w-12 h-0.5 bg-linear-to-r from-transparent to-orange-500"></div>
-        <Zap className="w-5 h-5 text-orange-500" />
-        <div className="w-12 h-0.5 bg-linear-to-l from-transparent to-orange-500"></div>
+        <div className="w-12 h-0.5 bg-linear-to-r from-transparent to-[#FFD152]"></div>
+        <Zap className="w-5 h-5 text-[#FFD152]" />
+        <div className="w-12 h-0.5 bg-linear-to-l from-transparent to-[#FFD152]"></div>
       </div>
 
       <div className="w-full max-w-md px-10 flex flex-col items-center">
@@ -43,12 +43,12 @@ export default function ExportLoadingOverlay({ isVisible, progress }: ExportLoad
               fill="transparent"
               strokeDasharray={377}
               strokeDashoffset={377 - (377 * progress) / 100}
-              className="text-orange-500 transition-all duration-500 ease-out"
+              className="text-[#FFD152] transition-all duration-500 ease-out"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-3xl font-black font-mono">{progress}%</span>
-            <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">Progress</span>
+            <span className="text-[10px] font-bold text-[#FFD152] uppercase tracking-widest">Progress</span>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ export default function ExportLoadingOverlay({ isVisible, progress }: ExportLoad
         {/* 橘白條紋進度條 */}
         <div className="w-full h-4 bg-white/10 rounded-full overflow-hidden border border-white/5 shadow-inner relative">
           <div 
-            className="h-full bg-orange-500 transition-all duration-500 ease-out relative"
+            className="h-full bg-[#FFD152] transition-all duration-500 ease-out relative"
             style={{ 
               width: `${progress}%`,
               backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent)',
@@ -73,12 +73,12 @@ export default function ExportLoadingOverlay({ isVisible, progress }: ExportLoad
             }}
           >
             {/* 進度條光暈 */}
-            <div className="absolute inset-0 shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
+            <div className="absolute inset-0 shadow-[0_0_15px_#FFD15280]"></div>
           </div>
         </div>
 
         <div className="mt-6 flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-          <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+          <Loader2 className="w-4 h-4 animate-spin text-[#FFD152]" />
           <span className="text-[11px] font-bold text-slate-300">
             {progress < 100 ? "排版處理中..." : "檔案準備完成，即將開始下載"}
           </span>

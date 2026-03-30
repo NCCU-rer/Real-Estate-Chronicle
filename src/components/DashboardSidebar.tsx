@@ -139,7 +139,7 @@ export default function DashboardSidebar({
           className="bg-white flex flex-col shrink-0 relative p-6 border-b border-slate-100"
         >
           <div className="relative z-10 flex items-center gap-4">
-            <div className="shrink-0 bg-brand/5 p-1.5 rounded-xl">
+            <div className="shrink-0 bg-[#FFD152]/5 p-1.5 rounded-xl">
                <Image 
                  src="/logo_transparent.svg" 
                  alt="Logo" 
@@ -150,19 +150,19 @@ export default function DashboardSidebar({
             </div>
             <div className="opacity-100">
               <div className="flex items-center gap-2">
-                <h1 className="font-black text-2xl tracking-tight text-brand">不動產大事紀</h1>
+                <h1 className="font-black text-2xl tracking-tight text-[#FFD152]">不動產大事紀</h1>
                 <button 
                   onClick={onInfoOpen}
-                  className="p-1 hover:bg-brand/10 rounded-full transition-colors group/info"
+                  className="p-1 hover:bg-[#FFD152]/10 rounded-full transition-colors group/info"
                 >
-                  <HelpCircle className="w-4 h-4 text-slate-300 group-hover:text-brand" />
+                  <HelpCircle className="w-4 h-4 text-slate-300 group-hover/text-[#FFD152]" />
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-slate-400 hover:text-brand transition-colors font-bold text-xs">
+          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-slate-400 hover:text-[#FFD152] transition-colors font-bold text-xs">
             關閉
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function DashboardSidebar({
               {/* 1. 時間區間 - 單行 */}
               <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-4 bg-brand rounded-full"></div>
+                  <div className="w-1 h-4 bg-[#FFD152] rounded-full"></div>
                   <span className="text-base font-black text-slate-800 tracking-tight">觀察區間設定</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function DashboardSidebar({
               <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-1 h-4 bg-brand rounded-full"></div>
+                    <div className="w-1 h-4 bg-[#FFD152] rounded-full"></div>
                     <span className="text-base font-black text-slate-800 tracking-tight uppercase">城市觀察選取</span>
                   </div>
                   <span className="px-2 py-1 bg-slate-100 rounded-md text-[10px] font-black text-slate-500">{tempCompare.length} / 3 對照中</span>
@@ -204,12 +204,12 @@ export default function DashboardSidebar({
                     return (
                       <div key={city.id} className={`
                         relative flex items-center p-2.5 rounded-xl transition-all cursor-pointer group
-                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-brand text-slate-800' : 'border bg-white border-slate-100 text-slate-600 hover:border-brand/30 hover:bg-slate-50'}
-                        ${isComparing && !isMain ? 'ring-2 ring-brand/20' : ''}
+                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-[#FFD152] text-slate-800' : 'border bg-white border-slate-100 text-slate-600 hover:border-[#FFD152]/30 hover:bg-slate-50'}
+                        ${isComparing && !isMain ? 'ring-2 ring-[#FFD152]/20' : ''}
                       `}
                       onClick={() => setTempMain(city.id)}>
                         {/* 主要城市指示條 */}
-                        {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand rounded-r-full"></div>}
+                        {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#FFD152] rounded-r-full"></div>}
                         
                         <div className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5 ml-0.5" style={{ backgroundColor: city.color }}></div>
                         <span className={`text-sm truncate flex-1 ${isMain ? 'font-black text-slate-900' : 'font-bold'}`}>{city.label}</span>
@@ -220,15 +220,15 @@ export default function DashboardSidebar({
                             className={`
                               flex items-center justify-center px-2 py-1.5 rounded-lg border transition-all
                               ${isComparing 
-                                ? 'bg-brand border-brand text-white shadow-sm' 
-                                : 'bg-white border-slate-200 text-slate-300 group-hover:text-brand group-hover:border-brand/30'}
+                                ? 'bg-[#FFD152] border-[#FFD152] text-slate-800 shadow-sm' 
+                                : 'bg-white border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
                             `}
                           >
                             <span className="text-[10px] font-black">比</span>
                           </button>
                         )}
                         {isMain && (
-                           <div className="px-2 py-1 rounded-md bg-brand text-white text-[10px] font-black tracking-tighter shadow-sm shadow-brand/20">
+                           <div className="px-2 py-1 rounded-md bg-[#FFD152] text-slate-800 text-[10px] font-black tracking-tighter shadow-sm shadow-[#FFD152]/20">
                              主要
                            </div>
                         )}
@@ -238,7 +238,7 @@ export default function DashboardSidebar({
                 </div>
                 
                 <p className="text-xs text-slate-400 mt-4 text-center italic font-medium">
-                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「比」開啟 <span className="text-brand font-bold underline decoration-brand/20">比較分析</span>
+                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「比」開啟 <span className="text-[#FFD152] font-bold underline decoration-[#FFD152]/20">比較分析</span>
                 </p>
               </div>
 
@@ -276,7 +276,7 @@ export default function DashboardSidebar({
             className={`
               w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2
               ${hasChanges 
-                ? 'bg-brand text-white shadow-lg shadow-brand/20 hover:bg-brand/90 active:scale-95' 
+                ? 'bg-[#FFD152] text-slate-800 shadow-lg shadow-[#FFD152]/20 hover:brightness-95 active:scale-95' 
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
             `}
           >
@@ -284,7 +284,7 @@ export default function DashboardSidebar({
             確定更新資料
           </button>
           {hasChanges && (
-            <p className="text-sm text-brand text-center mt-2 animate-pulse font-bold">設定已變更，請點擊更新</p>
+            <p className="text-sm text-[#FFD152] text-center mt-2 animate-pulse font-bold">設定已變更，請點擊更新</p>
           )}
         </div>
 

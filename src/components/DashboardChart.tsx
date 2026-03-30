@@ -32,7 +32,7 @@ export default function DashboardChart({
     <div className="w-full h-full bg-white border-t border-slate-200 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col animate-in fade-in slide-in-from-bottom-4 delay-300 duration-700">
       {/* Chart Title Bar */}
       <div className="shrink-0 h-10 border-b border-slate-100 flex items-center px-4 gap-2">
-        <TrendingUp className="w-4 h-4 text-orange-500" />
+        <TrendingUp className="w-4 h-4 text-[#FFD152]" />
         <h3 className="text-sm font-bold text-slate-700">{chartTitle}</h3>
       </div>
 

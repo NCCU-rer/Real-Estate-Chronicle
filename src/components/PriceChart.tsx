@@ -57,7 +57,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
     return (
       <div className="bg-white/95 backdrop-blur-md p-3 border border-slate-200 rounded-xl shadow-2xl text-xs z-50 ring-1 ring-slate-100 min-w-40">
         <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1.5 flex items-center gap-2">
-          <span className="w-1 h-3 bg-orange-500 rounded-full"></span>
+          <span className="w-1 h-3 bg-[#FFD152] rounded-full"></span>
           {label}
         </p>
         <div className="space-y-1.5">
@@ -94,7 +94,7 @@ const MobileTooltipDisplay = ({ payload, unit }: { payload: TooltipPayloadItem[]
          <p className="font-bold text-slate-700 truncate flex items-center gap-2">
            {label ? (
              <>
-               <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
+               <span className="w-1.5 h-1.5 bg-[#FFD152] rounded-full animate-pulse"></span>
                {label}
              </>
            ) : (
@@ -366,9 +366,9 @@ export default function PriceChart({ selectedCities, startPeriod, endPeriod }: P
               <Brush 
                 dataKey="quarter" 
                 height={20} 
-                stroke="#f97316"     // ★ 選取框邊框：亮橘色
+                stroke="#FFD152"     // ★ 選取框邊框：亮橘色
                 travellerWidth={20} 
-                fill="#fff7ed"       // ★ 選取框背景：淺橘色
+                fill="#FFD15220"       // ★ 選取框背景：淺橘色
                 fillOpacity={0.4}    // ★ 輕微透明
                 tickFormatter={() => ""} 
                 onChange={handleBrushChange}

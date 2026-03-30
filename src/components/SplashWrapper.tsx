@@ -52,7 +52,7 @@ export default function SplashWrapper({ children }: { children: React.ReactNode 
           </h1>
           
           {/* 分隔線 */}
-          <div className="w-12 h-1 bg-orange-500 rounded-full mb-5"></div>
+          <div className="w-12 h-1 bg-[#FFD152] rounded-full mb-5"></div>
           
           {/* 副標題 */}
           <p className="text-sm md:text-base font-bold text-slate-500 tracking-[0.2em] uppercase">
