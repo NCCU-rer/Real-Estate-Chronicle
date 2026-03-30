@@ -132,7 +132,7 @@ export default function DashboardSidebar({
         fixed md:static inset-y-0 left-0 z-60
         bg-white
         flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out border-r border-slate-200
-        w-80 
+        w-80 animate-in fade-in slide-in-from-left-8 duration-500
       `}>
         
         <div 

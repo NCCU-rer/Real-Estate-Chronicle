@@ -14,6 +14,7 @@ import { rawData } from "@/data/sourceData";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
+import SplashWrapper from "@/components/SplashWrapper";
 
 export default function Home() {
   // === 1. 狀態管理 (State) ===
@@ -127,7 +128,8 @@ export default function Home() {
 
   // === 5. 畫面渲染 (Render) ===
   return (
-    <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
+    <SplashWrapper>
+      <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
       <main className="flex-1 flex overflow-hidden">
         
         {/* 1. 側邊欄組件 */}
@@ -152,7 +154,7 @@ export default function Home() {
         <div className="flex-1 flex flex-col min-w-0 relative bg-slate-50 overflow-hidden">
           
           {/* Top Header */}
-          <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
+          <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30 animate-in fade-in delay-150 duration-500">
              <div className="flex items-center gap-4">
                <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
                <div className="flex items-center gap-3">
@@ -210,6 +212,7 @@ export default function Home() {
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
       <InfoTooltip isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
-    </div>
+      </div>
+    </SplashWrapper>
   );
 }

@@ -139,7 +139,7 @@ export default function EventList({ data, startPeriod, endPeriod, citiesOrder }:
   }, [data]);
 
   return (
-    <div className="w-full h-full flex bg-slate-50 relative divide-x divide-slate-200">
+    <div className="w-full h-full flex bg-slate-50 relative divide-x divide-slate-200 animate-in fade-in slide-in-from-left-8 delay-200 duration-700">
       
       {/* 1. 左側：主要觀察 (Primary) */}
       <section className="flex-1 flex flex-col min-w-0">
