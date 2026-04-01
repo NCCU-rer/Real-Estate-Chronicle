@@ -156,21 +156,21 @@ export default function Home() {
         <div className="flex-1 flex flex-col min-w-0 relative bg-slate-50 overflow-hidden">
           
           {/* Top Header */}
-          <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30 animate-in fade-in delay-150 duration-500">
+          <header className="bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 py-4 shadow-sm z-30 animate-in fade-in delay-150 duration-500">
              <div className="flex items-center gap-4">
                <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-slate-400">目前顯示：</span>
+                  <span className="text-xs font-bold text-slate-400 whitespace-nowrap">目前顯示：</span>
                   <div className="flex items-center gap-2">
                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
-                        {getDisplayName(mainCity)}
+                        主要：{getDisplayName(mainCity)}
                      </span>
                      {compareCities.map(id => (
                         <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
                            <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
-                           {getCityName(id)}
+                           對照：{getCityName(id)}
                         </span>
                      ))}
                   </div>

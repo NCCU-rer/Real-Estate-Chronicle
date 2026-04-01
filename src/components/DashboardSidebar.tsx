@@ -125,37 +125,40 @@ export default function DashboardSidebar({
       `}>
         
         <div 
-          className="bg-[#B7791F] flex flex-col shrink-0 relative p-6 border-b border-[#B7791F]/10 shadow-lg shadow-[#B7791F]/10"
+          className="bg-[#B7791F] flex flex-col shrink-0 relative py-4 px-6 border-b border-[#B7791F]/10 shadow-lg shadow-[#B7791F]/10"
         >
           <div className="relative z-10 flex items-center gap-4">
             <div className="shrink-0 p-1.5 bg-white/10 rounded-xl backdrop-blur-sm">
                <Image 
-                 src="/logo_transparent.svg" 
+                 src="/icon.svg" 
                  alt="Logo" 
                  width={38} 
                  height={38} 
                  className="object-contain rounded-xl"
                />
             </div>
-            <div className="opacity-100">
-              <div className="flex items-center gap-2">
-                <h1 className="font-black text-2xl tracking-tight text-white">不動產大事紀</h1>
+            <div className="opacity-100 flex-1 min-w-0">
+              {/* 第一排：標題 與 問號 */}
+              <div className="flex items-center justify-between">
+                <h1 className="font-black text-2xl tracking-tight text-white whitespace-nowrap">不動產大事紀</h1>
                 <button 
                   onClick={onInfoOpen}
                   className="p-1 hover:bg-white/20 rounded-full transition-colors group/info"
                 >
-                  <HelpCircle className="w-4 h-4 text-white/60 group-hover:text-white" />
+                  <HelpCircle className="w-5 h-5 text-white/80 group-hover:text-white" />
                 </button>
               </div>
-              <p className="text-[10px] text-white/70 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
-
-              <button 
-                onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
-                className="mt-2 flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[11px] font-bold transition-colors border border-white/10"
-              >
-                <PlayCircle className="w-3.5 h-3.5 text-white" />
-                開啟互動式導覽
-              </button>
+              
+              {/* 第二排：副標 與 導覽按鈕 */}
+              <div className="flex items-center justify-between mt-0.5">
+                <p className="text-[10px] text-white/70 font-bold tracking-widest uppercase">Real Estate Timeline</p>
+                <button 
+                  onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
+                  className="flex items-center justify-center px-2 py-0.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-[10px] font-bold transition-all border border-white/20 shadow-sm"
+                >
+                  導覽
+                </button>
+              </div>
             </div>
           </div>
           
@@ -215,7 +218,7 @@ export default function DashboardSidebar({
                           <button 
                             onClick={(e) => { e.stopPropagation(); localToggleCompare(city.id); }}
                             className={`
-                              flex items-center justify-center px-2 py-1.5 rounded-lg border transition-all
+                              h-6 flex items-center justify-center px-2 rounded-md border transition-all
                               ${isComparing 
                                 ? 'bg-[#B7791F] border-[#B7791F] text-white shadow-sm' 
                                 : 'bg-slate-50 border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
@@ -225,7 +228,7 @@ export default function DashboardSidebar({
                           </button>
                         )}
                         {isMain && (
-                           <div className="px-2 py-1 rounded-md bg-[#B7791F] text-white text-[10px] font-black tracking-tighter shadow-sm shadow-[#B7791F]/20">
+                           <div className="h-6 flex items-center justify-center px-2 rounded-md bg-[#B7791F] text-white text-[10px] font-black tracking-tighter shadow-sm shadow-[#B7791F]/20">
                              主要
                            </div>
                         )}
