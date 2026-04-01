@@ -1,31 +1,21 @@
 "use client";
 
-import { generateQuarterOptions } from "@/utils/eventHelper";
-import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors"; 
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { 
-  Calendar, 
-  MapPin, 
-  GitCompare, 
-  X, 
   ArrowRight,
   CheckCircle2,
-  Circle,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  DollarSign,
-  TrendingUp,
   Download,
   Share2,
   RotateCcw,
   HelpCircle,
   PlayCircle,
 } from "lucide-react";
-import React from "react";
 
-const QUARTER_OPTIONS = generateQuarterOptions();
+import { generateQuarterOptions } from "@/utils/eventHelper";
+import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors"; 
 
+// --- 類型定義 ---
 interface SidebarProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (v: boolean) => void;
@@ -43,6 +33,13 @@ interface SidebarProps {
   onInfoOpen: () => void;
 }
 
+// --- 常數設定 ---
+const QUARTER_OPTIONS = generateQuarterOptions();
+
+/**
+ * 儀表板側邊欄組件
+ * 包含：標題區、時間區間設定、城市選取、功能選單、以及確定更新按鈕
+ */
 export default function DashboardSidebar({
   isSettingsOpen,
   setIsSettingsOpen,
@@ -59,57 +56,72 @@ export default function DashboardSidebar({
   onShare,
   onInfoOpen,
 }: SidebarProps) {
-  // 局部狀態，直到按下「確定更新」才同步回全域
-  const [tempStart, setTempStart] = React.useState(startPeriod);
-  const [tempEnd, setTempEnd] = React.useState(endPeriod);
-  const [tempMain, setTempMain] = React.useState(mainCity);
-  const [tempCompare, setTempCompare] = React.useState(compareCities);
+  
+  // === 1. 局部狀態 (直到按下「確定更新」才同步回父組件) ===
+  const [tempStart, setTempStart] = useState(startPeriod);
+  const [tempEnd, setTempEnd] = useState(endPeriod);
+  const [tempMain, setTempMain] = useState(mainCity);
+  const [tempCompare, setTempCompare] = useState(compareCities);
 
-  // 當外部 props 改變時（例如點擊重設），同步局部狀態
-  React.useEffect(() => {
+  // === 2. 副作用處理 ===
+  // 當外部 props 改變時（例如點擊重設），同步更新局部狀態
+  useEffect(() => {
     setTempStart(startPeriod);
     setTempEnd(endPeriod);
     setTempMain(mainCity);
     setTempCompare(compareCities);
   }, [startPeriod, endPeriod, mainCity, compareCities]);
 
+  // === 3. 業務邏輯 ===
+  
+  // 檢查設定是否已變更
+  const hasChanges = useMemo(() => {
+    return tempStart !== startPeriod || 
+           tempEnd !== endPeriod || 
+           tempMain !== mainCity || 
+           JSON.stringify(tempCompare) !== JSON.stringify(compareCities);
+  }, [tempStart, startPeriod, tempEnd, endPeriod, tempMain, mainCity, tempCompare, compareCities]);
+
+  // 套用設定並通知父組件
   const handleApply = () => {
     setStartPeriod(tempStart);
     setEndPeriod(tempEnd);
     handleMainCityChange(tempMain);
-    // 更新對照城市
+    
+    // 更新對照城市邏輯
     compareCities.forEach(c => { if(!tempCompare.includes(c)) toggleCompare(c); });
     tempCompare.forEach(c => { if(!compareCities.includes(c)) toggleCompare(c); });
     
-    // 關閉手機版選單
-    setIsSettingsOpen(false);
+    setIsSettingsOpen(false); // 在手機版時關閉抽屜
   };
 
+  // 重設為初始預設值
   const handleReset = () => {
     setTempStart("2013_Q1");
     setTempEnd("2025_Q4");
     setTempMain("nation");
     setTempCompare([]);
-    
-    // 立即同步回全域 (可選，這裡選擇點擊重設後仍需點擊確定，或直接同步)
-    // 為了體驗一致性，重設後也需要按「確定更新」才生效
   };
 
-  const hasChanges = tempStart !== startPeriod || 
-                     tempEnd !== endPeriod || 
-                     tempMain !== mainCity || 
-                     JSON.stringify(tempCompare) !== JSON.stringify(compareCities);
-
+  // 局部切換比較城市
   const localToggleCompare = (cityId: string) => {
     setTempCompare(prev => {
       if (prev.includes(cityId)) return prev.filter(id => id !== cityId);
-      if (prev.length >= 3) return prev;
+      if (prev.length >= 3) return prev; // 最多選 3 個
       return [...prev, cityId];
     });
   };
 
+  // === 4. UI 渲染助手 ===
+  const sidebarClass = `
+    tour-filter-pannel fixed md:static inset-y-0 left-0 z-60
+    bg-slate-50 flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200
+    w-80 animate-in fade-in slide-in-from-left-8 duration-500
+  `;
+
   return (
     <>
+      {/* 手機版遮罩 */}
       {isSettingsOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm md:hidden" 
@@ -117,17 +129,12 @@ export default function DashboardSidebar({
         />
       )}
 
-      <aside className={`
-        tour-filter-pannel fixed md:static inset-y-0 left-0 z-60
-        bg-slate-50
-        flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200
-        w-80 animate-in fade-in slide-in-from-left-8 duration-500
-      `}>
+      <aside className={sidebarClass}>
         
-        <div 
-          className="bg-[#B7791F] flex flex-col shrink-0 relative py-4 px-6 border-b border-[#B7791F]/10 shadow-lg shadow-[#B7791F]/10"
-        >
+        {/* --- A. 琥珀色標頭區塊 --- */}
+        <div className="bg-[#B7791F] flex flex-col shrink-0 relative py-4 px-6 border-b border-[#B7791F]/10 shadow-lg shadow-[#B7791F]/10">
           <div className="relative z-10 flex items-center gap-4">
+            {/* Logo 外框 */}
             <div className="shrink-0 p-1.5 bg-white/10 rounded-xl backdrop-blur-sm">
                <Image 
                  src="/icon.svg" 
@@ -137,134 +144,146 @@ export default function DashboardSidebar({
                  className="object-contain rounded-xl"
                />
             </div>
+            
+            {/* 標題與功能按鈕對齊區 */}
             <div className="opacity-100 flex-1 min-w-0">
-              {/* 第一排：標題 與 問號 */}
               <div className="flex items-center justify-between">
                 <h1 className="font-black text-2xl tracking-tight text-white whitespace-nowrap">不動產大事紀</h1>
-                <button 
-                  onClick={onInfoOpen}
-                  className="p-1 hover:bg-white/20 rounded-full transition-colors group/info"
-                >
-                  <HelpCircle className="w-5 h-5 text-white/80 group-hover:text-white" />
-                </button>
+                <div className="flex flex-col items-center gap-1 shrink-0 mt-1">
+                  <button onClick={onInfoOpen} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+                    <HelpCircle className="w-5 h-5 text-white/80" />
+                  </button>
+                  <button 
+                    onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
+                    className="flex items-center justify-center px-2 py-0.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-[11px] font-bold transition-all border border-white/20 shadow-sm"
+                  >
+                    導覽
+                  </button>
+                </div>
               </div>
-              
-              {/* 第二排：副標 與 導覽按鈕 */}
-              <div className="flex items-center justify-between mt-0.5">
-                <p className="text-[10px] text-white/70 font-bold tracking-widest uppercase">Real Estate Timeline</p>
-                <button 
-                  onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
-                  className="flex items-center justify-center px-2 py-0.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-[10px] font-bold transition-all border border-white/20 shadow-sm"
-                >
-                  導覽
-                </button>
-              </div>
+              <p className="text-[10px] text-white/70 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-white/60 hover:text-white transition-colors font-bold text-xs">
+          {/* 手機版關閉按鈕 */}
+          <button 
+            onClick={() => setIsSettingsOpen(false)} 
+            className="md:hidden absolute top-6 right-6 text-white/60 hover:text-white transition-colors"
+          >
             關閉
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 p-4 space-y-4">
-             <>
-              {/* 1. 時間區間 - 單行 */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
-                  <span className="text-base font-black text-slate-800 tracking-tight">觀察區間設定</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors">
-                    {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
-                  </select>
-                  <ArrowRight className="w-4 h-4 text-slate-300" />
-                  <select value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors">
-                    {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
-                  </select>
-                </div>
-              </div>
+        {/* --- B. 滾動內容區 --- */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+          
+          {/* 1. 時間區間設定 */}
+          <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
+              <span className="text-base font-black text-slate-800 tracking-tight">觀察區間設定</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <select 
+                value={tempStart} 
+                onChange={(e) => setTempStart(e.target.value)} 
+                className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors"
+              >
+                {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+              </select>
+              <ArrowRight className="w-4 h-4 text-slate-300" />
+              <select 
+                value={tempEnd} 
+                onChange={(e) => setTempEnd(e.target.value)} 
+                className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors"
+              >
+                {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+              </select>
+            </div>
+          </div>
 
-              {/* 2. 城市選取 - 網格 */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
-                    <span className="text-base font-black text-slate-800 tracking-tight uppercase">城市觀察選取</span>
-                  </div>
-                  <span className="px-2 py-1 bg-slate-200/50 rounded-md text-[10px] font-black text-slate-500">{tempCompare.length} / 3 對照中</span>
-                </div>
+          {/* 2. 城市選取網格 */}
+          <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
+                <span className="text-base font-black text-slate-800 tracking-tight uppercase">城市觀察選取</span>
+              </div>
+              <span className="px-2 py-1 bg-slate-200/50 rounded-md text-[10px] font-black text-slate-500">
+                {tempCompare.length} / 3 對照中
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              {[ { id: 'nation', label: '全國', color: NATIONAL_CONFIG.color }, ...CITIES_CONFIG ].map(city => {
+                const isMain = tempMain === city.id;
+                const isComparing = tempCompare.includes(city.id);
                 
-                <div className="grid grid-cols-2 gap-2">
-                  {[ { id: 'nation', label: '全國', color: NATIONAL_CONFIG.color }, ...CITIES_CONFIG ].map(city => {
-                    const isMain = tempMain === city.id;
-                    const isComparing = tempCompare.includes(city.id);
+                return (
+                  <div 
+                    key={city.id} 
+                    className={`
+                      relative flex items-center p-2.5 rounded-xl transition-all cursor-pointer group
+                      ${isMain ? 'z-10 shadow-md bg-white border-2 border-[#B7791F] text-slate-800' : 'border bg-white border-slate-200 text-slate-600 hover:border-[#FFD152]/30 hover:bg-slate-50'}
+                      ${isComparing && !isMain ? 'ring-2 ring-[#FFD152]/20' : ''}
+                    `}
+                    onClick={() => setTempMain(city.id)}
+                  >
+                    {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#B7791F] rounded-r-full"></div>}
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5 ml-0.5" style={{ backgroundColor: city.color }}></div>
+                    <span className={`text-sm truncate flex-1 ${isMain ? 'font-black text-slate-900' : 'font-bold'}`}>{city.label}</span>
                     
-                    return (
-                      <div key={city.id} className={`
-                        relative flex items-center p-2.5 rounded-xl transition-all cursor-pointer group
-                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-[#B7791F] text-slate-800' : 'border bg-white border-slate-200 text-slate-600 hover:border-[#FFD152]/30 hover:bg-slate-50'}
-                        ${isComparing && !isMain ? 'ring-2 ring-[#FFD152]/20' : ''}
-                      `}
-                      onClick={() => setTempMain(city.id)}>
-                        {/* 主要城市指示條 */}
-                        {isMain && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#B7791F] rounded-r-full"></div>}
-                        
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5 ml-0.5" style={{ backgroundColor: city.color }}></div>
-                        <span className={`text-sm truncate flex-1 ${isMain ? 'font-black text-slate-900' : 'font-bold'}`}>{city.label}</span>
-                        
-                        {!isMain && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); localToggleCompare(city.id); }}
-                            className={`
-                              h-6 flex items-center justify-center px-2 rounded-md border transition-all
-                              ${isComparing 
-                                ? 'bg-[#B7791F] border-[#B7791F] text-white shadow-sm' 
-                                : 'bg-slate-50 border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
-                            `}
-                          >
-                            <span className="text-[10px] font-black">比</span>
-                          </button>
-                        )}
-                        {isMain && (
-                           <div className="h-6 flex items-center justify-center px-2 rounded-md bg-[#B7791F] text-white text-[10px] font-black tracking-tighter shadow-sm shadow-[#B7791F]/20">
-                             主要
-                           </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-                
-                <p className="text-xs text-slate-400 mt-4 text-center italic font-medium">
-                  💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span> • 點選「比」開啟 <span className="text-[#B7791F] font-bold underline decoration-[#B7791F]/20">比較分析</span>
-                </p>
-              </div>
+                    {!isMain && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); localToggleCompare(city.id); }}
+                        className={`
+                          h-6 flex items-center justify-center px-2 rounded-md border transition-all
+                          ${isComparing 
+                            ? 'bg-[#B7791F] border-[#B7791F] text-white shadow-sm' 
+                            : 'bg-slate-50 border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
+                        `}
+                      >
+                        <span className="text-[10px] font-black">比</span>
+                      </button>
+                    )}
+                    {isMain && (
+                       <div className="h-6 flex items-center justify-center px-2 rounded-md bg-[#B7791F] text-white text-[10px] font-black tracking-tighter">
+                         主要
+                       </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            
+            <p className="text-xs text-slate-400 mt-4 text-center italic font-medium leading-relaxed">
+              💡 點選名稱設為 <span className="text-slate-600 font-bold underline decoration-slate-300">主要</span><br/>
+              點選「比」開啟 <span className="text-[#B7791F] font-bold underline decoration-[#B7791F]/20">比較分析</span>
+            </p>
+          </div>
 
-              {/* 3. 功能選單 - 圖標化 */}
-              <div className="grid grid-cols-2 gap-2 mt-auto">
-                <button 
-                  onClick={onDownload}
-                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
-                >
-                  <Download className="w-4 h-4" /> 下載圖表
-                </button>
-                <button 
-                  onClick={onShare}
-                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
-                >
-                  <Share2 className="w-4 h-4" /> 分享連結
-                </button>
-              </div>
-             </>
+          {/* 3. 下載與分享按鈕 */}
+          <div className="grid grid-cols-2 gap-2 mt-auto">
+            <button 
+              onClick={onDownload}
+              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <Download className="w-4 h-4" /> 下載圖表
+            </button>
+            <button 
+              onClick={onShare}
+              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <Share2 className="w-4 h-4" /> 分享連結
+            </button>
+          </div>
         </div>
         
-        {/* 底部固定確定按鈕區 */}
+        {/* --- C. 底部操作區 --- */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-2">
           <button 
             onClick={handleReset}
-            className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-100"
+            className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             重設所有設定
