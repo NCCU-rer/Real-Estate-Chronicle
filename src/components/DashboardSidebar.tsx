@@ -43,18 +43,6 @@ interface SidebarProps {
   onInfoOpen: () => void;
 }
 
-const InfoCard = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
-  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-    <div className="flex items-start gap-3">
-      <div>
-        <h3 className="font-bold text-slate-800 text-base">{title}</h3>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
-      </div>
-    </div>
-    <div className="mt-3">{children}</div>
-  </div>
-);
-
 export default function DashboardSidebar({
   isSettingsOpen,
   setIsSettingsOpen,
@@ -131,47 +119,47 @@ export default function DashboardSidebar({
 
       <aside className={`
         tour-filter-pannel fixed md:static inset-y-0 left-0 z-60
-        bg-white
-        flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out border-r border-slate-200
+        bg-slate-50
+        flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200
         w-80 animate-in fade-in slide-in-from-left-8 duration-500
       `}>
         
         <div 
-          className="bg-white flex flex-col shrink-0 relative p-6 border-b border-slate-100"
+          className="bg-[#B7791F] flex flex-col shrink-0 relative p-6 border-b border-[#B7791F]/10 shadow-lg shadow-[#B7791F]/10"
         >
           <div className="relative z-10 flex items-center gap-4">
-            <div className="shrink-0 bg-[#B7791F]/5 p-1.5 rounded-xl">
+            <div className="shrink-0 p-1.5 bg-white/10 rounded-xl backdrop-blur-sm">
                <Image 
                  src="/logo_transparent.svg" 
                  alt="Logo" 
                  width={38} 
                  height={38} 
-                 className="object-contain"
+                 className="object-contain rounded-xl"
                />
             </div>
             <div className="opacity-100">
               <div className="flex items-center gap-2">
-                <h1 className="font-black text-2xl tracking-tight text-[#2D2D24]">不動產大事紀</h1>
+                <h1 className="font-black text-2xl tracking-tight text-white">不動產大事紀</h1>
                 <button 
                   onClick={onInfoOpen}
-                  className="p-1 hover:bg-[#B7791F]/10 rounded-full transition-colors group/info"
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors group/info"
                 >
-                  <HelpCircle className="w-4 h-4 text-slate-300 group-hover/text-[#B7791F]" />
+                  <HelpCircle className="w-4 h-4 text-white/60 group-hover:text-white" />
                 </button>
               </div>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
+              <p className="text-[10px] text-white/70 font-bold tracking-widest mt-0.5 uppercase">Real Estate Timeline</p>
 
               <button 
                 onClick={() => window.dispatchEvent(new Event('start-onboarding-tour'))}
-                className="mt-2 flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold transition-colors"
+                className="mt-2 flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[11px] font-bold transition-colors border border-white/10"
               >
-                <PlayCircle className="w-3.5 h-3.5 text-[#B7791F]" />
+                <PlayCircle className="w-3.5 h-3.5 text-white" />
                 開啟互動式導覽
               </button>
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-slate-400 hover:text-[#B7791F] transition-colors font-bold text-xs">
+          <button onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(false); }} className="md:hidden absolute top-6 right-6 text-white/60 hover:text-white transition-colors font-bold text-xs">
             關閉
           </button>
         </div>
@@ -179,30 +167,30 @@ export default function DashboardSidebar({
         <div className="flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 p-4 space-y-4">
              <>
               {/* 1. 時間區間 - 單行 */}
-              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
                   <span className="text-base font-black text-slate-800 tracking-tight">觀察區間設定</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+                  <select value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                   <ArrowRight className="w-4 h-4 text-slate-300" />
-                  <select value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="flex-1 bg-slate-50 border border-slate-100 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-100 transition-colors">
+                  <select value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors">
                     {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                   </select>
                 </div>
               </div>
 
               {/* 2. 城市選取 - 網格 */}
-              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex-1">
+              <div className="bg-slate-50 rounded-2xl border border-slate-200/60 p-5 shadow-sm flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-[#B7791F] rounded-full"></div>
                     <span className="text-base font-black text-slate-800 tracking-tight uppercase">城市觀察選取</span>
                   </div>
-                  <span className="px-2 py-1 bg-slate-100 rounded-md text-[10px] font-black text-slate-500">{tempCompare.length} / 3 對照中</span>
+                  <span className="px-2 py-1 bg-slate-200/50 rounded-md text-[10px] font-black text-slate-500">{tempCompare.length} / 3 對照中</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2">
@@ -213,7 +201,7 @@ export default function DashboardSidebar({
                     return (
                       <div key={city.id} className={`
                         relative flex items-center p-2.5 rounded-xl transition-all cursor-pointer group
-                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-[#B7791F] text-slate-800' : 'border bg-white border-slate-100 text-slate-600 hover:border-[#FFD152]/30 hover:bg-slate-50'}
+                        ${isMain ? 'z-10 shadow-md bg-white border-2 border-[#B7791F] text-slate-800' : 'border bg-white border-slate-200 text-slate-600 hover:border-[#FFD152]/30 hover:bg-slate-50'}
                         ${isComparing && !isMain ? 'ring-2 ring-[#FFD152]/20' : ''}
                       `}
                       onClick={() => setTempMain(city.id)}>
@@ -230,7 +218,7 @@ export default function DashboardSidebar({
                               flex items-center justify-center px-2 py-1.5 rounded-lg border transition-all
                               ${isComparing 
                                 ? 'bg-[#B7791F] border-[#B7791F] text-white shadow-sm' 
-                                : 'bg-white border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
+                                : 'bg-slate-50 border-slate-200 text-slate-300 group-hover:text-[#FFD152] group-hover:border-[#FFD152]/30'}
                             `}
                           >
                             <span className="text-[10px] font-black">比</span>
@@ -255,13 +243,13 @@ export default function DashboardSidebar({
               <div className="grid grid-cols-2 gap-2 mt-auto">
                 <button 
                   onClick={onDownload}
-                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Download className="w-4 h-4" /> 下載圖表
                 </button>
                 <button 
                   onClick={onShare}
-                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Share2 className="w-4 h-4" /> 分享連結
                 </button>
@@ -270,7 +258,7 @@ export default function DashboardSidebar({
         </div>
         
         {/* 底部固定確定按鈕區 */}
-        <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] space-y-2">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-2">
           <button 
             onClick={handleReset}
             className="w-full py-2 rounded-lg font-bold text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2 border border-transparent hover:border-red-100"

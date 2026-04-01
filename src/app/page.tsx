@@ -198,20 +198,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-<div className="mt-6 p-4 border-t border-gray-100">
-  <p className="text-sm text-gray-500 mb-3">
-    💡 提示：若您是初次使用，可以點擊下方按鈕啟動功能導覽。
-  </p>
-  <button 
-    onClick={() => {
-      // 發送自定義事件，這會觸發上面的 UserTour 組件
-      window.dispatchEvent(new Event('start-onboarding-tour'));
-    }}
-    className="w-full py-2 bg-[#B7791F] text-white rounded-md font-medium hover:bg-opacity-90 transition-all"
-  >
-    開啟互動式功能導覽
-  </button>
-</div>
       <Footer />
 
       <ExportModal 
