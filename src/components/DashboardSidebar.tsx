@@ -18,8 +18,8 @@ import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 interface SidebarProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (v: boolean) => void;
-  isSidebarCollapsed: boolean;
-  setIsSidebarCollapsed: (v: boolean) => void;
+  isSidebarCollapsed?: boolean;
+  setIsSidebarCollapsed?: (v: boolean) => void;
   startPeriod: string;
   setStartPeriod: (v: string) => void;
   endPeriod: string;
@@ -28,7 +28,7 @@ interface SidebarProps {
   handleMainCityChange: (cityId: string) => void;
   compareCities: string[];
   toggleCompare: (cityId: string) => void;
-  handleCancelCompare: () => void;
+  handleCancelCompare?: () => void;
   onDownload: () => void;
   onShare: () => void;
   quarterOptions?: string[];
