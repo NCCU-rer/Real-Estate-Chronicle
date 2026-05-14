@@ -73,13 +73,45 @@ export const getQuarterValue = (quarterStr: string) => {
   return parseInt(cleanStr);
 };
 
-// 3. 輔助：產生季度選單 (從 2013 開始)
-export const generateQuarterOptions = () => {
+// 3. 輔助：產生季度選單 (從 2013 開始，預設到當前年份)
+export const generateQuarterOptions = (endYear?: number) => {
   const options = [];
-  for (let y = 2013; y <= 2025; y++) {
+  const finalEndYear = endYear || new Date().getFullYear();
+  for (let y = 2013; y <= finalEndYear; y++) {
     for (let q = 1; q <= 4; q++) {
       options.push(`${y}_Q${q}`);
     }
   }
   return options;
+};
+
+/**
+ * 從原始資料中提取所有可用的季度
+ * @param data 原始價格資料陣列或其他包含 Quarter 的資料
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getAvailableQuarters = (data: any | any[]) => {
+  let quarters: string[] = [];
+  
+  if (Array.isArray(data)) {
+    quarters = data
+      .map(item => item?.Quarter)
+      .filter((q): q is string => typeof q === 'string' && q.includes('_'));
+  } else if (data && typeof data === 'object') {
+    // 處理物件格式 (例如 rawData)
+    const allItems = Object.values(data).flat() as any[];
+    quarters = allItems
+      .map(item => item?.Quarter)
+      .filter((q): q is string => typeof q === 'string' && q.includes('_'));
+  }
+    
+  if (quarters.length === 0) return generateQuarterOptions();
+  
+  // 去重
+  const uniqueQuarters = Array.from(new Set(quarters));
+  
+  // 排序確保時間順序
+  return uniqueQuarters.sort((a, b) => {
+    return getQuarterValue(a) - getQuarterValue(b);
+  });
 };

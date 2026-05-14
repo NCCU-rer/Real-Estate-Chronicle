@@ -9,7 +9,6 @@ import {
   Share2,
   RotateCcw,
   HelpCircle,
-  PlayCircle,
 } from "lucide-react";
 
 import { generateQuarterOptions } from "@/utils/eventHelper";
@@ -19,6 +18,8 @@ import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 interface SidebarProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (v: boolean) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (v: boolean) => void;
   startPeriod: string;
   setStartPeriod: (v: string) => void;
   endPeriod: string;
@@ -30,11 +31,9 @@ interface SidebarProps {
   handleCancelCompare: () => void;
   onDownload: () => void;
   onShare: () => void;
-  onInfoOpen: () => void;
+  quarterOptions?: string[];
+  onInfoOpen?: () => void;
 }
-
-// --- 常數設定 ---
-const QUARTER_OPTIONS = generateQuarterOptions();
 
 /**
  * 儀表板側邊欄組件
@@ -51,11 +50,15 @@ export default function DashboardSidebar({
   handleMainCityChange,
   compareCities,
   toggleCompare,
-  handleCancelCompare,
   onDownload,
   onShare,
+  quarterOptions = [],
   onInfoOpen,
 }: SidebarProps) {
+  // 使用傳入的 quarterOptions，若無則使用 fallback
+  const effectiveQuarterOptions = quarterOptions.length > 0 
+    ? quarterOptions 
+    : generateQuarterOptions();
   
   // === 1. 局部狀態 (直到按下「確定更新」才同步回父組件) ===
   const [tempStart, setTempStart] = useState(startPeriod);
@@ -65,6 +68,7 @@ export default function DashboardSidebar({
 
   // === 2. 副作用處理 ===
   // 當外部 props 改變時（例如點擊重設），同步更新局部狀態
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setTempStart(startPeriod);
     setTempEnd(endPeriod);
@@ -98,7 +102,7 @@ export default function DashboardSidebar({
   // 重設為初始預設值
   const handleReset = () => {
     setTempStart("2013_Q1");
-    setTempEnd("2025_Q4");
+    setTempEnd(effectiveQuarterOptions[effectiveQuarterOptions.length - 1]);
     setTempMain("nation");
     setTempCompare([]);
   };
@@ -189,7 +193,7 @@ export default function DashboardSidebar({
                 onChange={(e) => setTempStart(e.target.value)} 
                 className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors"
               >
-                {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+                {effectiveQuarterOptions.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
               </select>
               <ArrowRight className="w-4 h-4 text-slate-300" />
               <select 
@@ -197,7 +201,7 @@ export default function DashboardSidebar({
                 onChange={(e) => setTempEnd(e.target.value)} 
                 className="flex-1 bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 font-bold outline-none cursor-pointer hover:bg-slate-50 transition-colors"
               >
-                {QUARTER_OPTIONS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+                {effectiveQuarterOptions.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
               </select>
             </div>
           </div>

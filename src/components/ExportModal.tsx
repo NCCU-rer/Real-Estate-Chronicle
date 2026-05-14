@@ -5,8 +5,6 @@ import { X, Download, Calendar, MapPin, CheckCircle2, ChevronRight, FileText } f
 import { CITIES_CONFIG, NATIONAL_CONFIG } from "@/config/cityColors";
 import { generateQuarterOptions } from "@/utils/eventHelper";
 
-const QUARTERS = generateQuarterOptions();
-
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,6 +13,7 @@ interface ExportModalProps {
   defaultMain: string;
   defaultCompare: string[];
   onGenerate: (config: ExportConfig) => void;
+  quarterOptions?: string[];
 }
 
 export interface ExportConfig {
@@ -35,8 +34,13 @@ export default function ExportModal({
   defaultEnd, 
   defaultMain, 
   defaultCompare,
-  onGenerate 
+  onGenerate,
+  quarterOptions = []
 }: ExportModalProps) {
+  const effectiveQuarters = quarterOptions.length > 0 
+    ? quarterOptions 
+    : generateQuarterOptions();
+
   const [config, setConfig] = useState<ExportConfig>({
     start: defaultStart,
     end: defaultEnd,
@@ -97,7 +101,7 @@ export default function ExportModal({
                   onChange={e => setConfig(prev => ({ ...prev, start: e.target.value }))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#FFD152]/20"
                 >
-                  {QUARTERS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+                  {effectiveQuarters.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
@@ -107,7 +111,7 @@ export default function ExportModal({
                   onChange={e => setConfig(prev => ({ ...prev, end: e.target.value }))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#FFD152]/20"
                 >
-                  {QUARTERS.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
+                  {effectiveQuarters.map(q => <option key={q} value={q}>{q.replace("_", " ")}</option>)}
                 </select>
               </div>
             </div>

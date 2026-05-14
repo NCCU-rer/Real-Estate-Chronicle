@@ -11,21 +11,35 @@ import ReportCanvas from "@/components/ReportCanvas";
 import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
 import { useDashboardExport } from "@/hooks/useDashboardExport";
 import { rawData } from "@/data/sourceData";
-import { processEvents, getQuarterValue } from "@/utils/eventHelper";
+import { rawPriceData } from "@/data/priceData";
+import { processEvents, getQuarterValue, getAvailableQuarters } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
 import SplashWrapper from "@/components/SplashWrapper";
 import UserTour from "@/components/Guide/UserTour";
 
 export default function Home() {
+  // === 0. 資料預處理 (Data Preparation) ===
+  // 同步從價格資料與大事紀資料提取季度，確保兩邊新增都能偵測到
+  const quarterOptions = useMemo(() => {
+    const priceQuarters = getAvailableQuarters(rawPriceData);
+    const eventQuarters = getAvailableQuarters(rawData);
+    // 合併並去重、排序
+    return Array.from(new Set([...priceQuarters, ...eventQuarters])).sort((a, b) => getQuarterValue(a) - getQuarterValue(b));
+  }, []);
+  
+  const lastQuarter = useMemo(() => {
+    return quarterOptions[quarterOptions.length - 1] || "2026_Q1";
+  }, [quarterOptions]);
+
   // === 1. 狀態管理 (State) ===
   const [startPeriod, setStartPeriod] = useState("2013_Q1");
-  const [endPeriod, setEndPeriod] = useState("2025_Q4");
+  const [endPeriod, setEndPeriod] = useState("2013_Q4"); // 初始佔位，useEffect 會更新
   const [mainCity, setMainCity] = useState("nation");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(true);
-  
+
   // 匯出功能
   const reportRef = useRef<HTMLDivElement>(null);
   const { 
@@ -41,11 +55,21 @@ export default function Home() {
   // === 2. 初始化與 URL 同步 (Initialization) ===
   useEffect(() => {
     const params = decodeDashboardUrl();
-    if (params.start) setStartPeriod(params.start);
-    if (params.end) setEndPeriod(params.end);
+    if (params.start) {
+      setStartPeriod(params.start);
+    }
+
+    // 優先使用 URL 的參數，若無則使用資料中最新的季度
+    if (params.end) {
+      setEndPeriod(params.end);
+    } else {
+      setEndPeriod(lastQuarter);
+    }
+
     if (params.main) setMainCity(params.main);
     if (params.compare) setCompareCities(params.compare);
-  }, []);
+  }, [lastQuarter]);
+
 
   // 當使用者點擊「確定更新資料」時，在 DashboardSidebar 呼叫全域更新時也會觸發此處邏輯
   const updateUrl = (start: string, end: string, main: string, compare: string[]) => {
@@ -73,7 +97,7 @@ export default function Home() {
     try {
       const shareUrl = encodeDashboardUrl({ 
         start: startPeriod || "2013_Q1", 
-        end: endPeriod || "2025_Q4", 
+        end: endPeriod || lastQuarter, 
         main: mainCity || "nation", 
         compare: compareCities || [] 
       });
@@ -150,6 +174,7 @@ export default function Home() {
           onDownload={openExportModal}
           onShare={handleShare}
           onInfoOpen={() => setIsInfoOpen(true)}
+          quarterOptions={quarterOptions}
         />
 
         {/* 2. 右側主要內容區 */}
@@ -208,6 +233,7 @@ export default function Home() {
         defaultMain={mainCity}
         defaultCompare={compareCities}
         onGenerate={handleGenerate}
+        quarterOptions={quarterOptions}
       />
 
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
