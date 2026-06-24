@@ -11,14 +11,14 @@ import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
 import { useDashboardExport } from "@/hooks/useDashboardExport";
 import { rawData } from "@/data/events";
 import { rawPriceData } from "@/data/priceData";
-import { processEvents, getQuarterValue, getQuarterOptionsFromData } from "@/utils/eventHelper";
+import { processEvents, getQuarterValue, getAvailableQuarters } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
 
 export default function Home() {
   // === 1. 動態計算可用季度 (Reactive Quarter Options) ===
   const quarterOptions = useMemo(() => 
-    getQuarterOptionsFromData(Object.values(rawData).flat(), rawPriceData),
+    getAvailableQuarters(rawData),
     [] // 注：在生產環境若需實時更新，可在此處依賴於外部觸發
   );
 
@@ -29,6 +29,7 @@ export default function Home() {
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   
   // 匯出功能
   const reportRef = useRef<HTMLDivElement>(null);
@@ -225,7 +226,6 @@ export default function Home() {
             startPeriod={startPeriod} 
             endPeriod={endPeriod} 
             citiesOrder={chartCities} 
-             quarterWidth={120}
           />
         </div>
 
@@ -251,7 +251,7 @@ export default function Home() {
       />
 
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
-      <InfoTooltip />
+      <InfoTooltip isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
     </main>
   );
