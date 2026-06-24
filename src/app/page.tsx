@@ -4,39 +4,32 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardChart from "@/components/DashboardChart";
 import EventList from "@/components/EventList";
-import InfoTooltip from "@/components/InfoTooltip";
-import Footer from "@/components/layout/Footer";
+import InfoTooltip from '@/components/InfoTooltip'; 
 import ExportModal from "@/components/ExportModal";
 import ReportCanvas from "@/components/ReportCanvas";
 import ExportLoadingOverlay from "@/components/ExportLoadingOverlay";
 import { useDashboardExport } from "@/hooks/useDashboardExport";
-import { rawData } from "@/data/sourceData";
+import { rawData } from "@/data/events";
 import { rawPriceData } from "@/data/priceData";
-import { processEvents, getQuarterValue, getAvailableQuarters } from "@/utils/eventHelper";
+import { processEvents, getQuarterValue, getQuarterOptionsFromData } from "@/utils/eventHelper";
 import { CITIES_CONFIG, getCityName, NATIONAL_CONFIG } from "@/config/cityColors";
 import { decodeDashboardUrl, encodeDashboardUrl } from "@/utils/urlHelper";
-import SplashWrapper from "@/components/SplashWrapper";
-import UserTour from "@/components/Guide/UserTour";
 
 export default function Home() {
-  // === 0. 資料預處理 (Data Preparation) ===
-  const quarterOptions = useMemo(() => {
-    const priceQuarters = getAvailableQuarters(rawPriceData);
-    const eventQuarters = getAvailableQuarters(rawData);
-    const merged = Array.from(new Set([...priceQuarters, ...eventQuarters]));
-    return merged.sort((a, b) => getQuarterValue(a) - getQuarterValue(b));
-  }, []);
-  
-  const lastQuarter = quarterOptions.length > 0 ? quarterOptions[quarterOptions.length - 1] : "2025_Q4";
+  // === 1. 動態計算可用季度 (Reactive Quarter Options) ===
+  const quarterOptions = useMemo(() => 
+    getQuarterOptionsFromData(Object.values(rawData).flat(), rawPriceData),
+    [] // 注：在生產環境若需實時更新，可在此處依賴於外部觸發
+  );
 
-  // === 1. 狀態管理 (State) ===
-  const [startPeriod, setStartPeriod] = useState("2013_Q1");
-  const [endPeriod, setEndPeriod] = useState(lastQuarter);
+  // === 2. 狀態管理 (State) ===
+  const [startPeriod, setStartPeriod] = useState<string>("");
+  const [endPeriod, setEndPeriod] = useState<string>("");
   const [mainCity, setMainCity] = useState("nation");
   const [compareCities, setCompareCities] = useState<string[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(true);
-
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
   // 匯出功能
   const reportRef = useRef<HTMLDivElement>(null);
   const { 
@@ -49,28 +42,59 @@ export default function Home() {
     handleGenerate 
   } = useDashboardExport(reportRef);
 
-  // === 2. 初始化與 URL 同步 (Initialization) ===
+  // === 3. 根據可用季度初始化時間範圍 (Initialize with Available Quarters) ===
   useEffect(() => {
-    const params = decodeDashboardUrl();
-    if (params.start) setStartPeriod(params.start);
-    if (params.end) {
-      setEndPeriod(params.end);
-    } else if (lastQuarter) {
-      setEndPeriod(lastQuarter);
-    }
+    // 若季度選項為空，不初始化
+    if (quarterOptions.length === 0) return;
     
+    // 若已有狀態值，則從 URL 或保持現有值
+    if (startPeriod && endPeriod) return;
+    
+    const params = decodeDashboardUrl();
+    const validStart = params.start && quarterOptions.includes(params.start) 
+      ? params.start 
+      : quarterOptions[0];
+    const validEnd = params.end && quarterOptions.includes(params.end)
+      ? params.end
+      : quarterOptions[quarterOptions.length - 1];
+    
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStartPeriod(validStart);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEndPeriod(validEnd);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (params.main) setMainCity(params.main);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (params.compare) setCompareCities(params.compare);
-  }, [lastQuarter]);
+  }, [quarterOptions]);
 
+  // === 4. 當季度選項變化時，調整時間範圍 (Auto-adjust when new quarters available) ===
+  useEffect(() => {
+    if (quarterOptions.length === 0) return;
+    
+    // 檢查當前的 startPeriod/endPeriod 是否仍在可用季度內
+    const newStart = startPeriod && quarterOptions.includes(startPeriod) 
+      ? startPeriod 
+      : quarterOptions[0];
+    const newEnd = endPeriod && quarterOptions.includes(endPeriod)
+      ? endPeriod
+      : quarterOptions[quarterOptions.length - 1];
+    
+    // 若有任何改變，更新狀態並同步 URL
+    if (newStart !== startPeriod || newEnd !== endPeriod) {
+      setStartPeriod(newStart);
+      setEndPeriod(newEnd);
+      updateUrl(newStart, newEnd, mainCity, compareCities);
+    }
+  }, [quarterOptions, mainCity, compareCities]);
 
-  // 當使用者點擊「確定更新資料」時，在 DashboardSidebar 呼叫全域更新時也會觸發此處邏輯
+  // === 5. 同步 URL (Sync to URL) ===
   const updateUrl = (start: string, end: string, main: string, compare: string[]) => {
     const newUrl = encodeDashboardUrl({ start, end, main, compare });
     window.history.replaceState({}, '', newUrl);
   };
 
-  // === 3. 業務邏輯 (Handlers) ===
+  // === 6. 業務邏輯 (Handlers) ===
   const handleMainCityChange = (cityId: string) => {
     setMainCity(cityId);
     setCompareCities(prev => prev.filter(c => c !== cityId));
@@ -90,7 +114,7 @@ export default function Home() {
     try {
       const shareUrl = encodeDashboardUrl({ 
         start: startPeriod || "2013_Q1", 
-        end: endPeriod || lastQuarter, 
+        end: endPeriod || quarterOptions[quarterOptions.length - 1] || "2025_Q4", 
         main: mainCity || "nation", 
         compare: compareCities || [] 
       });
@@ -119,7 +143,7 @@ export default function Home() {
     return city ? city.color : "#333333";
   };
 
-  // === 4. 資料計算 (Computation) ===
+  // === 7. 資料計算 (Computation) ===
   const allEvents = useMemo(() => processEvents(Object.values(rawData).flat()), []);
   const chartCities = useMemo(() => [mainCity, ...compareCities], [mainCity, compareCities]);
   
@@ -144,79 +168,76 @@ export default function Home() {
 
   }, [chartCities, startPeriod, endPeriod, allEvents]);
 
-  // === 5. 畫面渲染 (Render) ===
+  // === 8. 畫面渲染 (Render) ===
   return (
-    <SplashWrapper>
-      <UserTour />
-      <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
-      <main className="flex-1 flex overflow-hidden">
+    <main className="h-full w-full flex bg-slate-50 font-sans overflow-hidden">
+      
+      {/* 1. 側邊欄組件 */}
+      <DashboardSidebar 
+        isSettingsOpen={isSettingsOpen}
+        setIsSettingsOpen={setIsSettingsOpen}
+        isSidebarCollapsed={isSidebarCollapsed}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
+        startPeriod={startPeriod}
+        setStartPeriod={(v) => { setStartPeriod(v); updateUrl(v, endPeriod, mainCity, compareCities); }}
+        endPeriod={endPeriod}
+        setEndPeriod={(v) => { setEndPeriod(v); updateUrl(startPeriod, v, mainCity, compareCities); }}
+        mainCity={mainCity}
+        handleMainCityChange={(v) => { handleMainCityChange(v); updateUrl(startPeriod, endPeriod, v, compareCities.filter(c => c !== v)); }}
+        compareCities={compareCities}
+        toggleCompare={(v) => { toggleCompare(v); /* 這裡的同步較複雜，DashboardSidebar 內部的 handleApply 會一次性處理 */ }}
+        handleCancelCompare={handleCancelCompare}
+        onDownload={openExportModal}
+        onShare={handleShare}
+        quarterOptions={quarterOptions}
+      />
+
+      {/* 2. 右側主要內容區 */}
+      <div className="flex-1 flex flex-col min-w-0 relative h-screen bg-slate-50 overflow-hidden">
         
-        {/* 1. 側邊欄組件 */}
-        <DashboardSidebar 
-          isSettingsOpen={isSettingsOpen}
-          setIsSettingsOpen={setIsSettingsOpen}
-          startPeriod={startPeriod}
-          setStartPeriod={(v) => { setStartPeriod(v); updateUrl(v, endPeriod, mainCity, compareCities); }}
-          endPeriod={endPeriod}
-          setEndPeriod={(v) => { setEndPeriod(v); updateUrl(startPeriod, v, mainCity, compareCities); }}
-          mainCity={mainCity}
-          handleMainCityChange={(v) => { handleMainCityChange(v); updateUrl(startPeriod, endPeriod, v, compareCities.filter(c => c !== v)); }}
-          compareCities={compareCities}
-          toggleCompare={(v) => { toggleCompare(v); }}
-          handleCancelCompare={handleCancelCompare}
-          onDownload={openExportModal}
-          onShare={handleShare}
-          onInfoOpen={() => setIsInfoOpen(true)}
-          quarterOptions={quarterOptions}
-        />
-
-        {/* 2. 右側主要內容區 */}
-        <div className="flex-1 flex flex-col min-w-0 relative bg-slate-50 overflow-hidden">
-          
-          {/* Top Header */}
-          <header className="bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 py-4 shadow-sm z-30 animate-in fade-in delay-150 duration-500">
-             <div className="flex items-center gap-4">
-               <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
-               <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-400 whitespace-nowrap">目前顯示：</span>
-                  <div className="flex items-center gap-2">
-                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
-                        主要：{getDisplayName(mainCity)}
-                     </span>
-                     {compareCities.map(id => (
-                        <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-                           <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
-                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
-                           對照：{getCityName(id)}
-                        </span>
-                     ))}
-                  </div>
-               </div>
+        {/* Top Header */}
+        <header className="h-16 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between px-6 shadow-sm z-30">
+           <div className="flex items-center gap-4">
+             <button onClick={() => setIsSettingsOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded">☰</button>
+             <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-slate-400">目前顯示：</span>
+                <div className="flex items-center gap-2">
+                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(mainCity) }}></div>
+                      {getDisplayName(mainCity)}
+                   </span>
+                   {compareCities.map(id => (
+                      <span key={id} className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                         <span className="text-[10px] text-slate-300 font-extrabold italic">VS</span>
+                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getDisplayColor(id) }}></div>
+                         {getCityName(id)}
+                      </span>
+                   ))}
+                </div>
              </div>
-          </header>
+           </div>
+        </header>
 
-          {/* List Content: Takes up 60% of the space */}
-          <div className="tour-event-timeline h-[60%] bg-slate-50/50 z-10 overflow-hidden">
-            <EventList 
-              data={currentViewEvents} 
-              startPeriod={startPeriod} 
-              endPeriod={endPeriod} 
-              citiesOrder={chartCities} 
-            />
-          </div>
-
-          {/* 底部圖表組件 */}
-          <div className="tour-price-chart h-[40%] shrink-0 z-20">
-            <DashboardChart 
-              selectedCities={chartCities}
-              startPeriod={startPeriod}
-              endPeriod={endPeriod}
-            />
-          </div>
+        {/* List Content: Takes up 60% of the space */}
+        <div className="h-[60%] bg-slate-50/50 z-10 overflow-hidden">
+          <EventList 
+            data={currentViewEvents} 
+            startPeriod={startPeriod} 
+            endPeriod={endPeriod} 
+            citiesOrder={chartCities} 
+             quarterWidth={120}
+          />
         </div>
-      </main>
-      <Footer />
+
+        {/* 底部圖表組件 */}
+        <div className="h-[40%] shrink-0 z-20">
+          <DashboardChart 
+            selectedCities={chartCities}
+            startPeriod={startPeriod}
+            endPeriod={endPeriod}
+          />
+        </div>
+      </div>
 
       <ExportModal 
         isOpen={isExportOpen}
@@ -230,9 +251,8 @@ export default function Home() {
       />
 
       {exportConfig && <ReportCanvas config={exportConfig} canvasRef={reportRef} />}
-      <InfoTooltip isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
+      <InfoTooltip />
       <ExportLoadingOverlay isVisible={isGenerating} progress={exportProgress} />
-      </div>
-    </SplashWrapper>
+    </main>
   );
 }

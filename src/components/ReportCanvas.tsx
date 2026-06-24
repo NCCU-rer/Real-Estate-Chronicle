@@ -5,7 +5,7 @@ import DashboardChart from "@/components/DashboardChart";
 import { ExportConfig } from "@/components/ExportModal";
 import { NATIONAL_CONFIG, getCityColor, getCityName } from "@/config/cityColors";
 import { processEvents, getQuarterValue } from "@/utils/eventHelper";
-import { rawData } from "@/data/sourceData";
+import { rawData } from "@/data/events";
 import { Pin, GitCompare } from "lucide-react";
 
 interface ReportCanvasProps {
