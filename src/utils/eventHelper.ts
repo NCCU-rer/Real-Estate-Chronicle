@@ -2,29 +2,29 @@
 
 import { getCityName } from "@/config/cityColors";
 
-// 1. 銝餉?皜??摩
+// 1. 主要清洗邏輯
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processEvents = (data: any[]) => {
-  // ?脣?嚗???data 銝???嚗?亙??喟征???嚗??map ?嗆?
+  // 防呆：如果 data 不是陣列，直接回傳空陣列，避免 map 當機
   if (!Array.isArray(data)) {
-    console.error("processEvents ?嗅?航炊???撘?", data);
+    console.error("processEvents 收到錯誤的資料格式:", data);
     return [];
   }
 
-  // ?脣?嚗甇Ｚ??憭惜??? (靘? [[...], [...]])嚗?憯像??撅?
+  // 防呆：防止資料是多層陣列 (例如 [[...], [...]])，先壓平成一層
   const flatData = data.flat();
 
   return flatData.map((item) => {
-    // ?脣?嚗???item ?舐征???臬??芰??梯正嚗停頝喲?
+    // 防呆：如果 item 是空的或是奇怪的東西，就跳過
     if (!item || typeof item !== 'object') return null;
 
-    // ?圾??嚗?憒?"2013_Q1" -> 2013, Q1
+    // 拆解時間，例如 "2013_Q1" -> 2013, Q1
     const [yearStr, quarterStr] = item.Quarter ? item.Quarter.split("_") : ["0", ""];
 
-    // ?斗??鞈?撅祆?芸?撣?
-    // ?摩嚗炎?亦隞嗉ㄐ???摰? Key (靘? KaohsiungLabel)
-    let city = "nation"; // ?身?箏??
-    let title = item.Label || "憭找?蝝";
+    // 判斷這筆資料屬於哪個城市
+    // 邏輯：檢查物件裡有沒有特定的 Key (例如 KaohsiungLabel)
+    let city = "nation"; // 預設為全國
+    let title = item.Label || "大事紀";
 
     if (item.TaipeiLabel) {
       city = "taipei";
@@ -53,26 +53,27 @@ export const processEvents = (data: any[]) => {
       year: parseInt(yearStr) || 0,
       quarter: quarterStr || "",
       city: city,
+      cityName: getCityName(city), // Add city name
       title: title,
       category: item.Category,
       isNational: city === "nation",
       
-      // ?? ?嚗???鞈???Detail 撠???description (蝯血?頝唾?蝒)
+      // ⚠️ 關鍵：將原始資料的 Detail 對應到 description (給彈跳視窗用)
       description: item.Detail || null, 
     };
   })
-  // ?蕪??null ?瘝?璅??????
+  // 過濾掉 null 或是沒有標題的無效資料
   .filter((item): item is NonNullable<typeof item> => item !== null && !!item.title);
 };
 
-// 2. 頛嚗? "2013_Q1" 頧??詨? 20131 隞乩噶瘥?憭批?
+// 2. 輔助：把 "2013_Q1" 轉成數字 20131 以便比較大小
 export const getQuarterValue = (quarterStr: string) => {
   if (!quarterStr) return 0;
   const cleanStr = quarterStr.replace("_", "").replace(" ", "").replace("Q", ""); 
   return parseInt(cleanStr);
 };
 
-// 4. 頛嚗?鈭辣??潸??葉?Ｙ??舐摮?漲?賊?
+// 3. 輔助：從事件與價格資料中產生可用季度選項
 export const getQuarterOptionsFromData = (eventData: any[] = [], priceData: any[] = []) => {
   const eventQuarters = Array.isArray(eventData)
     ? eventData.flat().map((item) => item?.Quarter).filter(Boolean)
@@ -88,7 +89,7 @@ export const getQuarterOptionsFromData = (eventData: any[] = [], priceData: any[
     .map(({ quarter }) => quarter);
 };
 
-// 5. 頛嚗?迤摨阡??(敺?2013 ??, ?身靘??嗅?撟港遢)
+// 4. 輔助：產生季度選單 (從 2013 開始, 預設依據當前年份)
 export const generateQuarterOptions = (startYear = 2013, endYear = new Date().getFullYear()) => {
   const options = [];
   for (let y = startYear; y <= endYear; y++) {
@@ -99,7 +100,7 @@ export const generateQuarterOptions = (startYear = 2013, endYear = new Date().ge
   return options;
 };
 
-// 6. 敺?憪??葉?????函?摮?漲
+// 5. 從原始資料中提取所有可用的季度
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getAvailableQuarters = (data: any | any[]) => {
   let quarters: string[] = [];
@@ -109,7 +110,7 @@ export const getAvailableQuarters = (data: any | any[]) => {
       .map(item => item?.Quarter)
       .filter((q): q is string => typeof q === 'string' && q.includes('_'));
   } else if (data && typeof data === 'object') {
-    // ???拐辣?澆? (靘? rawData)
+    // 處理物件格式 (例如 rawData)
     const allItems = Object.values(data).flat() as any[];
     quarters = allItems
       .map(item => item?.Quarter)
@@ -118,14 +119,11 @@ export const getAvailableQuarters = (data: any | any[]) => {
     
   if (quarters.length === 0) return generateQuarterOptions();
   
-  // ?駁?
+  // 去重
   const uniqueQuarters = Array.from(new Set(quarters));
   
-  // ??蝣箔?????
+  // 排序確保時間順序
   return uniqueQuarters.sort((a, b) => {
     return getQuarterValue(a) - getQuarterValue(b);
   });
 };
-
-
-
